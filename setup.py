@@ -26,7 +26,7 @@ setup(
     packages=find_packages(exclude=['docs', 'tests']),
     install_requires=[],
     extras_require={
-        'test': ['pytest'],
+        'test': ['pytest', 'pytest-cov', 'flake8'],
     },
     entry_points="""
         [console_scripts]

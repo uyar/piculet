@@ -4,5 +4,6 @@ syntax: glob
 *.egg-info/
 
 .cache/
+.coverage/
 
 .idea/
