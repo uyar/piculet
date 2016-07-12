@@ -27,5 +27,9 @@ setup(
     install_requires=[],
     extras_require={
         'test': ['pytest'],
-    }
+    },
+    entry_points="""
+        [console_scripts]
+        woody=woody.cli:main
+    """
 )
