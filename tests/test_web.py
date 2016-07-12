@@ -8,7 +8,7 @@ from urllib.error import HTTPError
 def test_retrieve_url_not_found_should_raise_http_error(web_server):
     url = '{}/utf-8_charset_utf-9.html'.format(web_server)
     with raises(HTTPError):
-        content = retrieve(url)
+        retrieve(url)
 
 
 def test_retrieve_meta_charset_correct_should_succeed(web_server):
@@ -38,13 +38,13 @@ def test_retrieve_meta_content_type_incorrect_should_fail(web_server):
 def test_retrieve_meta_charset_incompatible_should_raise_unicode_error(web_server):
     url = '{}/iso8859-9_charset_utf-8.html'.format(web_server)
     with raises(UnicodeDecodeError):
-        content = retrieve(url)
+        retrieve(url)
 
 
 def test_retrieve_meta_content_type_incompatible_should_raise_unicode_error(web_server):
     url = '{}/iso8859-9_content-type_utf-8.html'.format(web_server)
     with raises(UnicodeDecodeError):
-        content = retrieve(url)
+        retrieve(url)
 
 
 def test_retrieve_requested_charset_correct_should_succeed(web_server):
@@ -62,7 +62,7 @@ def test_retrieve_requested_charset_incorrect_should_fail(web_server):
 def test_retrieve_requested_charset_incompatible_should_raise_unicode_error(web_server):
     url = '{}/iso8859-9_charset_iso8859-9.html'.format(web_server)
     with raises(UnicodeDecodeError):
-        content = retrieve(url, charset='utf-8')
+        retrieve(url, charset='utf-8')
 
 
 def test_retrieve_fallback_default_correct_should_succeed(web_server):
@@ -86,7 +86,7 @@ def test_retrieve_fallback_incorrect_should_fail(web_server):
 def test_retrieve_fallback_incompatible_should_raise_unicode_error(web_server):
     url = '{}/iso8859-9_charset_none.html'.format(web_server)
     with raises(UnicodeDecodeError):
-        content = retrieve(url, fallback_charset='utf-8')
+        retrieve(url, fallback_charset='utf-8')
 
 
 def test_html_to_xhtml_well_formed_xml_should_succeed():
