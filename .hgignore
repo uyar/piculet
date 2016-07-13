@@ -6,4 +6,6 @@ syntax: glob
 .cache/
 .coverage/
 
+_build/
+
 .idea/
