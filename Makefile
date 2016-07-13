@@ -1,4 +1,4 @@
-.PHONY: help clean clean-pyc clean-build list test coverage docs release sdist
+.PHONY: help clean clean-pyc clean-build list test test-all coverage docs release sdist
 
 help:
 	@echo "clean-build - remove build artifacts"
@@ -32,6 +32,9 @@ lint:
 
 test:
 	py.test
+
+test-all:
+	tox
 
 coverage:
 	py.test --cov=woody tests
