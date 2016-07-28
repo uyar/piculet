@@ -19,6 +19,9 @@
 This is the module that cantains the XML scrapers.
 """
 
+from collections import namedtuple
+from enum import Enum
+
 import logging
 
 
@@ -54,3 +57,30 @@ def xpath(element, path):
         else:
             result = element.findall(path)
     return result
+
+
+class Reducer(Enum):
+    first = lambda xs: xs[0]
+    join = lambda xs: ''.join(xs)
+
+
+Rule = namedtuple('Rule', ['key', 'path', 'reducer'])
+"""A rule for extracting data from an element."""
+
+
+def peck(element, rule):
+    """Extract one data item from an element.
+
+    :param element: Element to extract the data from.
+    :param rule: Rule that specifies how to extract the data from the element.
+    :return: Extracted data value.
+    """
+    values = xpath(element, rule.path)
+    if len(values) == 0:
+        _logger.debug('no match for %s using %s', rule.key, rule.path)
+        return None
+
+    _logger.debug('extracted value for %s: %s', rule.key, values)
+    value = rule.reducer(values)
+    _logger.debug('applied %s, new value %s', rule.reducer, value)
+    return value
