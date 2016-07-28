@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import Iterable, List, Mapping, Optional, Union
 
 from xml.etree import ElementTree
 from woody.wood import Rule
@@ -8,6 +8,13 @@ def peck(
         element: ElementTree.Element,
         rule: Rule
 ) -> Optional[str]: ...
+
+
+def scrape(
+        content: str,
+        rules: Iterable[Rule],
+        prune: Optional[str] = None
+) -> Mapping[str, str]: ...
 
 
 def xpath(

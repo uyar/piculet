@@ -1,6 +1,6 @@
-from pytest import fixture
+from pytest import fixture, raises
 
-from woody.wood import Reducer, Rule, peck, xpath
+from woody.wood import Reducer, Rule, peck, scrape, xpath
 
 from xml.etree import ElementTree
 
@@ -33,30 +33,73 @@ def test_xpath_attr_queries_should_return_strings(generic_xml):
 
 
 @fixture(scope='session')
-def person_content():
-    """XML content to represent the data of a person."""
-    return '<p><n>John Smith</n><a>42</a><b></b><b></b></p>'
+def people_content():
+    """XML content to represent the data of multiple persons."""
+    return '<p><p1><n>John Smith</n><a>42</a></p1><p2><n>Jane Doe</n></p2></p>'
 
 
 @fixture(scope='session')
-def person_root(person_content):
+def people_root(people_content):
     """XML document to represent the data of a person."""
-    return ElementTree.fromstring(person_content)
+    return ElementTree.fromstring(people_content)
 
 
-def test_peck_non_matching_path_should_return_none(person_root):
-    rule = Rule('name', path='.//z/text()', reducer=Reducer.join)
-    data = peck(person_root, rule)
-    assert data is None
-
-
-def test_peck_reducer_first_should_return_first_element(person_root):
-    rule = Rule('name', path='.//n/text()', reducer=Reducer.first)
-    data = peck(person_root, rule)
+def test_peck_reducer_first_should_return_first_element(people_root):
+    rule = Rule('name', path='./p1/n/text()', reducer=Reducer.first)
+    data = peck(people_root, rule)
     assert data == 'John Smith'
 
 
-def test_peck_reducer_join_should_return_joined_text(person_root):
-    rule = Rule('text', path='.//text()', reducer=Reducer.join)
-    data = peck(person_root, rule)
+def test_peck_reducer_join_should_return_joined_text(people_root):
+    rule = Rule('text', path='./p1//text()', reducer=Reducer.join)
+    data = peck(people_root, rule)
     assert data == 'John Smith42'
+
+
+def test_peck_custom_reducer_should_work(people_root):
+    rule = Rule('text', path='.//n/text()', reducer=lambda xs: ', '.join(xs))
+    data = peck(people_root, rule)
+    assert data == 'John Smith, Jane Doe'
+
+
+def test_peck_non_matching_path_should_return_none(people_root):
+    rule = Rule('name', path='./p3/a/text()', reducer=Reducer.first)
+    data = peck(people_root, rule)
+    assert data is None
+
+
+def test_scrape_no_prune_should_return_all(people_content):
+    rules = [
+        Rule('name', path='./p2/n/text()', reducer=Reducer.first),
+        Rule('age', path='./p1/a/text()', reducer=Reducer.first)
+    ]
+    data = scrape(people_content, rules)
+    assert data == {'name': 'Jane Doe', 'age': '42'}
+
+
+def test_scrape_prune_should_exclude_unselected_parts(people_content):
+    rules = [
+        Rule('name', path='.//n/text()', reducer=Reducer.first),
+        Rule('age', path='.//a/text()', reducer=Reducer.first)
+    ]
+    data = scrape(people_content, rules, prune='./p1')
+    assert data == {'name': 'John Smith', 'age': '42'}
+
+
+def test_scrape_missing_data_should_be_excluded(people_content):
+    rules = [
+        Rule('name', path='.//n/text()', reducer=Reducer.first),
+        Rule('age', path='.//a/text()', reducer=Reducer.first)
+    ]
+    data = scrape(people_content, rules, prune='./p2')
+    assert data == {'name': 'Jane Doe'}
+
+
+def test_scrape_prune_should_select_one_element(people_content):
+    with raises(ValueError):
+        scrape(people_content, rules=[], prune='.//n')
+
+
+def test_scrape_no_rules_should_return_empty_result(people_content):
+    data = scrape(people_content, rules=[])
+    assert data == {}

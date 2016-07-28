@@ -21,6 +21,7 @@ This is the module that cantains the XML scrapers.
 
 from collections import namedtuple
 from enum import Enum
+from xml.etree import ElementTree
 
 import logging
 
@@ -84,3 +85,28 @@ def peck(element, rule):
     value = rule.reducer(values)
     _logger.debug('applied %s, new value %s', rule.reducer, value)
     return value
+
+
+def scrape(content, rules, prune=None):
+    """Extract data from an XML document.
+
+    :param content: Content to extract the data from.
+    :param rules: Rules that specify how to extract the data from the document.
+    :param prune: Path for the element to act as the root of tree.
+    :return: Extracted data.
+    """
+    root = ElementTree.fromstring(content)
+    if prune is not None:
+        _logger.debug('selecting new root using %s', prune)
+        elements = xpath(root, prune)
+        if len(elements) != 1:
+            raise ValueError('Pruning expression must select exactly'
+                             ' one element: {}.'.format(prune))
+        root = elements[0]
+
+    data = {}
+    for rule in rules:
+        value = peck(root, rule)
+        if value is not None:
+            data[rule.key] = value
+    return data
