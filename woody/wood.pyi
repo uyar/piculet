@@ -1,4 +1,4 @@
-from typing import Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from xml.etree import ElementTree
 from woody.wood import Rule
@@ -14,6 +14,13 @@ def scrape(
         content: str,
         rules: Iterable[Rule],
         prune: Optional[str] = None
+) -> Mapping[str, str]: ...
+
+
+def scrape_url(
+        spec: Iterable[Mapping[str, Any]],
+        scraper_id: str,
+        **kwargs
 ) -> Mapping[str, str]: ...
 
 

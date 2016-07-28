@@ -4,8 +4,8 @@ from codecs import open
 from os import path
 
 
-here = path.abspath(path.dirname(__file__))
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+cwd = path.abspath(path.dirname(__file__))
+with open(path.join(cwd, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
@@ -28,6 +28,9 @@ setup(
     install_requires=[],
     extras_require={
         'test': ['pytest', 'pytest-cov', 'flake8'],
+    },
+    package_data={
+        '': ['*.json'],
     },
     entry_points="""
         [console_scripts]

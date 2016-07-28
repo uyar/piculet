@@ -1,0 +1,25 @@
+[
+  {
+    "id": "movie_combined_details",
+    "url": "http://akas.imdb.com/title/tt{imdb_id}/combined",
+    "format": "html",
+    "prune": ".//div[@id='tn15']",
+    "rules": [
+      {
+        "key": "long title",
+        "path": ".//div[@id='tn15crumbs']/b/text()",
+        "reducer": "first"
+      },
+      {
+        "key": "poster",
+        "path": ".//img[@id='primary-poster']/@src",
+        "reducer": "first"
+      },
+      {
+        "key": "rating",
+        "path": ".//div[@class='starbar-meta']/b/text()",
+        "reducer": "first"
+      }
+    ]
+  }
+]

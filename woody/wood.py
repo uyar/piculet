@@ -20,10 +20,13 @@ This is the module that cantains the XML scrapers.
 """
 
 from collections import namedtuple
-from enum import Enum
+from hashlib import md5
 from xml.etree import ElementTree
 
 import logging
+import os
+
+from .web import html_to_xhtml, retrieve
 
 
 _logger = logging.getLogger(__name__)
@@ -60,9 +63,10 @@ def xpath(element, path):
     return result
 
 
-class Reducer(Enum):
-    first = lambda xs: xs[0]
-    join = lambda xs: ''.join(xs)
+_REDUCERS = {
+    'first': lambda xs: xs[0],
+    'join': lambda xs: ''.join(xs)
+}
 
 
 Rule = namedtuple('Rule', ['key', 'path', 'reducer'])
@@ -81,9 +85,13 @@ def peck(element, rule):
         _logger.debug('no match for %s using %s', rule.key, rule.path)
         return None
 
-    _logger.debug('extracted value for %s: %s', rule.key, values)
-    value = rule.reducer(values)
-    _logger.debug('applied %s, new value %s', rule.reducer, value)
+    _logger.debug('extracted data for %s: %s', rule.key, values)
+    try:
+        reducer = _REDUCERS[rule.reducer]
+        value = reducer(values)
+        _logger.debug('applied %s reducer, new value %s', rule.reducer, value)
+    except KeyError:
+        raise ValueError('Unknown reducer: %s', rule.reducer)
     return value
 
 
@@ -109,4 +117,42 @@ def scrape(content, rules, prune=None):
         value = peck(root, rule)
         if value is not None:
             data[rule.key] = value
+    return data
+
+
+def scrape_url(spec, scraper_id, **kwargs):
+    """Extract data retrieved from a URL.
+
+    :param spec: Data extraction specification.
+    :param scraper_id: Selected scraper from the spec.
+    :return: Extracted data from selected scraper.
+    """
+    scrapers = [s for s in spec if s['id'] == scraper_id]
+    if len(scrapers) != 1:
+        raise ValueError('Spec must contain exactly one id'
+                         ' for a scraper: {}.'.format(scraper_id))
+    scraper = scrapers[0]
+
+    url = scraper['url'].format(**kwargs)
+    cache_dir = os.environ.get('WOODY_WEB_CACHE_DIR')
+    if cache_dir is None:
+        content = retrieve(url)
+    else:
+        os.makedirs(cache_dir, exist_ok=True)
+        key = md5(url.encode('utf-8')).hexdigest()
+        cache_file = os.path.join(cache_dir, key)
+        if not os.path.exists(cache_file):
+            content = retrieve(url)
+            with open(cache_file, 'w') as f:
+                f.write(content)
+        else:
+            with open(cache_file) as f:
+                content = f.read()
+
+    content_format = scraper.get('format', 'xml')
+    if content_format == 'html':
+        content = html_to_xhtml(content)
+
+    rules = [Rule(**r) for r in scraper['rules']]
+    data = scrape(content, rules, prune=scraper.get('prune'))
     return data
