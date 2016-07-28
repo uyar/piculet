@@ -65,7 +65,7 @@ def xpath(element, path):
 
 _REDUCERS = {
     'first': lambda xs: xs[0],
-    'join': lambda xs: ''.join(xs)
+    'join': lambda xs, d='': d.join(xs)
 }
 
 
@@ -86,12 +86,13 @@ def peck(element, rule):
         return None
 
     _logger.debug('extracted data for %s: %s', rule.key, values)
+    reducer_name, *params = rule.reducer.split('?')
     try:
-        reducer = _REDUCERS[rule.reducer]
-        value = reducer(values)
-        _logger.debug('applied %s reducer, new value %s', rule.reducer, value)
+        reducer = _REDUCERS[reducer_name]
     except KeyError:
-        raise ValueError('Unknown reducer: %s', rule.reducer)
+        raise ValueError('Unknown reducer: %s', reducer_name)
+    value = reducer(values, *params)
+    _logger.debug('applied %s reducer, new value %s', rule.reducer, value)
     return value
 
 

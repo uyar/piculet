@@ -56,10 +56,10 @@ def test_peck_reducer_join_should_return_joined_text(people_root):
     assert data == 'John Smith42'
 
 
-# def test_peck_custom_reducer_should_work(people_root):
-#     rule = Rule('text', path='.//n/text()', reducer=lambda xs: ', '.join(xs))
-#     data = peck(people_root, rule)
-#     assert data == 'John Smith, Jane Doe'
+def test_peck_reducer_with_param_should_work(people_root):
+    rule = Rule('text', path='.//n/text()', reducer='join?,')
+    data = peck(people_root, rule)
+    assert data == 'John Smith,Jane Doe'
 
 
 def test_peck_unknown_reducer_should_raise_error(people_root):
