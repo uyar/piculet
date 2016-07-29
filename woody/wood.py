@@ -86,12 +86,11 @@ def peck(element, rule):
         return None
 
     _logger.debug('extracted data for %s: %s', rule.key, values)
-    reducer_name, *params = rule.reducer.split('?')
     try:
-        reducer = _REDUCERS[reducer_name]
+        reducer = _REDUCERS[rule.reducer]
     except KeyError:
-        raise ValueError('Unknown reducer: %s', reducer_name)
-    value = reducer(values, *params)
+        raise ValueError('Unknown reducer: %s', rule.reducer)
+    value = reducer(values)
     _logger.debug('applied %s reducer, new value %s', rule.reducer, value)
     return value
 
