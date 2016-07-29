@@ -29,6 +29,12 @@
         "key": "rank",
         "path": ".//div[@class='starbar-special']/a/text()",
         "reducer": "first"
+      },
+      {
+        "foreach": ".//div[@class='info']",
+        "key": "./h5/text()",
+        "path": "./div[@class='info-content']//text()",
+        "reducer": "clean"
       }
     ]
   }

@@ -30,7 +30,8 @@ def movie_ids():
         'matrix': 133093,            # The Matrix (top 250)
         'matrix_tv': 389150,         # The Matrix Defence (TV movie, no poster)
         'matrix_vg': 390244,         # The Matrix Online (video game)
-        'matrix_video': 109151       # Armitage III: Poly Matrix (video movie)
+        'matrix_video': 109151,      # Armitage III: Poly Matrix (video movie)
+        'roast_sheen': 1985970       # Comedy Central Roast of Charlie Sheen (TV Special)
     }
 
 
@@ -112,3 +113,32 @@ def test_rank_bottom100_should_match(imdb_spec, movie_ids):
 def test_rank_none_should_have_no_rank(imdb_spec, movie_ids):
     data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['ace_in_the_hole'])
     assert 'rank' not in data
+
+
+def test_genres_single_without_see_more_should_have_one(imdb_spec, movie_ids):
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['ates_parcasi'])
+    assert data['Genre:'] == 'Comedy'
+
+
+def test_genres_single_with_see_more_should_have_see_more(imdb_spec, movie_ids):
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['roast_sheen'])
+    assert data['Genre:'] == 'Comedy See more »'
+
+
+# TODO: find an entry with multiple genres but not see more
+# def test_genres_multiple_without_see_more_should_match(imdb_spec, movie_ids):
+#     data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['???'])
+#     assert '???' not in data
+
+
+def test_genres_multiple_with_see_more_should_have_see_more(imdb_spec, movie_ids):
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix'])
+    assert data['Genre:'] == 'Action | Sci-Fi See more »'
+
+
+# TODO: find an entry without a genre
+# def test_genres_none_should_have_no_genres(imdb_spec, movie_ids):
+#     data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['???'])
+#     assert 'Genre:' not in data
+
+
