@@ -1,11 +1,10 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
-from codecs import open
-from os import path
+import os
 
 
-cwd = path.abspath(path.dirname(__file__))
-with open(path.join(cwd, 'README.rst'), encoding='utf-8') as f:
+cwd = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(cwd, 'README.rst')) as f:
     long_description = f.read()
 
 setup(
@@ -24,14 +23,9 @@ setup(
         'Programming Language :: Python :: 3.5'
     ],
     keywords='xml html xpath scrape',
-    packages=find_packages(exclude=['docs', 'tests']),
+    packages=['woody'],
     install_requires=[],
-    extras_require={
-        'test': ['pytest', 'pytest-cov', 'flake8'],
-    },
-    package_data={
-        '': ['*.json'],
-    },
+    tests_require=['pytest', 'pytest-cov', 'flake8'],
     entry_points="""
         [console_scripts]
         woody=woody.cli:main
