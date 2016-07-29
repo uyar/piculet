@@ -14,7 +14,7 @@ os.environ['WOODY_WEB_CACHE_DIR'] = os.path.join(os.path.dirname(__file__), '.ca
 def imdb_spec():
     """Data extraction spec for the IMDb site (in JSON format)."""
     cwd = os.path.dirname(__file__)
-    specfile = os.path.join(cwd, '..', 'woody', 'imdb.json')
+    specfile = os.path.join(cwd, '..', 'examples', 'imdb.json')
     with open(specfile) as f:
         spec = json.loads(f.read())
     return spec

@@ -8,5 +8,6 @@ syntax: glob
 .tox/
 
 _build/
+dist/
 
 .idea/
