@@ -16,17 +16,13 @@
 # along with Woody.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-This is the module that cantains the XML scrapers.
+This module contains the components for handling XML trees.
 """
 
 from collections import namedtuple
-from hashlib import md5
 from xml.etree import ElementTree
 
 import logging
-import os
-
-from .web import html_to_xhtml, retrieve
 
 
 _logger = logging.getLogger(__name__)
@@ -35,8 +31,8 @@ _logger = logging.getLogger(__name__)
 def xpath(element, path):
     """Apply an XPath expression to an element.
 
-    This function is mainly needed to compensate for the lack of ``/text()``
-    and ``/@attr`` queries in ElementTree XPath support.
+    This function is mainly needed to compensate for the lack of ``text()``
+    and ``@attr`` axis queries in ElementTree XPath support.
 
     :param element: Element to apply the expression to.
     :param path: XPath expression to apply.
@@ -65,19 +61,31 @@ def xpath(element, path):
 
 _REDUCERS = {
     'first': lambda xs: xs[0],
-    'join': lambda xs, d='': d.join(xs)
+    'join': lambda xs: ''.join(xs)
 }
+"""Pre-defined reducers."""
 
 
 Rule = namedtuple('Rule', ['key', 'path', 'reducer'])
-"""A rule for extracting data from an element."""
+"""A rule for extracting data from an element.
+
+The XPath expression is applied to an element. The expression is expected
+to generate a list of strings; therefore it has to end with ``text()``
+or ``@attr``. The resulting list will be reduced to a single value using
+the reducer function. These functions have to take a list of strings
+as parameter and return a single string as result.
+
+:param key: What to use as key for this data in the result mapping.
+:param path: XPath expression to select the data contents.
+:param reducer: Function to reduce the data contents to a single value.
+"""
 
 
 def peck(element, rule):
-    """Extract one data item from an element.
+    """Extract a data item from an element.
 
     :param element: Element to extract the data from.
-    :param rule: Rule that specifies how to extract the data from the element.
+    :param rule: Rule that specifies how to extract the data.
     :return: Extracted data value.
     """
     values = xpath(element, rule.path)
@@ -95,12 +103,12 @@ def peck(element, rule):
     return value
 
 
-def scrape(content, rules, prune=None):
+def extract(content, rules, prune=None):
     """Extract data from an XML document.
 
     :param content: Content to extract the data from.
-    :param rules: Rules that specify how to extract the data from the document.
-    :param prune: Path for the element to act as the root of tree.
+    :param rules: Rules that specify how to extract the data.
+    :param prune: Path for the element to set as root before extractions.
     :return: Extracted data.
     """
     root = ElementTree.fromstring(content)
@@ -117,42 +125,4 @@ def scrape(content, rules, prune=None):
         value = peck(root, rule)
         if value is not None:
             data[rule.key] = value
-    return data
-
-
-def scrape_url(spec, scraper_id, **kwargs):
-    """Extract data retrieved from a URL.
-
-    :param spec: Data extraction specification.
-    :param scraper_id: Selected scraper from the spec.
-    :return: Extracted data from selected scraper.
-    """
-    scrapers = [s for s in spec if s['id'] == scraper_id]
-    if len(scrapers) != 1:
-        raise ValueError('Spec must contain exactly one id'
-                         ' for a scraper: {}.'.format(scraper_id))
-    scraper = scrapers[0]
-
-    url = scraper['url'].format(**kwargs)
-    cache_dir = os.environ.get('WOODY_WEB_CACHE_DIR')
-    if cache_dir is None:
-        content = retrieve(url)
-    else:
-        os.makedirs(cache_dir, exist_ok=True)
-        key = md5(url.encode('utf-8')).hexdigest()
-        cache_file = os.path.join(cache_dir, key)
-        if not os.path.exists(cache_file):
-            content = retrieve(url)
-            with open(cache_file, 'w') as f:
-                f.write(content)
-        else:
-            with open(cache_file) as f:
-                content = f.read()
-
-    content_format = scraper.get('format', 'xml')
-    if content_format == 'html':
-        content = html_to_xhtml(content)
-
-    rules = [Rule(**r) for r in scraper['rules']]
-    data = scrape(content, rules, prune=scraper.get('prune'))
     return data

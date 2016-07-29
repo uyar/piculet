@@ -4,7 +4,7 @@ import json
 import os
 import re
 
-from woody.wood import scrape_url
+from woody import scrape
 
 
 os.environ['WOODY_WEB_CACHE_DIR'] = os.path.join(os.path.dirname(__file__), '.cache')
@@ -31,25 +31,25 @@ def movie_ids():
 
 
 def test_long_title_should_have_title_and_year(imdb_spec, movie_ids):
-    data = scrape_url(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix'])
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix'])
     assert data['long title'] == 'The Matrix (1999)'
 
 
 def test_poster_exists_should_have_url(imdb_spec, movie_ids):
-    data = scrape_url(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix'])
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix'])
     assert data['poster'].endswith('._V1._SX94_SY140_.jpg')
 
 
 def test_poster_none_should_have_no_url(imdb_spec, movie_ids):
-    data = scrape_url(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix_tv'])
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix_tv'])
     assert 'poster' not in data
 
 
 def test_rating_exists_should_match(imdb_spec, movie_ids):
-    data = scrape_url(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix'])
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix'])
     assert re.match(r'[1-9]\.\d\/10', data['rating'])
 
 
 def test_rating_none_should_have_no_rating(imdb_spec, movie_ids):
-    data = scrape_url(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['ates_parcasi'])
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['ates_parcasi'])
     assert 'rating' not in data

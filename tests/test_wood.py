@@ -1,6 +1,6 @@
 from pytest import fixture, raises
 
-from woody.wood import Rule, peck, scrape, xpath
+from woody.wood import Rule, extract, peck, xpath
 
 from xml.etree import ElementTree
 
@@ -73,7 +73,7 @@ def test_scrape_no_prune_should_return_all(people_content):
         Rule('name', path='./p2/n/text()', reducer='first'),
         Rule('age', path='./p1/a/text()', reducer='first')
     ]
-    data = scrape(people_content, rules)
+    data = extract(people_content, rules)
     assert data == {'name': 'Jane Doe', 'age': '42'}
 
 
@@ -82,7 +82,7 @@ def test_scrape_prune_should_exclude_unselected_parts(people_content):
         Rule('name', path='.//n/text()', reducer='first'),
         Rule('age', path='.//a/text()', reducer='first')
     ]
-    data = scrape(people_content, rules, prune='./p1')
+    data = extract(people_content, rules, prune='./p1')
     assert data == {'name': 'John Smith', 'age': '42'}
 
 
@@ -91,15 +91,15 @@ def test_scrape_missing_data_should_be_excluded(people_content):
         Rule('name', path='.//n/text()', reducer='first'),
         Rule('age', path='.//a/text()', reducer='first')
     ]
-    data = scrape(people_content, rules, prune='./p2')
+    data = extract(people_content, rules, prune='./p2')
     assert data == {'name': 'Jane Doe'}
 
 
 def test_scrape_prune_should_select_one_element(people_content):
     with raises(ValueError):
-        scrape(people_content, rules=[], prune='.//n')
+        extract(people_content, rules=[], prune='.//n')
 
 
 def test_scrape_no_rules_should_return_empty_result(people_content):
-    data = scrape(people_content, rules=[])
+    data = extract(people_content, rules=[])
     assert data == {}
