@@ -7,12 +7,9 @@ import re
 from woody import scrape
 
 
-os.environ['WOODY_WEB_CACHE_DIR'] = os.path.join(os.path.dirname(__file__), '.cache')
-
-
 @fixture(scope='session')
 def imdb_spec():
-    """Data extraction spec for the IMDb site (in JSON format)."""
+    """Data extraction spec for the IMDb site."""
     cwd = os.path.dirname(__file__)
     specfile = os.path.join(cwd, '..', 'examples', 'imdb.json')
     with open(specfile) as f:

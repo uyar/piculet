@@ -20,3 +20,10 @@ def web_server(request):
 
     request.addfinalizer(finalize)
     return 'http://127.0.0.1:{}/files'.format(port)
+
+
+@fixture(autouse=True)
+def web_cache():
+    """Environment variable for web cache directory."""
+    os.environ['WOODY_WEB_CACHE_DIR'] = os.path.join(os.path.dirname(__file__),
+                                                     '.cache')
