@@ -19,6 +19,16 @@
         "key": "rating",
         "path": ".//div[@class='starbar-meta']/b/text()",
         "reducer": "first"
+      },
+      {
+        "key": "votes",
+        "path": ".//div[@class='starbar-meta']/a/text()",
+        "reducer": "first"
+      },
+      {
+        "key": "rank",
+        "path": ".//div[@class='starbar-special']/a/text()",
+        "reducer": "first"
       }
     ]
   }
