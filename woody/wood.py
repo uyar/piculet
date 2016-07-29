@@ -19,10 +19,10 @@
 This module contains the components for handling XML trees.
 """
 
-from collections import namedtuple
 from xml.etree import ElementTree
 
 import logging
+import re
 
 
 _logger = logging.getLogger(__name__)
@@ -61,24 +61,34 @@ def xpath(element, path):
 
 _REDUCERS = {
     'first': lambda xs: xs[0],
-    'join': lambda xs: ''.join(xs)
+    'join': lambda xs: ''.join(xs),
+    'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs)).strip()
 }
 """Pre-defined reducers."""
 
 
-Rule = namedtuple('Rule', ['key', 'path', 'reducer'])
-"""A rule for extracting data from an element.
+class Rule:
+    """A rule for extracting data from an element.
 
-The XPath expression is applied to an element. The expression is expected
-to generate a list of strings; therefore it has to end with ``text()``
-or ``@attr``. The resulting list will be reduced to a single value using
-the reducer function. These functions have to take a list of strings
-as parameter and return a single string as result.
+    The XPath expression is applied to an element. The expression is expected
+    to generate a list of strings; therefore it has to end with ``text()``
+    or ``@attr``. The resulting list will be reduced to a single value using
+    the reducer function. These functions have to take a list of strings
+    as parameter and return a single string as result.
 
-:param key: What to use as key for this data in the result mapping.
-:param path: XPath expression to select the data contents.
-:param reducer: Function to reduce the data contents to a single value.
-"""
+    TODO: explain foreach
+
+    :param key: What to use as key for this data in the result mapping.
+    :param path: XPath expression to select the data contents.
+    :param reducer: Function to reduce the data contents to a single value.
+    :param foreach: XPath expression to select sections in document.
+    """
+
+    def __init__(self, key, path, reducer, foreach=None):
+        self.key = key
+        self.path = path
+        self.reducer = reducer
+        self.foreach = foreach
 
 
 def peck(element, rule):
@@ -122,7 +132,18 @@ def extract(content, rules, prune=None):
 
     data = {}
     for rule in rules:
-        value = peck(root, rule)
-        if value is not None:
-            data[rule.key] = value
+        if rule.foreach is None:
+            value = peck(root, rule)
+            if value is not None:
+                data[rule.key] = value
+        else:
+            for section in xpath(root, rule.foreach):
+                keys = xpath(section, rule.key)
+                if len(keys) != 1:
+                    _logger.warn('section key selects incorrect number of elements: %s', keys)
+                    continue
+                key = keys[0]
+                value = peck(section, rule)
+                if value is not None:
+                    data[key] = value
     return data

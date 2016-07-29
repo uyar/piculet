@@ -1,7 +1,18 @@
 from typing import Iterable, List, Mapping, Optional, Union
 
 from xml.etree import ElementTree
-from woody.wood import Rule
+
+
+XPath = str
+
+
+class Rule:
+    def __init__(
+            key: Union[str, XPath],
+            path: XPath,
+            reducer: str,
+            foreach: Optional[XPath] = None
+    ) -> None: ...
 
 
 def peck(
