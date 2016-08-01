@@ -46,13 +46,13 @@ def people_root(people_content):
 
 def test_peck_reducer_first_should_return_first_element(people_root):
     pecker = WoodPecker(path='./p1/n/text()', reducer='first')
-    data = pecker.peck(people_root)
+    data = pecker(people_root)
     assert data == 'John Smith'
 
 
 def test_peck_reducer_join_should_return_joined_text(people_root):
     pecker = WoodPecker(path='./p1//text()', reducer='join')
-    data = pecker.peck(people_root)
+    data = pecker(people_root)
     assert data == 'John Smith42'
 
 
@@ -63,7 +63,7 @@ def test_peck_unknown_reducer_should_raise_error(people_root):
 
 def test_peck_non_matching_path_should_return_none(people_root):
     pecker = WoodPecker(path='./p3/a/text()', reducer='first')
-    data = pecker.peck(people_root)
+    data = pecker(people_root)
     assert data is None
 
 

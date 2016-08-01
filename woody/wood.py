@@ -87,7 +87,7 @@ class WoodPecker:
         except KeyError:
             raise ValueError('Unknown reducer: %s', reducer)
 
-    def peck(self, element):
+    def __call__(self, element):
         """Extract a data item from an element.
 
         :param element: Element to extract the data from.
@@ -126,16 +126,16 @@ def extract(content, rules, prune=None):
         pecker = WoodPecker(path=rule['path'], reducer=rule['reducer'])
         sections = rule.get('foreach')
         if sections is None:
-            value = pecker.peck(root)
+            value = pecker(root)
             if value is not None:
                 data[rule['key']] = value
         else:
             for section in xpath(root, sections):
                 key_pecker = WoodPecker(path=rule['key'],
                                         reducer=rule['key_reducer'])
-                key = key_pecker.peck(section)
+                key = key_pecker(section)
                 pecker = WoodPecker(path=rule['path'], reducer=rule['reducer'])
-                value = pecker.peck(section)
+                value = pecker(section)
                 if value is not None:
                     data[key] = value
     return data
