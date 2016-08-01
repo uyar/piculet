@@ -1,17 +1,11 @@
 from setuptools import setup
 
-import os
-
-
-cwd = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(cwd, 'README.rst')) as f:
-    long_description = f.read()
 
 setup(
     name='woody',
     version='1.0a1',
     description='XML/HTML scraper using XPath queries.',
-    long_description=long_description,
+    long_description='',
     url='https://bitbucket.org/uyar/woody',
     author='H. Turgut Uyar',
     author_email='uyar@tekir.org',

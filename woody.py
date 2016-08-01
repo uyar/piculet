@@ -254,7 +254,7 @@ def html_to_xhtml(content, omit_tags=None, omit_attrs=None):
 
 
 ###########################################################
-### DATA EXTRACTION OPERATIONS
+# DATA EXTRACTION OPERATIONS
 ###########################################################
 
 
@@ -435,7 +435,7 @@ def scrape(spec, scraper_id, **kwargs):
 
 
 ###########################################################
-### COMMAND-LINE INTERFACE
+# COMMAND-LINE INTERFACE
 ###########################################################
 
 
