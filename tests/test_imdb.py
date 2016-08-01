@@ -117,12 +117,12 @@ def test_rank_none_should_have_no_rank(imdb_spec, movie_ids):
 
 def test_genres_single_without_see_more_should_have_one(imdb_spec, movie_ids):
     data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['ates_parcasi'])
-    assert data['Genre:'] == 'Comedy'
+    assert data['genre'] == 'Comedy'
 
 
 def test_genres_single_with_see_more_should_have_see_more(imdb_spec, movie_ids):
     data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['roast_sheen'])
-    assert data['Genre:'] == 'Comedy See more »'
+    assert data['genre'] == 'Comedy See more »'
 
 
 # TODO: find an entry with multiple genres but not see more
@@ -133,7 +133,7 @@ def test_genres_single_with_see_more_should_have_see_more(imdb_spec, movie_ids):
 
 def test_genres_multiple_with_see_more_should_have_see_more(imdb_spec, movie_ids):
     data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix'])
-    assert data['Genre:'] == 'Action | Sci-Fi See more »'
+    assert data['genre'] == 'Action | Sci-Fi See more »'
 
 
 # TODO: find an entry without a genre

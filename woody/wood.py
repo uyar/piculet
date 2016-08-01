@@ -75,7 +75,8 @@ class WoodPecker:
     REDUCERS = {
         'first': lambda xs: xs[0],
         'join': lambda xs: ''.join(xs),
-        'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs)).strip()
+        'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs)).strip(),
+        'normalize': lambda xs: re.sub('[^a-z0-9]', '', ''.join(xs).lower())
     }
     """Pre-defined reducers."""
 
@@ -130,7 +131,8 @@ def extract(content, rules, prune=None):
                 data[rule['key']] = value
         else:
             for section in xpath(root, sections):
-                key_pecker = WoodPecker(path=rule['key'], reducer='clean')
+                key_pecker = WoodPecker(path=rule['key'],
+                                        reducer=rule['key_reducer'])
                 key = key_pecker.peck(section)
                 pecker = WoodPecker(path=rule['path'], reducer=rule['reducer'])
                 value = pecker.peck(section)
