@@ -1,14 +1,7 @@
 from typing import Any, Callable, Optional, Union
 from typing import Iterable, List, Mapping, Set
 
-from argparse import ArgumentParser
 from xml.etree import ElementTree
-
-
-def _get_document(url: str) -> str: ...
-
-
-def _get_parser() -> ArgumentParser: ...
 
 
 def extract(
@@ -23,9 +16,6 @@ def html_to_xhtml(
         omit_tags: Optional[Set[str]] = None,
         omit_attrs: Optional[Set[str]] = None
 ) -> str: ...
-
-
-def main() -> None: ...
 
 
 def retrieve(
