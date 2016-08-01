@@ -1,4 +1,4 @@
-from typing import Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from xml.etree import ElementTree
 
@@ -6,7 +6,7 @@ from xml.etree import ElementTree
 XPath = str
 
 
-class Rule:
+class WoodPecker:
     def __init__(
             key: Union[str, XPath],
             path: XPath,
@@ -14,16 +14,12 @@ class Rule:
             foreach: Optional[XPath] = None
     ) -> None: ...
 
-
-def peck(
-        element: ElementTree.Element,
-        rule: Rule
-) -> Optional[str]: ...
+    def peck(element: ElementTree.Element) -> Optional[str]: ...
 
 
 def extract(
         content: str,
-        rules: Iterable[Rule],
+        rules: Iterable[Mapping[str, Any]],
         prune: Optional[str] = None
 ) -> Mapping[str, str]: ...
 

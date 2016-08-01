@@ -59,16 +59,8 @@ def xpath(element, path):
     return result
 
 
-_REDUCERS = {
-    'first': lambda xs: xs[0],
-    'join': lambda xs: ''.join(xs),
-    'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs)).strip()
-}
-"""Pre-defined reducers."""
-
-
-class Rule:
-    """A rule for extracting data from an element.
+class WoodPecker:
+    """A data extractor.
 
     The XPath expression is applied to an element. The expression is expected
     to generate a list of strings; therefore it has to end with ``text()``
@@ -84,33 +76,37 @@ class Rule:
     :param foreach: XPath expression to select sections in document.
     """
 
+    REDUCERS = {
+        'first': lambda xs: xs[0],
+        'join': lambda xs: ''.join(xs),
+        'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs)).strip()
+    }
+    """Pre-defined reducers."""
+
     def __init__(self, key, path, reducer, foreach=None):
         self.key = key
         self.path = path
-        self.reducer = reducer
+        try:
+            self.reducer = WoodPecker.REDUCERS[reducer]
+        except KeyError:
+            raise ValueError('Unknown reducer: %s', reducer)
         self.foreach = foreach
 
+    def peck(self, element):
+        """Extract a data item from an element.
 
-def peck(element, rule):
-    """Extract a data item from an element.
+        :param element: Element to extract the data from.
+        :return: Extracted data value.
+        """
+        values = xpath(element, self.path)
+        if len(values) == 0:
+            _logger.debug('no match for %s', self.path)
+            return None
 
-    :param element: Element to extract the data from.
-    :param rule: Rule that specifies how to extract the data.
-    :return: Extracted data value.
-    """
-    values = xpath(element, rule.path)
-    if len(values) == 0:
-        _logger.debug('no match for %s using %s', rule.key, rule.path)
-        return None
-
-    _logger.debug('extracted data for %s: %s', rule.key, values)
-    try:
-        reducer = _REDUCERS[rule.reducer]
-    except KeyError:
-        raise ValueError('Unknown reducer: %s', rule.reducer)
-    value = reducer(values)
-    _logger.debug('applied %s reducer, new value %s', rule.reducer, value)
-    return value
+        _logger.debug('extracted data: %s', values)
+        value = self.reducer(values)
+        _logger.debug('applied %s reducer, new value %s', self.reducer, value)
+        return value
 
 
 def extract(content, rules, prune=None):
@@ -132,18 +128,19 @@ def extract(content, rules, prune=None):
 
     data = {}
     for rule in rules:
-        if rule.foreach is None:
-            value = peck(root, rule)
+        pecker = WoodPecker(**rule)
+        if pecker.foreach is None:
+            value = pecker.peck(root)
             if value is not None:
-                data[rule.key] = value
+                data[pecker.key] = value
         else:
-            for section in xpath(root, rule.foreach):
-                keys = xpath(section, rule.key)
+            for section in xpath(root, pecker.foreach):
+                keys = xpath(section, pecker.key)
                 if len(keys) != 1:
                     _logger.warn('section key selects incorrect number of elements: %s', keys)
                     continue
                 key = keys[0]
-                value = peck(section, rule)
+                value = pecker.peck(section)
                 if value is not None:
                     data[key] = value
     return data

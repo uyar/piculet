@@ -24,7 +24,7 @@ import logging
 import os
 
 from .web import html_to_xhtml, retrieve
-from .wood import Rule, extract
+from .wood import extract
 
 
 _logger = logging.getLogger(__name__)
@@ -88,6 +88,5 @@ def scrape(spec, scraper_id, **kwargs):
         _logger.debug('converting html document to xml')
         content = html_to_xhtml(content)
 
-    rules = [Rule(**r) for r in scraper['rules']]
-    data = extract(content, rules, prune=scraper.get('prune'))
+    data = extract(content, scraper['rules'], prune=scraper.get('prune'))
     return data

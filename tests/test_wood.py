@@ -1,6 +1,6 @@
 from pytest import fixture, raises
 
-from woody.wood import Rule, extract, peck, xpath
+from woody.wood import WoodPecker, extract, xpath
 
 from xml.etree import ElementTree
 
@@ -45,33 +45,32 @@ def people_root(people_content):
 
 
 def test_peck_reducer_first_should_return_first_element(people_root):
-    rule = Rule('name', path='./p1/n/text()', reducer='first')
-    data = peck(people_root, rule)
+    pecker = WoodPecker('name', path='./p1/n/text()', reducer='first')
+    data = pecker.peck(people_root)
     assert data == 'John Smith'
 
 
 def test_peck_reducer_join_should_return_joined_text(people_root):
-    rule = Rule('text', path='./p1//text()', reducer='join')
-    data = peck(people_root, rule)
+    pecker = WoodPecker('text', path='./p1//text()', reducer='join')
+    data = pecker.peck(people_root)
     assert data == 'John Smith42'
 
 
 def test_peck_unknown_reducer_should_raise_error(people_root):
-    rule = Rule('text', path='./p1//text()', reducer='merge')
     with raises(ValueError):
-        peck(people_root, rule)
+        WoodPecker('text', path='./p1//text()', reducer='merge')
 
 
 def test_peck_non_matching_path_should_return_none(people_root):
-    rule = Rule('name', path='./p3/a/text()', reducer='first')
-    data = peck(people_root, rule)
+    pecker = WoodPecker('name', path='./p3/a/text()', reducer='first')
+    data = pecker.peck(people_root)
     assert data is None
 
 
 def test_scrape_no_prune_should_return_all(people_content):
     rules = [
-        Rule('name', path='./p2/n/text()', reducer='first'),
-        Rule('age', path='./p1/a/text()', reducer='first')
+        {'key': 'name', 'path': './p2/n/text()', 'reducer': 'first'},
+        {'key': 'age', 'path': './p1/a/text()', 'reducer': 'first'}
     ]
     data = extract(people_content, rules)
     assert data == {'name': 'Jane Doe', 'age': '42'}
@@ -79,8 +78,8 @@ def test_scrape_no_prune_should_return_all(people_content):
 
 def test_scrape_prune_should_exclude_unselected_parts(people_content):
     rules = [
-        Rule('name', path='.//n/text()', reducer='first'),
-        Rule('age', path='.//a/text()', reducer='first')
+        {'key': 'name', 'path': './/n/text()', 'reducer': 'first'},
+        {'key': 'age', 'path': './/a/text()', 'reducer': 'first'}
     ]
     data = extract(people_content, rules, prune='./p1')
     assert data == {'name': 'John Smith', 'age': '42'}
@@ -88,8 +87,8 @@ def test_scrape_prune_should_exclude_unselected_parts(people_content):
 
 def test_scrape_missing_data_should_be_excluded(people_content):
     rules = [
-        Rule('name', path='.//n/text()', reducer='first'),
-        Rule('age', path='.//a/text()', reducer='first')
+        {'key': 'name', 'path': './/n/text()', 'reducer': 'first'},
+        {'key': 'age', 'path': './/a/text()', 'reducer': 'first'}
     ]
     data = extract(people_content, rules, prune='./p2')
     assert data == {'name': 'Jane Doe'}

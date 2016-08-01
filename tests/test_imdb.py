@@ -140,5 +140,3 @@ def test_genres_multiple_with_see_more_should_have_see_more(imdb_spec, movie_ids
 # def test_genres_none_should_have_no_genres(imdb_spec, movie_ids):
 #     data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['???'])
 #     assert 'Genre:' not in data
-
-
