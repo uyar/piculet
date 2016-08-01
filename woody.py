@@ -34,7 +34,7 @@ _logger = logging.getLogger(__name__)
 
 
 ###########################################################
-### WEB OPERATIONS
+# WEB OPERATIONS
 ###########################################################
 
 
@@ -47,7 +47,6 @@ _CHARSET_TAGS = {
 }
 
 
-# :: str x str x str -> str
 def retrieve(url, charset=None, fallback_charset='utf-8'):
     """Get the contents of a web page.
 
@@ -204,7 +203,6 @@ class _HTMLNormalizer(HTMLParser):
         #     print('</{t}>'.format(t=tag), end='')
 
 
-# :: str x Set[str] x Set[str] -> str
 def html_to_xhtml(content, omit_tags=None, omit_attrs=None):
     """Clean HTML and convert to XHTML.
 
@@ -226,7 +224,6 @@ def html_to_xhtml(content, omit_tags=None, omit_attrs=None):
 ###########################################################
 
 
-# :: ElementTree.Element x str -> List[str] | List[ElementTree.Element]
 def xpath(element, path):
     """Apply an XPath expression to an element.
 
@@ -258,8 +255,8 @@ def xpath(element, path):
     return result
 
 
-class WoodPecker:
-    """A data extractor.
+def woodpecker(path, reducer):
+    """A data extractor that combines an XPath query with a reducing function.
 
     The XPath expression is applied to an element. The expression is expected
     to generate a list of strings; therefore it has to end with ``text()``
@@ -269,6 +266,7 @@ class WoodPecker:
 
     :param path: XPath expression to select the data contents.
     :param reducer: Function to reduce the data contents to a single value.
+    :return: A callable that can apply this path and reducer to an element.
     """
 
     REDUCERS = {
@@ -279,33 +277,30 @@ class WoodPecker:
     }
     """Pre-defined reducers."""
 
-    # :: str x str -> None
-    def __init__(self, path, reducer):
-        self.path = path
-        try:
-            self.reducer = WoodPecker.REDUCERS[reducer]
-        except KeyError:
-            raise ValueError('Unknown reducer: %s', reducer)
+    try:
+        reduce = REDUCERS[reducer]
+    except KeyError:
+        raise ValueError('Unknown reducer: %s', reducer)
 
-    # :: ElementTree.Element -> Optional[str]
-    def __call__(self, element):
+    def apply(element):
         """Extract a data item from an element.
 
         :param element: Element to extract the data from.
         :return: Extracted data value.
         """
-        values = xpath(element, self.path)
+        values = xpath(element, path)
         if len(values) == 0:
-            _logger.debug('no match for %s', self.path)
+            _logger.debug('no match for %s', path)
             return None
 
         _logger.debug('extracted data: %s', values)
-        value = self.reducer(values)
-        _logger.debug('applied %s reducer, new value %s', self.reducer, value)
+        value = reduce(values)
+        _logger.debug('applied %s reducer, new value %s', reducer, value)
         return value
 
+    return apply
 
-# :: str x Iterable[Mapping[str, Any]] x str -> Mapping[str, str]
+
 def extract(content, rules, prune=None):
     """Extract data from an XML document.
 
@@ -325,7 +320,7 @@ def extract(content, rules, prune=None):
 
     data = {}
     for rule in rules:
-        pecker = WoodPecker(path=rule['path'], reducer=rule['reducer'])
+        pecker = woodpecker(path=rule['path'], reducer=rule['reducer'])
         sections = rule.get('foreach')
         if sections is None:
             value = pecker(root)
@@ -333,17 +328,16 @@ def extract(content, rules, prune=None):
                 data[rule['key']] = value
         else:
             for section in xpath(root, sections):
-                key_pecker = WoodPecker(path=rule['key'],
+                key_pecker = woodpecker(path=rule['key'],
                                         reducer=rule['key_reducer'])
                 key = key_pecker(section)
-                pecker = WoodPecker(path=rule['path'], reducer=rule['reducer'])
+                pecker = woodpecker(path=rule['path'], reducer=rule['reducer'])
                 value = pecker(section)
                 if value is not None:
                     data[key] = value
     return data
 
 
-# :: str -> str
 def _get_document(url):
     """Get the document with the given URL.
 
@@ -375,7 +369,6 @@ def _get_document(url):
     return content
 
 
-# :: Mapping[str, Any] x str x ... -> Mapping[str, Any]
 def scrape(spec, scraper_id, **kwargs):
     """Extract data from a document according to a specification.
 
@@ -412,7 +405,6 @@ def scrape(spec, scraper_id, **kwargs):
 ###########################################################
 
 
-# :: -> ArgumentParser
 def _get_parser():
     """Get a parser for command line arguments."""
 

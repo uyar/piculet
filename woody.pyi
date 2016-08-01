@@ -1,18 +1,8 @@
-from typing import Any, Optional, Union
+from typing import Any, Callable, Optional, Union
 from typing import Iterable, List, Mapping, Set
 
 from argparse import ArgumentParser
 from xml.etree import ElementTree
-
-
-class WoodPecker:
-    def __init__(
-            self,
-            path: str,
-            reducer: str,
-    ) -> None: ...
-
-    def __call__(self, element: ElementTree.Element) -> Optional[str]: ...
 
 
 def _get_document(url: str) -> str: ...
@@ -50,6 +40,12 @@ def scrape(
         scraper_id: str,
         **kwargs
 ) -> Mapping[str, Any]: ...
+
+
+def woodpecker(
+        path: str,
+        reducer: str
+) -> Callable[[ElementTree.Element], Optional[str]]: ...
 
 
 def xpath(
