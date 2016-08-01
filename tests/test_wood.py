@@ -1,6 +1,6 @@
 from pytest import fixture, raises
 
-from woody.wood import WoodPecker, extract, xpath
+from woody import WoodPecker, extract, xpath
 
 from xml.etree import ElementTree
 

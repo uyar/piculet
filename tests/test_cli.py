@@ -13,7 +13,7 @@ def test_no_arguments_should_fail_with_usage_string():
 
 
 def test_start_through_module_should_be_accessible():
-    command = ['python', '-m', 'woody.cli']
+    command = ['python', '-m', 'woody']
     process = Popen(command, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     assert process.returncode == 1

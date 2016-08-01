@@ -2,6 +2,6 @@ woody module
 ============
 
 .. automodule:: woody
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

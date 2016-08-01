@@ -23,11 +23,11 @@ setup(
         'Programming Language :: Python :: 3.5'
     ],
     keywords='xml html xpath scrape',
-    packages=['woody'],
+    py_modules=['bottle'],
     install_requires=[],
     tests_require=['pytest', 'pytest-cov', 'flake8'],
     entry_points="""
         [console_scripts]
-        woody=woody.cli:main
+        woody=woody:main
     """
 )

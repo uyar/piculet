@@ -1,6 +1,0 @@
-from argparse import ArgumentParser
-
-
-def _get_parser() -> ArgumentParser: ...
-
-def main() -> None: ...

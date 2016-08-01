@@ -1,6 +1,6 @@
 from pytest import raises
 
-from woody.web import retrieve, html_to_xhtml
+from woody import retrieve, html_to_xhtml
 
 from urllib.error import HTTPError
 
