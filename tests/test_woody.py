@@ -9,11 +9,16 @@ from woody import scrape
 @fixture(scope='session')
 def dummy_spec():
     """Dummy data extraction spec."""
-    return [{
-        'id': 'dummy',
-        'url': 'http://en.wikipedia.org/',
-        'rules': []
-    }]
+    return {
+        "base_url": "http://en.wikipedia.org",
+        "scrapers": [
+            {
+                "id": "dummy",
+                "url": "/",
+                "rules": []
+            }
+        ]
+    }
 
 
 @mark.skip
@@ -34,6 +39,7 @@ def test_scrape_url_cached_should_read_from_disk(dummy_spec):
 
 
 def test_scrape_url_multiple_ids_should_raise_error(dummy_spec):
-    dummy_spec.append(dummy_spec[0])
+    scrapers = dummy_spec['scrapers']
+    scrapers.append(scrapers[0])
     with raises(ValueError):
         scrape(dummy_spec, 'dummy')

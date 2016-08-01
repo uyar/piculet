@@ -71,14 +71,14 @@ def scrape(spec, scraper_id, **kwargs):
     :param scraper_id: Selected scraper from the spec.
     :return: Extracted data.
     """
-    scrapers = [s for s in spec if s['id'] == scraper_id]
+    scrapers = [s for s in spec['scrapers'] if s['id'] == scraper_id]
     if len(scrapers) != 1:
-        raise ValueError('Spec must contain exactly one id'
-                         ' for a scraper: {}.'.format(scraper_id))
+        raise ValueError('Scraper ids must be unique: %s'.format(scraper_id))
     scraper = scrapers[0]
     _logger.debug('using scraper %s', scraper)
 
-    url = scraper['url'].format(**kwargs)
+    base_url = spec['base_url']
+    url = base_url + scraper['url'].format(**kwargs)
     _logger.debug('scraping url %s', url)
 
     content = _get_document(url)

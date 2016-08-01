@@ -1,7 +1,7 @@
 from typing import Any, List, Mapping
 
 
-ScrapeSpec = List[Mapping[str, Any]]
+ScrapeSpec = Mapping[str, Any]
 
 
 def _get_document(url: str) -> str: ...
