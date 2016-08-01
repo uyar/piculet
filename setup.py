@@ -17,7 +17,7 @@ setup(
         'Programming Language :: Python :: 3.5'
     ],
     keywords='xml html xpath scrape',
-    py_modules=['bottle'],
+    py_modules=['woody'],
     install_requires=[],
     tests_require=['pytest', 'pytest-cov', 'flake8'],
     entry_points="""
