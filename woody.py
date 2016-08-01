@@ -47,6 +47,7 @@ _CHARSET_TAGS = {
 }
 
 
+# :: str x str x str -> str
 def retrieve(url, charset=None, fallback_charset='utf-8'):
     """Get the contents of a web page.
 
@@ -203,6 +204,7 @@ class _HTMLNormalizer(HTMLParser):
         #     print('</{t}>'.format(t=tag), end='')
 
 
+# :: str x Set[str] x Set[str] -> str
 def html_to_xhtml(content, omit_tags=None, omit_attrs=None):
     """Clean HTML and convert to XHTML.
 
@@ -220,10 +222,11 @@ def html_to_xhtml(content, omit_tags=None, omit_attrs=None):
 
 
 ###########################################################
-### XML OPERATIONS
+### DATA EXTRACTION OPERATIONS
 ###########################################################
 
 
+# :: ElementTree.Element x str -> List[str] | List[ElementTree.Element]
 def xpath(element, path):
     """Apply an XPath expression to an element.
 
@@ -276,6 +279,7 @@ class WoodPecker:
     }
     """Pre-defined reducers."""
 
+    # :: str x str -> None
     def __init__(self, path, reducer):
         self.path = path
         try:
@@ -283,6 +287,7 @@ class WoodPecker:
         except KeyError:
             raise ValueError('Unknown reducer: %s', reducer)
 
+    # :: ElementTree.Element -> Optional[str]
     def __call__(self, element):
         """Extract a data item from an element.
 
@@ -300,6 +305,7 @@ class WoodPecker:
         return value
 
 
+# :: str x Iterable[Mapping[str, Any]] x str -> Mapping[str, str]
 def extract(content, rules, prune=None):
     """Extract data from an XML document.
 
@@ -337,6 +343,7 @@ def extract(content, rules, prune=None):
     return data
 
 
+# :: str -> str
 def _get_document(url):
     """Get the document with the given URL.
 
@@ -368,6 +375,7 @@ def _get_document(url):
     return content
 
 
+# :: Mapping[str, Any] x str x ... -> Mapping[str, Any]
 def scrape(spec, scraper_id, **kwargs):
     """Extract data from a document according to a specification.
 
@@ -404,6 +412,7 @@ def scrape(spec, scraper_id, **kwargs):
 ###########################################################
 
 
+# :: -> ArgumentParser
 def _get_parser():
     """Get a parser for command line arguments."""
 
