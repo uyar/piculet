@@ -68,12 +68,8 @@ class WoodPecker:
     the reducer function. These functions have to take a list of strings
     as parameter and return a single string as result.
 
-    TODO: explain foreach
-
-    :param key: What to use as key for this data in the result mapping.
     :param path: XPath expression to select the data contents.
     :param reducer: Function to reduce the data contents to a single value.
-    :param foreach: XPath expression to select sections in document.
     """
 
     REDUCERS = {
@@ -83,14 +79,12 @@ class WoodPecker:
     }
     """Pre-defined reducers."""
 
-    def __init__(self, key, path, reducer, foreach=None):
-        self.key = key
+    def __init__(self, path, reducer):
         self.path = path
         try:
             self.reducer = WoodPecker.REDUCERS[reducer]
         except KeyError:
             raise ValueError('Unknown reducer: %s', reducer)
-        self.foreach = foreach
 
     def peck(self, element):
         """Extract a data item from an element.
@@ -128,18 +122,17 @@ def extract(content, rules, prune=None):
 
     data = {}
     for rule in rules:
-        pecker = WoodPecker(**rule)
-        if pecker.foreach is None:
+        pecker = WoodPecker(path=rule['path'], reducer=rule['reducer'])
+        sections = rule.get('foreach')
+        if sections is None:
             value = pecker.peck(root)
             if value is not None:
-                data[pecker.key] = value
+                data[rule['key']] = value
         else:
-            for section in xpath(root, pecker.foreach):
-                keys = xpath(section, pecker.key)
-                if len(keys) != 1:
-                    _logger.warn('section key selects incorrect number of elements: %s', keys)
-                    continue
-                key = keys[0]
+            for section in xpath(root, sections):
+                key_pecker = WoodPecker(path=rule['key'], reducer='clean')
+                key = key_pecker.peck(section)
+                pecker = WoodPecker(path=rule['path'], reducer=rule['reducer'])
                 value = pecker.peck(section)
                 if value is not None:
                     data[key] = value

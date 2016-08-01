@@ -8,13 +8,12 @@ XPath = str
 
 class WoodPecker:
     def __init__(
-            key: Union[str, XPath],
+            self,
             path: XPath,
             reducer: str,
-            foreach: Optional[XPath] = None
     ) -> None: ...
 
-    def peck(element: ElementTree.Element) -> Optional[str]: ...
+    def peck(self, element: ElementTree.Element) -> Optional[str]: ...
 
 
 def extract(
