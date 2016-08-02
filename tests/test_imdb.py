@@ -21,17 +21,18 @@ def imdb_spec():
 def movie_ids():
     """The IMDb movie ids."""
     return {
-        'ace_in_the_hole': 43338,    # Ace in the Hole
-        'ates_parcasi': 1863157,     # Ateş Parçası (no rating, votes, rank, plot, keywords)
-        'band_of_brothers': 185906,  # Band of Brothers (mini-series, ended)
-        'dr_who': 436992,            # Doctor Who 2005 (TV series)
-        'dr_who_blink': 1000252,     # Doctor Who 2005: Blink (TV episode)
-        'manos': 60666,              # Manos: The Hands of Fate (Bottom 100)
-        'matrix': 133093,            # The Matrix (top 250)
-        'matrix_tv': 389150,         # The Matrix Defence (TV movie, no poster)
-        'matrix_vg': 390244,         # The Matrix Online (video game)
-        'matrix_video': 109151,      # Armitage III: Poly Matrix (video movie)
-        'roast_sheen': 1985970       # Comedy Central Roast of Charlie Sheen (TV Special)
+        'ace_in_the_hole': 43338,
+        'ates_parcasi': 1863157,     # no rating, votes, rank, plot, keywords
+        'band_of_brothers': 185906,  # mini-series, ended
+        'dr_who': 436992,            # TV series
+        'dr_who_blink': 1000252,     # TV episode
+        'manos': 60666,              # bottom 100
+        'matrix': 133093,            # top 250
+        'matrix_tv': 389150,         # TV movie, no poster
+        'matrix_tv_short': 274085,   # TV short movie
+        'matrix_vg': 390244,         # video game
+        'matrix_video': 109151,      # video movie
+        'roast_sheen': 1985970       # TV Special
     }
 
 
@@ -125,10 +126,9 @@ def test_genres_single_with_see_more_should_have_see_more(imdb_spec, movie_ids):
     assert data['genre'] == 'Comedy See more »'
 
 
-# TODO: find an entry with multiple genres but not see more
-# def test_genres_multiple_without_see_more_should_match(imdb_spec, movie_ids):
-#     data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['???'])
-#     assert '???' not in data
+def test_genres_multiple_without_see_more_should_match(imdb_spec, movie_ids):
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix_tv_short'])
+    assert data['genre'] == 'Comedy | Short'
 
 
 def test_genres_multiple_with_see_more_should_have_see_more(imdb_spec, movie_ids):
@@ -139,4 +139,4 @@ def test_genres_multiple_with_see_more_should_have_see_more(imdb_spec, movie_ids
 # TODO: find an entry without a genre
 # def test_genres_none_should_have_no_genres(imdb_spec, movie_ids):
 #     data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['???'])
-#     assert 'Genre:' not in data
+#     assert 'genre' not in data
