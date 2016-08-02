@@ -8,7 +8,7 @@
       "prune": ".//div[@id='tn15']",
       "rules": [
         {
-          "key": "long title",
+          "key": "long_title",
           "path": ".//div[@id='tn15crumbs']/b/text()",
           "reducer": "first"
         },

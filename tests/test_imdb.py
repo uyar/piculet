@@ -44,37 +44,37 @@ def movies():
 
 def test_long_title_should_have_title_and_year(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['long title'] == 'The Matrix (1999)'
+    assert data['long_title'] == 'The Matrix (1999)'
 
 
 def test_long_title_video_movie_should_include_type(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_video'])
-    assert data['long title'] == 'Armitage III: Poly Matrix (1996) (V)'
+    assert data['long_title'] == 'Armitage III: Poly Matrix (1996) (V)'
 
 
 def test_long_title_tv_movie_should_include_type(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
-    assert data['long title'] == 'The Matrix Defence (2003) (TV)'
+    assert data['long_title'] == 'The Matrix Defence (2003) (TV)'
 
 
 def test_long_title_video_game_should_include_type(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_vg'])
-    assert data['long title'] == 'The Matrix Online (2005) (VG)'
+    assert data['long_title'] == 'The Matrix Online (2005) (VG)'
 
 
 def test_long_title_tv_series_should_have_quotes(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
-    assert data['long title'] == '"Doctor Who" (2005)'
+    assert data['long_title'] == '"Doctor Who" (2005)'
 
 
 def test_long_title_tv_mini_series_should_have_quotes(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['band_of_brothers'])
-    assert data['long title'] == '"Band of Brothers" (2001)'
+    assert data['long_title'] == '"Band of Brothers" (2001)'
 
 
 def test_long_title_tv_episode_should_have_series_title_in_quotes(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
-    assert data['long title'] == '"Doctor Who" Blink (2007)'
+    assert data['long_title'] == '"Doctor Who" Blink (2007)'
 
 
 def test_poster_should_have_url(imdb, movies):
@@ -287,3 +287,14 @@ def test_color_multiple_notes_should_include_all_notes(imdb, movies):
 def test_color_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
     assert 'color' not in data
+
+
+def test_aspect_ratio_should_be_a_number_to_one(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+    # if the aspect ratio exists, there is a see more link to technical page
+    assert data['aspect_ratio'] == '2.35 : 1 See more »'
+
+
+def test_aspect_ratio_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+    assert 'aspect_ratio' not in data
