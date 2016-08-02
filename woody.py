@@ -354,21 +354,19 @@ def extract(content, rules, prune=None):
 
     data = {}
     for rule in rules:
-        pecker = woodpecker(path=rule['path'], reducer=rule['reducer'])
-        sections = rule.get('foreach')
-        if sections is None:
-            value = pecker(root)
+        key = rule['key']
+        try:
+            keygen = woodpecker(path=key['path'], reducer=key['reducer'])
+        except:
+            keygen = lambda _: key
+
+        foreach = rule.get('foreach')
+        sections = [root] if foreach is None else xpath(root, foreach)
+        for section in sections:
+            pecker = woodpecker(path=rule['path'], reducer=rule['reducer'])
+            value = pecker(section)
             if value is not None:
-                data[rule['key']] = value
-        else:
-            for section in xpath(root, sections):
-                key_pecker = woodpecker(path=rule['key'],
-                                        reducer=rule['key_reducer'])
-                key = key_pecker(section)
-                pecker = woodpecker(path=rule['path'], reducer=rule['reducer'])
-                value = pecker(section)
-                if value is not None:
-                    data[key] = value
+                data[keygen(section)] = value
     return data
 
 

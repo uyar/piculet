@@ -34,8 +34,10 @@
         },
         {
           "foreach": ".//div[@class='info']",
-          "key": "./h5/text()",
-          "key_reducer": "normalize",
+          "key": {
+            "path": "./h5/text()",
+            "reducer": "normalize"
+          },
           "path": "./div[@class='info-content']//text()",
           "reducer": "clean"
         }
