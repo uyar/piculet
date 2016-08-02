@@ -24,10 +24,10 @@ def movies():
         'ace_in_the_hole': 43338,       # multiple languages
         'ates_parcasi': 1863157,        # no poster, rating, votes, rank, plot, keywords
         'band_of_brothers': 185906,     # mini-series, ended
-        'dr_who': 436992,               # TV series, continuing
+        'dr_who': 436992,               # TV series, continuing, multiple countries
         'dr_who_blink': 1000252,        # TV episode
         'house_md': 412142,             # TV series, ended
-        'if': 63850,                    # one tagline
+        'if': 63850,                    # one tagline, multiple color notes
         'manos': 60666,                 # bottom 100
         'matrix': 133093,               # top 250
         'matrix_short': 2971344,        # short movie, language none
@@ -35,9 +35,10 @@ def movies():
         'matrix_tv_short': 274085,      # TV short movie
         'matrix_vg': 390244,            # video game, no runtime
         'matrix_video': 109151,         # video movie
+        'pleasantville': 120789,        # multiple colors
         'roast_sheen': 1985970,         # TV Special
-        'shining': 81505,               # runtimes with multiple notes
-        'suspiria': 76786               # runtimes in different countries
+        'shining': 81505,               # multiple runtime notes
+        'suspiria': 76786               # multiple country runtimes
     }
 
 
@@ -121,17 +122,17 @@ def test_rank_none_should_be_excluded(imdb, movies):
     assert 'rank' not in data
 
 
-def test_genre_one_without_see_more_should_be_a_single_genre(imdb, movies):
+def test_genre_should_be_a_genre_name(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
     assert data['genre'] == 'Comedy'
 
 
-def test_genre_one_with_see_more_should_end_in_see_more(imdb, movies):
+def test_genre_with_see_more_should_end_in_see_more(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['roast_sheen'])
     assert data['genre'] == 'Comedy See more »'
 
 
-def test_genre_many_without_see_more_should_be_pipe_separated(imdb, movies):
+def test_genre_many_should_be_pipe_separated(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv_short'])
     assert data['genre'] == 'Comedy | Short'
 
@@ -141,13 +142,13 @@ def test_genres_many_with_see_more_should_end_in_see_more(imdb, movies):
     assert data['genre'] == 'Action | Sci-Fi See more »'
 
 
-# TODO: find an entry without a genre
+# TODO: find a movie with no genre
 # def test_genre_none_should_be_excluded(imdb, movies):
 #     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
 #     assert 'genre' not in data
 
 
-def test_tagline_without_see_more_should_be_a_single_tagline(imdb, movies):
+def test_tagline_should_be_a_tagline(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['if'])
     assert data['tagline'] == 'Which side will you be on?'
 
@@ -184,23 +185,23 @@ def test_plot_none_should_be_excluded(imdb, movies):
     assert 'plot' not in data
 
 
-def test_runtime_one_should_be_a_number_in_minutes(imdb, movies):
+def test_runtime_should_be_a_number_in_minutes(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert data['runtime'] == '136 min'
 
 
-# TODO: find an entry with one runtime and notes
+# TODO: find a movie with one runtime and notes
 # def test_runtime_one_with_notes_should_include_notes(imdb, movies):
 #     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
 #     assert data['runtime'] == '??? min (???)'
 
 
-def test_runtime_many_with_notes_should_be_pipe_separated(imdb, movies):
+def test_runtime_many_should_be_pipe_separated(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md'])
     assert data['runtime'] == '44 min | 7788 min (Entire series)'
 
 
-def test_runtime_many_with_multiple_notes_should_include_all_notes(imdb, movies):
+def test_runtime_multiple_notes_should_include_all_notes(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
     assert data['runtime'] == '144 min (cut) | 119 min (cut) (European version)' \
                               ' | 146 min (original version)'
@@ -216,7 +217,7 @@ def test_runtime_none_should_be_excluded(imdb, movies):
     assert 'runtime' not in data
 
 
-def test_country_one_should_be_a_country_name(imdb, movies):
+def test_country_should_be_a_country_name(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
     assert data['country'] == 'UK'
 
@@ -226,13 +227,13 @@ def test_country_many_should_be_pipe_separated(imdb, movies):
     assert data['country'] == 'UK | Canada'
 
 
-# TODO: find an entry with no country
+# TODO: find a movie with no country
 # def test_country_none_should_be_excluded(imdb, movies):
 #     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
 #     assert 'country' not in data
 
 
-def test_language_one_should_be_a_language_name(imdb, movies):
+def test_language_should_be_a_language_name(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
     assert data['language'] == 'English'
 
@@ -247,7 +248,32 @@ def test_language_none_is_a_language_name(imdb, movies):
     assert data['language'] == 'None'
 
 
-# TODO: find an entry without a language
+# TODO: find a movie with no language
 # def test_language_none_should_be_excluded(imdb, movies):
 #     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
 #     assert 'language' not in data
+
+
+def test_color_should_be_a_color_type(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+    assert data['color'] == 'Color'
+
+
+def test_color_with_note_should_include_note(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+    assert data['color'] == 'Color (Eastmancolor)'
+
+
+def test_color_many_should_be_pipe_separated(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['pleasantville'])
+    assert data['color'] == 'Black and White | Color'
+
+
+def test_color_multiple_notes_should_include_all_notes(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['if'])
+    assert data['color'] == 'Black and White | Color (Eastmancolor) (uncredited)'
+
+
+def test_color_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
+    assert 'color' not in data
