@@ -22,7 +22,7 @@ def movies():
     """The IMDb movie ids."""
     return {
         'ace_in_the_hole': 43338,       # multiple languages
-        'ates_parcasi': 1863157,        # no poster, rating, votes, rank, plot, keywords
+        'ates_parcasi': 1863157,        # no poster, rating, votes, rank, plot, keywords, mpaa
         'band_of_brothers': 185906,     # mini-series, ended
         'dr_who': 436992,               # TV series, continuing, multiple countries
         'dr_who_blink': 1000252,        # TV episode
@@ -185,9 +185,19 @@ def test_plot_none_should_be_excluded(imdb, movies):
     assert 'plot' not in data
 
 
+def test_mpaa_should_be_a_rating(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+    assert data['mpaa'] == 'Rated R for sci-fi violence and brief language'
+
+
 def test_runtime_should_be_a_number_in_minutes(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert data['runtime'] == '136 min'
+
+
+def test_mpaa_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+    assert 'mpaa' not in data
 
 
 # TODO: find a movie with one runtime and notes
