@@ -1,8 +1,28 @@
-from pytest import raises
+from pytest import fixture, raises
+
+from subprocess import Popen
+from time import sleep
+from urllib.error import HTTPError
+
+import os
 
 from woody import retrieve, html_to_xhtml
 
-from urllib.error import HTTPError
+
+@fixture(scope='module')
+def web_server(request):
+    """Address of local web server for serving test files."""
+    port = 2016
+
+    command = ['python3', '-m', 'http.server', str(port), '--bind', '127.0.0.1']
+    process = Popen(command, cwd=os.path.dirname(__file__))
+    sleep(0.5)
+
+    def finalize():
+        process.kill()
+
+    request.addfinalizer(finalize)
+    return 'http://127.0.0.1:{}/files'.format(port)
 
 
 def test_retrieve_url_not_found_should_raise_http_error(web_server):

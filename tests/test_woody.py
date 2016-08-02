@@ -1,13 +1,14 @@
 from pytest import fixture, mark, raises
 
 from xml.etree import ElementTree
+
 import os
 import time
 
 from woody import extract, scrape, woodpecker, xpath
 
 
-@fixture(scope='session')
+@fixture(scope='module')
 def generic_xml():
     """Simple XML document with generic content."""
     content = '<d><t1>foo</t1><t1 a="v"><t2>bar</t2></t1></d>'
@@ -34,13 +35,13 @@ def test_xpath_attr_queries_should_return_strings(generic_xml):
     assert selected == ['v']
 
 
-@fixture(scope='session')
+@fixture(scope='module')
 def people_content():
     """XML content to represent the data of multiple persons."""
     return '<p><p1><n>John Smith</n><a>42</a></p1><p2><n>Jane Doe</n></p2></p>'
 
 
-@fixture(scope='session')
+@fixture(scope='module')
 def people_root(people_content):
     """XML document to represent the data of a person."""
     return ElementTree.fromstring(people_content)
@@ -106,7 +107,7 @@ def test_scrape_no_rules_should_return_empty_result(people_content):
     assert data == {}
 
 
-@fixture(scope='session')
+@fixture(scope='module')
 def dummy_spec():
     """Dummy data extraction spec."""
     return {
@@ -123,7 +124,7 @@ def dummy_spec():
 
 @mark.skip
 def test_scrape_url_uncached_should_retrieve_from_web(dummy_spec):
-    del os.environ['WOODY_WEB_CACHE_DIR']
+    del os.environ['WOODY_WEB_CACHE']
     start = time.time()
     scrape(dummy_spec, 'dummy')
     end = time.time()

@@ -1,6 +1,6 @@
-import os
-
 from subprocess import Popen, PIPE
+
+import os
 
 
 def test_no_arguments_should_fail_with_usage_string():

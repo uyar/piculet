@@ -380,7 +380,7 @@ def _get_document(url):
     :param url: URL to get the document from.
     :return: Content of the retrieved document.
     """
-    cache_dir = os.environ.get('WOODY_WEB_CACHE_DIR')
+    cache_dir = os.environ.get('WOODY_WEB_CACHE')
     if cache_dir is None:
         _logger.debug('no caching, retrieving document')
         content = retrieve(url)
