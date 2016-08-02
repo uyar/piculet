@@ -22,18 +22,21 @@ def movie_ids():
     """The IMDb movie ids."""
     return {
         'ace_in_the_hole': 43338,
-        'ates_parcasi': 1863157,     # no rating, votes, rank, plot, keywords
-        'band_of_brothers': 185906,  # mini-series, ended
-        'dr_who': 436992,            # TV series
-        'dr_who_blink': 1000252,     # TV episode
-        'if': 63850,
-        'manos': 60666,              # bottom 100
-        'matrix': 133093,            # top 250
-        'matrix_tv': 389150,         # TV movie, no poster
-        'matrix_tv_short': 274085,   # TV short movie
-        'matrix_vg': 390244,         # video game
-        'matrix_video': 109151,      # video movie
-        'roast_sheen': 1985970       # TV Special
+        'ates_parcasi': 1863157,        # no poster, rating, votes, rank, plot, keywords
+        'band_of_brothers': 185906,     # mini-series, ended
+        'dr_who': 436992,               # TV series, continuing
+        'dr_who_blink': 1000252,        # TV episode
+        'house_md': 412142,             # TV series, ended
+        'if': 63850,                    # one tagline
+        'manos': 60666,                 # bottom 100
+        'matrix': 133093,               # top 250
+        'matrix_tv': 389150,            # TV movie
+        'matrix_tv_short': 274085,      # TV short movie
+        'matrix_vg': 390244,            # video game, no runtime
+        'matrix_video': 109151,         # video movie
+        'roast_sheen': 1985970,         # TV Special
+        'shining': 81505,               # runtimes with multiple notes
+        'suspiria': 76786               # runtimes in different countries
     }
 
 
@@ -78,7 +81,7 @@ def test_poster_should_have_url(imdb_spec, movie_ids):
 
 
 def test_poster_none_should_be_excluded(imdb_spec, movie_ids):
-    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix_tv'])
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['ates_parcasi'])
     assert 'poster' not in data
 
 
@@ -113,7 +116,7 @@ def test_rank_bottom100_should_include_position(imdb_spec, movie_ids):
 
 
 def test_rank_none_should_be_excluded(imdb_spec, movie_ids):
-    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['ace_in_the_hole'])
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['ates_parcasi'])
     assert 'rank' not in data
 
 
@@ -178,3 +181,34 @@ def test_plot_no_synopsis_should_end_in_add_synopsis(imdb_spec, movie_ids):
 def test_plot_none_should_be_excluded(imdb_spec, movie_ids):
     data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['ates_parcasi'])
     assert 'plot' not in data
+
+
+def test_runtime_one_should_be_a_number_in_minutes(imdb_spec, movie_ids):
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix'])
+    assert data['runtime'] == '136 min'
+
+
+# def test_runtime_one_with_notes_should_include_notes(imdb_spec, movie_ids):
+#     data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['band_of_brothers'])
+#     assert data['runtime'] == '705 min (10 parts)'
+
+
+def test_runtime_many_with_notes_should_include_notes(imdb_spec, movie_ids):
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['house_md'])
+    assert data['runtime'] == '44 min | 7788 min (Entire series)'
+
+
+def test_runtime_many_with_multiple_notes_should_include_all_notes(imdb_spec, movie_ids):
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['shining'])
+    assert data['runtime'] == '144 min (cut) | 119 min (cut) (European version)' \
+                              ' | 146 min (original version)'
+
+
+def test_runtime_many_with_different_countries_should_include_all_countries(imdb_spec, movie_ids):
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['suspiria'])
+    assert data['runtime'] == '98 min | Germany:88 min | USA:92 min | Argentina:95 min'
+
+
+def test_runtime_none_should_be_excluded(imdb_spec, movie_ids):
+    data = scrape(imdb_spec, 'movie_combined_details', imdb_id=movie_ids['matrix_vg'])
+    assert 'runtime' not in data
