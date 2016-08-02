@@ -307,7 +307,8 @@ def woodpecker(path, reducer):
         'first': lambda xs: xs[0],
         'join': lambda xs: ''.join(xs),
         'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs)).strip(),
-        'normalize': lambda xs: re.sub('[^a-z0-9]', '', ''.join(xs).lower())
+        'normalize': lambda xs: re.sub('[^a-z0-9_]', '',
+                                       ''.join(xs).lower().replace(' ', '_'))
     }
     """Pre-defined reducers."""
 
