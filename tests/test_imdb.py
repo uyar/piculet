@@ -21,7 +21,7 @@ def imdb():
 def movies():
     """The IMDb movie ids."""
     return {
-        'ace_in_the_hole': 43338,
+        'ace_in_the_hole': 43338,       # multiple languages
         'ates_parcasi': 1863157,        # no poster, rating, votes, rank, plot, keywords
         'band_of_brothers': 185906,     # mini-series, ended
         'dr_who': 436992,               # TV series, continuing
@@ -30,6 +30,7 @@ def movies():
         'if': 63850,                    # one tagline
         'manos': 60666,                 # bottom 100
         'matrix': 133093,               # top 250
+        'matrix_short': 2971344,        # short movie, language none
         'matrix_tv': 389150,            # TV movie
         'matrix_tv_short': 274085,      # TV short movie
         'matrix_vg': 390244,            # video game, no runtime
@@ -213,3 +214,40 @@ def test_runtime_many_with_different_countries_should_include_all_countries(imdb
 def test_runtime_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_vg'])
     assert 'runtime' not in data
+
+
+def test_country_one_should_be_a_country_name(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+    assert data['country'] == 'UK'
+
+
+def test_country_many_should_be_pipe_separated(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+    assert data['country'] == 'UK | Canada'
+
+
+# TODO: find an entry with no country
+# def test_country_none_should_be_excluded(imdb, movies):
+#     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
+#     assert 'country' not in data
+
+
+def test_language_one_should_be_a_language_name(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+    assert data['language'] == 'English'
+
+
+def test_language_many_should_be_pipe_separated(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ace_in_the_hole'])
+    assert data['language'] == 'English | Spanish | Latin'
+
+
+def test_language_none_is_a_language_name(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_short'])
+    assert data['language'] == 'None'
+
+
+# TODO: find an entry without a language
+# def test_language_none_should_be_excluded(imdb, movies):
+#     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
+#     assert 'language' not in data
