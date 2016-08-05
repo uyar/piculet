@@ -70,7 +70,7 @@ def test_peck_non_matching_path_should_return_none(people_root):
     assert data is None
 
 
-def test_scrape_no_prune_should_return_all(people_content):
+def test_scrape_no_subroot_should_return_all(people_content):
     rules = [
         {'key': 'name', 'path': './p2/n/text()', 'reducer': 'first'},
         {'key': 'age', 'path': './p1/a/text()', 'reducer': 'first'}
@@ -79,12 +79,12 @@ def test_scrape_no_prune_should_return_all(people_content):
     assert data == {'name': 'Jane Doe', 'age': '42'}
 
 
-def test_scrape_prune_should_exclude_unselected_parts(people_content):
+def test_scrape_subroot_should_exclude_unselected_parts(people_content):
     rules = [
         {'key': 'name', 'path': './/n/text()', 'reducer': 'first'},
         {'key': 'age', 'path': './/a/text()', 'reducer': 'first'}
     ]
-    data = extract(people_content, rules, prune='./p1')
+    data = extract(people_content, rules, pre=[{'root': './p1'}])
     assert data == {'name': 'John Smith', 'age': '42'}
 
 
@@ -93,13 +93,13 @@ def test_scrape_missing_data_should_be_excluded(people_content):
         {'key': 'name', 'path': './/n/text()', 'reducer': 'first'},
         {'key': 'age', 'path': './/a/text()', 'reducer': 'first'}
     ]
-    data = extract(people_content, rules, prune='./p2')
+    data = extract(people_content, rules, pre=[{'root': './p2'}])
     assert data == {'name': 'Jane Doe'}
 
 
-def test_scrape_prune_should_select_one_element(people_content):
+def test_scrape_subroot_should_select_one_element(people_content):
     with raises(ValueError):
-        extract(people_content, rules=[], prune='.//n')
+        extract(people_content, rules=[], pre=[{'root': './/n'}])
 
 
 def test_scrape_no_rules_should_return_empty_result(people_content):

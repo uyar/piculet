@@ -337,13 +337,12 @@ def woodpecker(path, reducer):
     return apply
 
 
-def extract(content, rules, pre=None, prune=None):
+def extract(content, rules, pre=None):
     """Extract data from an XML document.
 
     :param content: Content to extract the data from.
     :param rules: Rules that specify how to extract the data.
     :param pre: Preprocessing operations on the tree.
-    :param prune: Path for the element to set as root before extractions.
     :return: Extracted data.
     """
     root = ElementTree.fromstring(content)
@@ -351,18 +350,18 @@ def extract(content, rules, pre=None, prune=None):
     # ElementTree doesn't support parent queries, so build a map for it
     parents = {c: p for p in root.iter() for c in p}
 
-    if prune is not None:
-        _logger.debug('selecting new root using %s', prune)
-        elements = xpath(root, prune)
-        if len(elements) != 1:
-            raise ValueError('Pruning expression must select exactly'
-                             ' one element: {}.'.format(prune))
-        root = elements[0]
-
     if pre is not None:
         for step in pre:
             for op, path in step.items():
-                if op == 'remove':
+                if op == 'root':
+                    _logger.debug('selecting new root using %s', path)
+                    elements = xpath(root, path)
+                    if len(elements) != 1:
+                        raise ValueError('Root expression must select exactly'
+                                         ' one element: {}.'.format(path))
+                    root = elements[0]
+                elif op == 'remove':
+                    _logger.debug('removing elements %s', path)
                     for element in xpath(root, path):
                         parents[element].remove(element)
 
@@ -442,8 +441,7 @@ def scrape(spec, scraper_id, **kwargs):
         _logger.debug('converting html document to xml')
         content = html_to_xhtml(content)
 
-    data = extract(content, scraper['rules'], pre=scraper.get('pre'),
-                   prune=scraper.get('prune'))
+    data = extract(content, scraper['rules'], pre=scraper.get('pre'))
     return data
 
 
