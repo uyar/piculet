@@ -337,15 +337,20 @@ def woodpecker(path, reducer):
     return apply
 
 
-def extract(content, rules, prune=None):
+def extract(content, rules, pre=None, prune=None):
     """Extract data from an XML document.
 
     :param content: Content to extract the data from.
     :param rules: Rules that specify how to extract the data.
+    :param pre: Preprocessing operations on the tree.
     :param prune: Path for the element to set as root before extractions.
     :return: Extracted data.
     """
     root = ElementTree.fromstring(content)
+
+    # ElementTree doesn't support parent queries, so build a map for it
+    parents = {c: p for p in root.iter() for c in p}
+
     if prune is not None:
         _logger.debug('selecting new root using %s', prune)
         elements = xpath(root, prune)
@@ -353,6 +358,13 @@ def extract(content, rules, prune=None):
             raise ValueError('Pruning expression must select exactly'
                              ' one element: {}.'.format(prune))
         root = elements[0]
+
+    if pre is not None:
+        for step in pre:
+            for op, path in step.items():
+                if op == 'remove':
+                    for element in xpath(root, path):
+                        parents[element].remove(element)
 
     data = {}
     for rule in rules:
@@ -430,7 +442,8 @@ def scrape(spec, scraper_id, **kwargs):
         _logger.debug('converting html document to xml')
         content = html_to_xhtml(content)
 
-    data = extract(content, scraper['rules'], prune=scraper.get('prune'))
+    data = extract(content, scraper['rules'], pre=scraper.get('pre'),
+                   prune=scraper.get('prune'))
     return data
 
 

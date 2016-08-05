@@ -132,14 +132,12 @@ def test_rank_none_should_be_excluded(imdb, movies):
 
 def test_genre_should_be_a_genre_name(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['if'])
-    # if there are plot keywords there is a see more link to that page
-    assert data['genre'] == 'Drama See more »'
+    assert data['genre'] == 'Drama'
 
 
 def test_genre_many_should_be_pipe_separated(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    # if there are plot keywords there is a see more link to that page
-    assert data['genre'] == 'Action | Sci-Fi See more »'
+    assert data['genre'] == 'Action | Sci-Fi'
 
 
 # TODO: find a movie with no genre
@@ -151,7 +149,7 @@ def test_genre_many_should_be_pipe_separated(imdb, movies):
 def test_tagline_should_be_a_short_phrase(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     # if there is more than one tagline there is a see more link to the taglines page
-    assert data['tagline'] == 'Free your mind See more »'
+    assert data['tagline'] == 'Free your mind'
 
 
 def test_tagline_none_should_be_excluded(imdb, movies):
@@ -159,21 +157,9 @@ def test_tagline_none_should_be_excluded(imdb, movies):
     assert 'tagline' not in data
 
 
-def test_plot_should_end_in_full_summary(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
-    assert data['plot'].startswith('The further adventures of ')
-    assert data['plot'].endswith('Full summary »')
-
-
-def test_plot_with_synopsis_should_end_in_full_synopsis(imdb, movies):
+def test_plot_should_be_a_longer_text_without_synopsis(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert data['plot'].startswith('A computer hacker learns ')
-    assert data['plot'].endswith('Full summary » | Full synopsis »')
-
-
-def test_plot_no_synopsis_should_end_in_add_synopsis(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv_short'])
-    assert data['plot'].endswith(' | Add synopsis »')
 
 
 def test_plot_none_should_be_excluded(imdb, movies):
@@ -181,15 +167,9 @@ def test_plot_none_should_be_excluded(imdb, movies):
     assert 'plot' not in data
 
 
-def test_plot_keywords_many_should_be_pipe_separated(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['roast_sheen'])
-    assert data['plot_keywords'] == 'TV Special | Celebrity Roast'
-
-
-def test_plot_keywords_many_with_see_more_should_have_see_more(imdb, movies):
+def test_plot_keywords_see_more_should_be_removed(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['plot_keywords'] == \
-        'Computer | Hacker | Reality | Matrix | Computer Hacker See more »'
+    assert data['plot_keywords'] == 'Computer | Hacker | Reality | Matrix | Computer Hacker'
 
 
 def test_plot_keywords_none_should_be_excluded(imdb, movies):
@@ -202,7 +182,7 @@ def test_akas_should_be_titles(imdb, movies):
     # if an aka exists there is always a see more link to the akas page
     assert data['also_known_as'] == \
         '"Манос: Руки судьбы" - Soviet Union (Russian title)' \
-        ' "Manos - As Mãos do Destino" - Brazil (imdb display title) See more »'
+        ' "Manos - As Mãos do Destino" - Brazil (imdb display title)'
 
 
 def test_akas_none_should_be_excluded(imdb, movies):
@@ -301,7 +281,7 @@ def test_color_none_should_be_excluded(imdb, movies):
 def test_aspect_ratio_should_be_a_number_to_one(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     # if the aspect ratio exists, there is a see more link to technical page
-    assert data['aspect_ratio'] == '2.35 : 1 See more »'
+    assert data['aspect_ratio'] == '2.35 : 1'
 
 
 def test_aspect_ratio_none_should_be_excluded(imdb, movies):

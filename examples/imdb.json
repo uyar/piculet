@@ -6,6 +6,14 @@
       "url": "/title/tt{imdb_id:07}/combined",
       "format": "html",
       "prune": ".//div[@id='tn15']",
+      "pre": [
+        {
+          "remove": ".//a[@class='tn15more inline']"
+        },
+        {
+          "remove": ".//div[@class='info-content']//a[@class='tn15more']"
+        }
+      ],
       "rules": [
         {
           "key": "long_title",
