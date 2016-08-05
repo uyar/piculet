@@ -35,7 +35,7 @@ def movies():
         'matrix_tv_short': 274085,      # TV short movie, no plot synopsis
         'matrix_vg': 390244,            # video game, no runtime, one certification
         'matrix_video': 109151,         # video movie
-        # 'roast_sheen': 1985970,         # TV Special
+        'roast_sheen': 1985970,         # TV Special, few plot keywords
         'shining': 81505,               # multiple runtimes, multiple countries
         'suspiria': 76786               # multiple country runtimes
     }
@@ -179,6 +179,22 @@ def test_plot_no_synopsis_should_end_in_add_synopsis(imdb, movies):
 def test_plot_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
     assert 'plot' not in data
+
+
+def test_plot_keywords_many_should_be_pipe_separated(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['roast_sheen'])
+    assert data['plot_keywords'] == 'TV Special | Celebrity Roast'
+
+
+def test_plot_keywords_many_with_see_more_should_have_see_more(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+    assert data['plot_keywords'] == \
+        'Computer | Hacker | Reality | Matrix | Computer Hacker See more »'
+
+
+def test_plot_keywords_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+    assert 'plot_keywords' not in data
 
 
 def test_akas_should_be_titles(imdb, movies):

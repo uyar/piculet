@@ -17,8 +17,9 @@
 
 
 """
-Woody is a module for extracting data out of XML/HTML documents using XPath
-queries.
+Woody is a module for extracting data from XML documents using XPath queries.
+It also contains an HTML cleaner which can be used to convert HTML into XHTML
+so that web pages can also be parsed.
 
 
 Command-Line Interface
