@@ -181,6 +181,19 @@ def test_plot_none_should_be_excluded(imdb, movies):
     assert 'plot' not in data
 
 
+def test_akas_should_be_titles(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+    # if an aka exists there is always a see more link to the akas page
+    assert data['also_known_as'] == \
+        '"Манос: Руки судьбы" - Soviet Union (Russian title)' \
+        ' "Manos - As Mãos do Destino" - Brazil (imdb display title) See more »'
+
+
+def test_akas_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+    assert 'also_known_as' not in data
+
+
 def test_mpaa_should_be_a_rating(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert data['mpaa'] == 'Rated R for sci-fi violence and brief language'
