@@ -3,7 +3,7 @@
   "scrapers": [
     {
       "id": "movie_combined_details",
-      "url": "/title/tt{imdb_id}/combined",
+      "url": "/title/tt{imdb_id:07}/combined",
       "format": "html",
       "prune": ".//div[@id='tn15']",
       "rules": [

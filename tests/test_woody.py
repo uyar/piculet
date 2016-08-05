@@ -5,7 +5,7 @@ from xml.etree import ElementTree
 import os
 import time
 
-from woody import extract, scrape, woodpecker, xpath
+from woody import _get_document, extract, scrape, woodpecker, xpath
 
 
 @fixture(scope='module')
@@ -107,11 +107,14 @@ def test_scrape_no_rules_should_return_empty_result(people_content):
     assert data == {}
 
 
+TEST_SITE = 'http://en.wikipedia.org'
+
+
 @fixture(scope='module')
 def dummy_spec():
     """Dummy data extraction spec."""
     return {
-        "base_url": "http://en.wikipedia.org",
+        "base_url": TEST_SITE,
         "scrapers": [
             {
                 "id": "dummy",
@@ -120,6 +123,14 @@ def dummy_spec():
             }
         ]
     }
+
+
+@fixture(scope='module', autouse=True)
+def get_test_page(dummy_spec):
+    """Store the test page in the cache."""
+    for scraper in dummy_spec['scrapers']:
+        url = dummy_spec['base_url'] + scraper['url']
+        _get_document(url)
 
 
 @mark.skip
@@ -132,7 +143,6 @@ def test_scrape_url_uncached_should_retrieve_from_web(dummy_spec):
 
 
 def test_scrape_url_cached_should_read_from_disk(dummy_spec):
-    # FIXME: make sure that the URL is already in cache
     start = time.time()
     scrape(dummy_spec, 'dummy')
     end = time.time()

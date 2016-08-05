@@ -4,10 +4,10 @@ import json
 import os
 import re
 
-from woody import scrape
+from woody import _get_document, scrape
 
 
-@fixture(scope='session')
+@fixture(scope='module')
 def imdb():
     """Data extraction spec for the IMDb site."""
     cwd = os.path.dirname(__file__)
@@ -17,7 +17,7 @@ def imdb():
     return spec
 
 
-@fixture(scope='session')
+@fixture(scope='module')
 def movies():
     """The IMDb movie ids."""
     return {
@@ -39,6 +39,15 @@ def movies():
         'shining': 81505,               # multiple runtimes, multiple countries
         'suspiria': 76786               # multiple country runtimes
     }
+
+
+@fixture(scope='module', autouse=True)
+def get_imdb_pages(imdb, movies):
+    """Store all needed pages from the IMDb in the cache."""
+    for scraper in imdb['scrapers']:
+        for movie_id in movies.values():
+            url = imdb['base_url'] + scraper['url'].format(imdb_id=movie_id)
+            _get_document(url)
 
 
 def test_long_title_should_have_title_and_year(imdb, movies):
