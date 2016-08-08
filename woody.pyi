@@ -5,7 +5,7 @@ from xml.etree import ElementTree
 
 
 def extract(
-        content: str,
+        root: ElementTree.Element,
         items: Iterable[Mapping[str, Any]],
         pre: Optional[Mapping[str, str]] = None
 ) -> Mapping[str, str]: ...

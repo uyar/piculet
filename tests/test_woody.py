@@ -36,15 +36,10 @@ def test_xpath_attr_queries_should_return_strings(generic_xml):
 
 
 @fixture(scope='module')
-def people_content():
-    """XML content to represent the data of multiple persons."""
-    return '<p><p1><n>John Smith</n><a>42</a></p1><p2><n>Jane Doe</n></p2></p>'
-
-
-@fixture(scope='module')
-def people_root(people_content):
+def people_root():
     """XML document to represent the data of a person."""
-    return ElementTree.fromstring(people_content)
+    content = '<p><p1><n>John Smith</n><a>42</a></p1><p2><n>Jane Doe</n></p2></p>'
+    return ElementTree.fromstring(content)
 
 
 def test_peck_reducer_first_should_return_first_element(people_root):
@@ -70,40 +65,40 @@ def test_peck_non_matching_path_should_return_none(people_root):
     assert data is None
 
 
-def test_scrape_no_subroot_should_return_all(people_content):
+def test_scrape_no_subroot_should_return_all(people_root):
     rules = [
         {'key': 'name', 'value': {'path': './p2/n/text()', 'reducer': 'first'}},
         {'key': 'age', 'value': {'path': './p1/a/text()', 'reducer': 'first'}}
     ]
-    data = extract(people_content, rules)
+    data = extract(people_root, rules)
     assert data == {'name': 'Jane Doe', 'age': '42'}
 
 
-def test_scrape_subroot_should_exclude_unselected_parts(people_content):
+def test_scrape_subroot_should_exclude_unselected_parts(people_root):
     rules = [
         {'key': 'name', 'value': {'path': './/n/text()', 'reducer': 'first'}},
         {'key': 'age', 'value': {'path': './/a/text()', 'reducer': 'first'}}
     ]
-    data = extract(people_content, rules, pre=[{'root': './p1'}])
+    data = extract(people_root, rules, pre=[{'root': './p1'}])
     assert data == {'name': 'John Smith', 'age': '42'}
 
 
-def test_scrape_missing_data_should_be_excluded(people_content):
+def test_scrape_missing_data_should_be_excluded(people_root):
     rules = [
         {'key': 'name', 'value': {'path': './/n/text()', 'reducer': 'first'}},
         {'key': 'age', 'value': {'path': './/a/text()', 'reducer': 'first'}}
     ]
-    data = extract(people_content, rules, pre=[{'root': './p2'}])
+    data = extract(people_root, rules, pre=[{'root': './p2'}])
     assert data == {'name': 'Jane Doe'}
 
 
-def test_scrape_subroot_should_select_one_element(people_content):
+def test_scrape_subroot_should_select_one_element(people_root):
     with raises(ValueError):
-        extract(people_content, items=[], pre=[{'root': './/n'}])
+        extract(people_root, items=[], pre=[{'root': './/n'}])
 
 
-def test_scrape_no_rules_should_return_empty_result(people_content):
-    data = extract(people_content, items=[])
+def test_scrape_no_rules_should_return_empty_result(people_root):
+    data = extract(people_root, items=[])
     assert data == {}
 
 

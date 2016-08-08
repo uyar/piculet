@@ -337,16 +337,14 @@ def woodpecker(path, reducer):
     return apply
 
 
-def extract(content, items, pre=None):
+def extract(root, items, pre=None):
     """Extract data from an XML document.
 
-    :param content: Content to extract the data from.
+    :param root: Root of the tree to extract the data from.
     :param items: Rules that specify how to extract the data items.
     :param pre: Preprocessing operations on the tree.
     :return: Extracted data.
     """
-    root = ElementTree.fromstring(content)
-
     # ElementTree doesn't support parent queries, so build a map for it
     parents = {c: p for p in root.iter() for c in p}
 
@@ -442,7 +440,8 @@ def scrape(spec, scraper_id, **kwargs):
         _logger.debug('converting html document to xml')
         content = html_to_xhtml(content)
 
-    data = extract(content, scraper['items'], pre=scraper.get('pre'))
+    root = ElementTree.fromstring(content)
+    data = extract(root, scraper['items'], pre=scraper.get('pre'))
     return data
 
 
