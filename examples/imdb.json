@@ -7,13 +7,25 @@
       "format": "html",
       "pre": [
         {
-          "root": ".//div[@id='tn15']"
+          "op": "root",
+          "path": ".//div[@id='tn15']"
         },
         {
-          "remove": ".//a[@class='tn15more inline']"
+          "op": "remove",
+          "path": ".//a[@class='tn15more inline']"
         },
         {
-          "remove": ".//div[@class='info-content']//a[@class='tn15more']"
+          "op": "remove",
+          "path": ".//div[@class='info-content']//a[@class='tn15more']"
+        },
+        {
+          "op": "add_attr",
+          "path": ".//div[@class='info']/h5/..",
+          "name": "woody",
+          "value": {
+            "path": "./h5/text()",
+            "reducer": "normalize"
+          }
         }
       ],
       "items": [

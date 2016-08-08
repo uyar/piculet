@@ -291,7 +291,7 @@ def xpath(element, path):
 
 
 def woodpecker(path, reducer):
-    """A data extractor that combines an XPath query with a reducing function.
+    """A value extractor that combines an XPath query with a reducing function.
 
     The XPath expression is applied to an element. The expression is expected
     to generate a list of strings; therefore it has to end with ``text()``
@@ -299,8 +299,8 @@ def woodpecker(path, reducer):
     the reducer function. These functions have to take a list of strings
     as parameter and return a single string as result.
 
-    :param path: XPath expression to select the data contents.
-    :param reducer: Function to reduce the data contents to a single value.
+    :param path: XPath expression to select the contents.
+    :param reducer: Function to reduce the contents to a single value.
     :return: A callable that can apply this path and reducer to an element.
     """
 
@@ -319,19 +319,19 @@ def woodpecker(path, reducer):
         raise ValueError('Unknown reducer: %s', reducer)
 
     def apply(element):
-        """Extract a data item from an element.
+        """Extract a value from an element.
 
-        :param element: Element to extract the data from.
-        :return: Extracted data value.
+        :param element: Element to extract the value from.
+        :return: Extracted value.
         """
         values = xpath(element, path)
         if len(values) == 0:
             _logger.debug('no match for %s', path)
             return None
 
-        _logger.debug('extracted data: %s', values)
+        _logger.debug('extracted value: %s', values)
         value = reduce(values)
-        _logger.debug('applied %s reducer, new value %s', reducer, value)
+        _logger.debug('applied %s reducer, new value: %s', reducer, value)
         return value
 
     return apply
@@ -345,40 +345,55 @@ def extract(root, items, pre=None):
     :param pre: Preprocessing operations on the tree.
     :return: Extracted data.
     """
+
+    def gen(value):
+        try:
+            return woodpecker(value['path'], value['reducer'])
+        except:
+            return lambda _: value
+
     # ElementTree doesn't support parent queries, so build a map for it
     parents = {c: p for p in root.iter() for c in p}
 
-    if pre is not None:
-        for step in pre:
-            for op, path in step.items():
-                if op == 'root':
-                    _logger.debug('selecting new root using %s', path)
-                    elements = xpath(root, path)
-                    if len(elements) != 1:
-                        raise ValueError('Root expression must select exactly'
-                                         ' one element: {}.'.format(path))
-                    root = elements[0]
-                elif op == 'remove':
-                    _logger.debug('removing elements %s', path)
-                    for element in xpath(root, path):
-                        parents[element].remove(element)
+    for step in (pre if pre is not None else []):
+        op = step['op']
+        if op == 'root':
+            path = step['path']
+            _logger.debug('selecting new root using %s', path)
+            elements = xpath(root, path)
+            if len(elements) != 1:
+                raise ValueError('Root expression must select exactly'
+                                 ' one element: {}.'.format(path))
+            root = elements[0]
+        elif op == 'remove':
+            path = step['path']
+            elements = xpath(root, path)
+            _logger.debug('removing %s elements using %s', len(elements), path)
+            for element in elements:
+                parents[element].remove(element)
+        elif op == 'add_attr':
+            path = step['path']
+            for element in xpath(root, path):
+                attr_name = step['name']
+                attr_gen = gen(step['value'])
+                attr_value = attr_gen(element)
+                _logger.debug('setting %s attribute to %s on %s',
+                              attr_name, attr_value, element.tag)
+                element.attrib[attr_name] = attr_value
 
     data = {}
     for item in items:
         key = item['key']
-        try:
-            keygen = woodpecker(path=key['path'], reducer=key['reducer'])
-        except:
-            keygen = lambda _: key
+        key_gen = gen(key)
 
         foreach = item.get('foreach')
         sections = [root] if foreach is None else xpath(root, foreach)
         for section in sections:
             rule = item['value']
-            pecker = woodpecker(path=rule['path'], reducer=rule['reducer'])
-            value = pecker(section)
+            value_gen = gen(rule)
+            value = value_gen(section)
             if value is not None:
-                data[keygen(section)] = value
+                data[key_gen(section)] = value
     return data
 
 

@@ -79,7 +79,7 @@ def test_scrape_subroot_should_exclude_unselected_parts(people_root):
         {'key': 'name', 'value': {'path': './/n/text()', 'reducer': 'first'}},
         {'key': 'age', 'value': {'path': './/a/text()', 'reducer': 'first'}}
     ]
-    data = extract(people_root, rules, pre=[{'root': './p1'}])
+    data = extract(people_root, rules, pre=[{'op': 'root', 'path': './p1'}])
     assert data == {'name': 'John Smith', 'age': '42'}
 
 
@@ -88,13 +88,13 @@ def test_scrape_missing_data_should_be_excluded(people_root):
         {'key': 'name', 'value': {'path': './/n/text()', 'reducer': 'first'}},
         {'key': 'age', 'value': {'path': './/a/text()', 'reducer': 'first'}}
     ]
-    data = extract(people_root, rules, pre=[{'root': './p2'}])
+    data = extract(people_root, rules, pre=[{'op': 'root', 'path': './p2'}])
     assert data == {'name': 'Jane Doe'}
 
 
 def test_scrape_subroot_should_select_one_element(people_root):
     with raises(ValueError):
-        extract(people_root, items=[], pre=[{'root': './/n'}])
+        extract(people_root, items=[], pre=[{'op': 'root', 'path': './/n'}])
 
 
 def test_scrape_no_rules_should_return_empty_result(people_root):
