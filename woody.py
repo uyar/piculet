@@ -337,11 +337,11 @@ def woodpecker(path, reducer):
     return apply
 
 
-def extract(content, rules, pre=None):
+def extract(content, items, pre=None):
     """Extract data from an XML document.
 
     :param content: Content to extract the data from.
-    :param rules: Rules that specify how to extract the data.
+    :param items: Rules that specify how to extract the data items.
     :param pre: Preprocessing operations on the tree.
     :return: Extracted data.
     """
@@ -366,16 +366,17 @@ def extract(content, rules, pre=None):
                         parents[element].remove(element)
 
     data = {}
-    for rule in rules:
-        key = rule['key']
+    for item in items:
+        key = item['key']
         try:
             keygen = woodpecker(path=key['path'], reducer=key['reducer'])
         except:
             keygen = lambda _: key
 
-        foreach = rule.get('foreach')
+        foreach = item.get('foreach')
         sections = [root] if foreach is None else xpath(root, foreach)
         for section in sections:
+            rule = item['value']
             pecker = woodpecker(path=rule['path'], reducer=rule['reducer'])
             value = pecker(section)
             if value is not None:
@@ -441,7 +442,7 @@ def scrape(spec, scraper_id, **kwargs):
         _logger.debug('converting html document to xml')
         content = html_to_xhtml(content)
 
-    data = extract(content, scraper['rules'], pre=scraper.get('pre'))
+    data = extract(content, scraper['items'], pre=scraper.get('pre'))
     return data
 
 

@@ -72,8 +72,8 @@ def test_peck_non_matching_path_should_return_none(people_root):
 
 def test_scrape_no_subroot_should_return_all(people_content):
     rules = [
-        {'key': 'name', 'path': './p2/n/text()', 'reducer': 'first'},
-        {'key': 'age', 'path': './p1/a/text()', 'reducer': 'first'}
+        {'key': 'name', 'value': {'path': './p2/n/text()', 'reducer': 'first'}},
+        {'key': 'age', 'value': {'path': './p1/a/text()', 'reducer': 'first'}}
     ]
     data = extract(people_content, rules)
     assert data == {'name': 'Jane Doe', 'age': '42'}
@@ -81,8 +81,8 @@ def test_scrape_no_subroot_should_return_all(people_content):
 
 def test_scrape_subroot_should_exclude_unselected_parts(people_content):
     rules = [
-        {'key': 'name', 'path': './/n/text()', 'reducer': 'first'},
-        {'key': 'age', 'path': './/a/text()', 'reducer': 'first'}
+        {'key': 'name', 'value': {'path': './/n/text()', 'reducer': 'first'}},
+        {'key': 'age', 'value': {'path': './/a/text()', 'reducer': 'first'}}
     ]
     data = extract(people_content, rules, pre=[{'root': './p1'}])
     assert data == {'name': 'John Smith', 'age': '42'}
@@ -90,8 +90,8 @@ def test_scrape_subroot_should_exclude_unselected_parts(people_content):
 
 def test_scrape_missing_data_should_be_excluded(people_content):
     rules = [
-        {'key': 'name', 'path': './/n/text()', 'reducer': 'first'},
-        {'key': 'age', 'path': './/a/text()', 'reducer': 'first'}
+        {'key': 'name', 'value': {'path': './/n/text()', 'reducer': 'first'}},
+        {'key': 'age', 'value': {'path': './/a/text()', 'reducer': 'first'}}
     ]
     data = extract(people_content, rules, pre=[{'root': './p2'}])
     assert data == {'name': 'Jane Doe'}
@@ -99,11 +99,11 @@ def test_scrape_missing_data_should_be_excluded(people_content):
 
 def test_scrape_subroot_should_select_one_element(people_content):
     with raises(ValueError):
-        extract(people_content, rules=[], pre=[{'root': './/n'}])
+        extract(people_content, items=[], pre=[{'root': './/n'}])
 
 
 def test_scrape_no_rules_should_return_empty_result(people_content):
-    data = extract(people_content, rules=[])
+    data = extract(people_content, items=[])
     assert data == {}
 
 
@@ -119,7 +119,7 @@ def dummy_spec():
             {
                 "id": "dummy",
                 "url": "/",
-                "rules": []
+                "items": []
             }
         ]
     }
