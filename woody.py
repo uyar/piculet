@@ -350,45 +350,45 @@ def extract(root, items, pre=None):
     # ElementTree doesn't support parent queries, so build a map for it
     parents = {c: p for p in root.iter() for c in p}
 
-    for step in (pre if pre is not None else []):
-        op = step['op']
-        if op == 'root':
-            path = step['path']
-            _logger.debug('selecting new root using %s', path)
-            elements = xpath(root, path)
-            if len(elements) != 1:
-                raise ValueError('Root expression must select exactly'
-                                 ' one element: {}.'.format(path))
-            root = elements[0]
-        elif op == 'remove':
-            path = step['path']
-            elements = xpath(root, path)
-            _logger.debug('removing %s elements using %s', len(elements), path)
-            for element in elements:
-                parents[element].remove(element)
-        elif op == 'set_attr':
-            path = step['path']
-            for element in xpath(root, path):
-                attr_name = step['name']
-                attr_gen = gen(step['value'])
-                attr_value = attr_gen(element)
-                _logger.debug('setting %s attribute to %s on %s',
-                              attr_name, attr_value, element.tag)
-                element.attrib[attr_name] = attr_value
+    if pre is not None:
+        for step in pre:
+            op = step['op']
+            if op == 'root':
+                path = step['path']
+                _logger.debug('selecting new root using %s', path)
+                elements = xpath(root, path)
+                if len(elements) != 1:
+                    raise ValueError('Root expression must select exactly'
+                                     ' one element: {}.'.format(path))
+                root = elements[0]
+            elif op == 'remove':
+                path = step['path']
+                elements = xpath(root, path)
+                _logger.debug('removing %s elements using %s', len(elements), path)
+                for element in elements:
+                    parents[element].remove(element)
+            elif op == 'set_attr':
+                path = step['path']
+                attr_name_gen = gen(step['name'])
+                attr_value_gen = gen(step['value'])
+                for element in xpath(root, path):
+                    attr_name = attr_name_gen(element)
+                    attr_value = attr_value_gen(element)
+                    _logger.debug('setting %s attribute to %s on %s',
+                                  attr_name, attr_value, element.tag)
+                    element.attrib[attr_name] = attr_value
 
     data = {}
     for item in items:
-        key = item['key']
-        key_gen = gen(key)
-
+        key_gen = gen(item['key'])
+        value_gen = gen(item['value'])
         foreach = item.get('foreach')
         sections = [root] if foreach is None else xpath(root, foreach)
         for section in sections:
-            rule = item['value']
-            value_gen = gen(rule)
+            key = key_gen(section)
             value = value_gen(section)
             if value is not None:
-                data[key_gen(section)] = value
+                data[key] = value
     return data
 
 
