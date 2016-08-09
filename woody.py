@@ -105,15 +105,10 @@ def retrieve(url, charset=None, fallback_charset='utf-8'):
             start = content.find(tag)
             if start >= 0:
                 _logger.debug('charset found in %s tag', key)
-                meta_tag, meta_start = tag, start
+                charset_start = start + len(tag)
+                charset_end = content.find(b'"', charset_start)
+                charset = content[charset_start:charset_end].decode('ascii')
                 break
-        else:
-            meta_tag, meta_start = None, -1
-
-        if meta_tag is not None:
-            charset_start = meta_start + len(meta_tag)
-            charset_end = content.find(b'"', charset_start)
-            charset = content[charset_start:charset_end].decode('ascii')
         else:
             _logger.debug('charset not found, using fallback')
             charset = fallback_charset
