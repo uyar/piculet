@@ -285,31 +285,31 @@ def xpath(element, path):
     return result
 
 
+_REDUCERS = {
+    'first': lambda xs: xs[0],
+    'join': lambda xs: ''.join(xs),
+    'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs)).strip(),
+    'normalize': lambda xs: re.sub('[^a-z0-9_]', '',
+                                   ''.join(xs).lower().replace(' ', '_'))
+}
+"""Pre-defined reducers."""
+
+
 def woodpecker(path, reducer):
     """A value extractor that combines an XPath query with a reducing function.
 
-    The XPath expression is applied to an element. The expression is expected
-    to generate a list of strings; therefore it has to end with ``text()``
-    or ``@attr``. The resulting list will be reduced to a single value using
-    the reducer function. These functions have to take a list of strings
-    as parameter and return a single string as result.
+    This function returns a callable that takes an element as parameter and
+    applies the XPath query to that element. The result of this is expected
+    to be a list of strings; therefore the query has to end with ``text()`` or
+    ``@attr``. The list will then be passed to the reducer function to generate
+    a single string as the result.
 
-    :param path: XPath expression to select the contents.
-    :param reducer: Function to reduce the contents to a single value.
+    :param path: XPath query to select the values.
+    :param reducer: Name of reducer function.
     :return: A callable that can apply this path and reducer to an element.
     """
-
-    REDUCERS = {
-        'first': lambda xs: xs[0],
-        'join': lambda xs: ''.join(xs),
-        'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs)).strip(),
-        'normalize': lambda xs: re.sub('[^a-z0-9_]', '',
-                                       ''.join(xs).lower().replace(' ', '_'))
-    }
-    """Pre-defined reducers."""
-
     try:
-        reduce = REDUCERS[reducer]
+        reduce = _REDUCERS[reducer]
     except KeyError:
         raise ValueError('Unknown reducer: %s', reducer)
 
