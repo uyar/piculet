@@ -23,7 +23,7 @@
           "path": ".//div[@class='info']/h5/..",
           "name": "woody",
           "value": {
-            "path": "./h5/text()",
+            "path": "./h5//text()",
             "reducer": "normalize"
           }
         }
@@ -65,11 +65,126 @@
           }
         },
         {
-          "foreach": ".//div[@class='info']",
-          "key": {
-            "path": "./h5//text()",
-            "reducer": "normalize"
-          },
+          "foreach": ".//div[@woody='genre']",
+          "key": "genres",
+          "value": {
+            "foreach": "./div[@class='info-content']/a",
+            "path": "./text()",
+            "reducer": "first"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='tagline']",
+          "key": "tagline",
+          "value": {
+            "path": "./div[@class='info-content']/text()",
+            "reducer": "clean"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='plot']",
+          "key": "plot",
+          "value": {
+            "path": "./div[@class='info-content']/text()",
+            "reducer": "clean"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='plot_keywords']",
+          "key": "plot_keywords",
+          "value": {
+            "foreach": ".//div[@id='tn15plotkeywords']//a",
+            "path": "./text()",
+            "reducer": "first"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='also_known_as']",
+          "key": "also_known_as",
+          "value": {
+            "path": "./div[@class='info-content']//text()",
+            "reducer": "clean"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='mpaa']",
+          "key": "mpaa",
+          "value": {
+            "path": "./div[@class='info-content']/text()",
+            "reducer": "clean"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='runtime']",
+          "key": "runtime",
+          "value": {
+            "path": "./div[@class='info-content']/text()",
+            "reducer": "clean"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='country']",
+          "key": "countries",
+          "value": {
+            "foreach": "./div[@class='info-content']/a",
+            "path": "./text()",
+            "reducer": "first"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='country']",
+          "key": "country_codes",
+          "value": {
+            "foreach": "./div[@class='info-content']/a",
+            "path": "./@href",
+            "reducer": "first"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='language']",
+          "key": "languages",
+          "value": {
+            "foreach": "./div[@class='info-content']/a",
+            "path": "./text()",
+            "reducer": "first"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='language']",
+          "key": "language_codes",
+          "value": {
+            "foreach": "./div[@class='info-content']/a",
+            "path": "./@href",
+            "reducer": "first"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='color']",
+          "key": "color",
+          "value": {
+            "path": "./div[@class='info-content']//text()",
+            "reducer": "clean"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='aspect_ratio']",
+          "key": "aspect_ratio",
+          "value": {
+            "path": "./div[@class='info-content']/text()",
+            "reducer": "clean"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='sound_mix']",
+          "key": "sound_mix",
+          "value": {
+            "path": "./div[@class='info-content']//text()",
+            "reducer": "clean"
+          }
+        },
+        {
+          "foreach": ".//div[@woody='certification']",
+          "key": "certification",
           "value": {
             "path": "./div[@class='info-content']//text()",
             "reducer": "clean"
