@@ -371,7 +371,7 @@ def extract(root, items, pre=None):
             _logger.debug('removing %s elements using %s', len(elements), path)
             for element in elements:
                 parents[element].remove(element)
-        elif op == 'add_attr':
+        elif op == 'set_attr':
             path = step['path']
             for element in xpath(root, path):
                 attr_name = step['name']

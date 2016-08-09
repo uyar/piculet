@@ -19,7 +19,7 @@
           "path": ".//div[@class='info-content']//a[@class='tn15more']"
         },
         {
-          "op": "add_attr",
+          "op": "set_attr",
           "path": ".//div[@class='info']/h5/..",
           "name": "woody",
           "value": {
