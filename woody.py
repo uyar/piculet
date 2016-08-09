@@ -448,7 +448,7 @@ def scrape(spec, scraper_id, **kwargs):
     content_format = scraper.get('format', 'xml')
     if content_format == 'html':
         _logger.debug('converting html document to xml')
-        content = html_to_xhtml(content)
+        content = html_to_xhtml(content, omit_tags={'script'})
 
     root = ElementTree.fromstring(content)
     data = extract(root, scraper['items'], pre=scraper.get('pre'))
