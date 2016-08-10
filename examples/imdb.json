@@ -65,32 +65,28 @@
           }
         },
         {
-          "foreach": ".//div[@woody='genre']",
           "key": "genres",
           "value": {
-            "foreach": "./div[@class='info-content']/a",
+            "foreach": ".//div[@woody='genre']/div[@class='info-content']/a",
             "path": "./text()",
             "reducer": "first"
           }
         },
         {
-          "foreach": ".//div[@woody='tagline']",
           "key": "tagline",
           "value": {
-            "path": "./div[@class='info-content']/text()",
+            "path": ".//div[@woody='tagline']/div[@class='info-content']/text()",
             "reducer": "clean"
           }
         },
         {
-          "foreach": ".//div[@woody='plot']",
           "key": "plot",
           "value": {
-            "path": "./div[@class='info-content']/text()",
+            "path": ".//div[@woody='plot']/div[@class='info-content']/text()",
             "reducer": "clean"
           }
         },
         {
-          "foreach": ".//div[@woody='plot_keywords']",
           "key": "plot_keywords",
           "value": {
             "foreach": ".//div[@id='tn15plotkeywords']//a",
@@ -99,94 +95,83 @@
           }
         },
         {
-          "foreach": ".//div[@woody='also_known_as']",
           "key": "also_known_as",
           "value": {
-            "path": "./div[@class='info-content']//text()",
+            "path": ".//div[@woody='also_known_as']/div[@class='info-content']//text()",
             "reducer": "clean"
           }
         },
         {
-          "foreach": ".//div[@woody='mpaa']",
           "key": "mpaa",
           "value": {
-            "path": "./div[@class='info-content']/text()",
+            "path": ".//div[@woody='mpaa']/div[@class='info-content']/text()",
             "reducer": "clean"
           }
         },
         {
-          "foreach": ".//div[@woody='runtime']",
           "key": "runtime",
           "value": {
-            "path": "./div[@class='info-content']/text()",
+            "path": ".//div[@woody='runtime']/div[@class='info-content']/text()",
             "reducer": "clean"
           }
         },
         {
-          "foreach": ".//div[@woody='country']",
           "key": "countries",
           "value": {
-            "foreach": "./div[@class='info-content']/a",
+            "foreach": ".//div[@woody='country']/div[@class='info-content']/a",
             "path": "./text()",
             "reducer": "first"
           }
         },
         {
-          "foreach": ".//div[@woody='country']",
           "key": "country_codes",
           "value": {
-            "foreach": "./div[@class='info-content']/a",
+            "foreach": ".//div[@woody='country']/div[@class='info-content']/a",
             "path": "./@href",
             "reducer": "first"
           }
         },
         {
-          "foreach": ".//div[@woody='language']",
           "key": "languages",
           "value": {
-            "foreach": "./div[@class='info-content']/a",
+            "foreach": ".//div[@woody='language']/div[@class='info-content']/a",
             "path": "./text()",
             "reducer": "first"
           }
         },
         {
-          "foreach": ".//div[@woody='language']",
           "key": "language_codes",
           "value": {
-            "foreach": "./div[@class='info-content']/a",
+            "foreach": ".//div[@woody='language']/div[@class='info-content']/a",
             "path": "./@href",
             "reducer": "first"
           }
         },
         {
-          "foreach": ".//div[@woody='color']",
           "key": "color",
           "value": {
-            "path": "./div[@class='info-content']//text()",
+            "path": ".//div[@woody='color']/div[@class='info-content']//text()",
             "reducer": "clean"
           }
         },
         {
-          "foreach": ".//div[@woody='aspect_ratio']",
           "key": "aspect_ratio",
           "value": {
-            "path": "./div[@class='info-content']/text()",
+            "path": ".//div[@woody='aspect_ratio']/div[@class='info-content']/text()",
             "reducer": "clean"
           }
         },
         {
-          "foreach": ".//div[@woody='sound_mix']",
           "key": "sound_mix",
           "value": {
-            "path": "./div[@class='info-content']//text()",
+            "path": ".//div[@woody='sound_mix']/div[@class='info-content']//text()",
             "reducer": "clean"
           }
         },
         {
-          "foreach": ".//div[@woody='certification']",
           "key": "certification",
           "value": {
-            "path": "./div[@class='info-content']//text()",
+            "path": ".//div[@woody='certification']/div[@class='info-content']//text()",
             "reducer": "clean"
           }
         }
