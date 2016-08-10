@@ -243,6 +243,26 @@ def test_rank_none_should_be_excluded(imdb, movies):
     assert 'rank' not in data
 
 
+def test_directors_single_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
+    assert data['directors'] == [{'id': '/name/nm0000040/',
+                                  'name': 'Stanley Kubrick'}]
+
+
+def test_directors_multiple_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+    assert data['directors'] == [
+        {'id': '/name/nm0905154/', 'name': 'Lana Wachowski'},
+        {'id': '/name/nm0905152/', 'name': 'Lilly Wachowski'}
+    ]
+
+
+# TODO: find a movie with no directors
+# def test_directors_none_should_be_excluded(imdb, movies):
+#     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
+#     assert 'directors' not in data
+
+
 def test_seasons_should_be_a_list_of_seasons(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md'])
     assert data['seasons'] == ['episodes?season={}'.format(i) for i in range(1, 9)]

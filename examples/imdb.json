@@ -126,6 +126,28 @@
           }
         },
         {
+          "key": "directors",
+          "value": {
+            "foreach": ".//div[@id='director-info']/div[@class='info-content']/a",
+            "items": [
+              {
+                "key": "id",
+                "value": {
+                  "path": "./@href",
+                  "reducer": "first"
+                }
+              },
+              {
+                "key": "name",
+                "value": {
+                  "path": "./text()",
+                  "reducer": "clean"
+                }
+              }
+            ]
+          }
+        },
+        {
           "key": "seasons",
           "value": {
             "foreach": ".//div[@woody='seasons']/div[@class='info-content']/a",
