@@ -50,6 +50,7 @@ can be used as part of a pipe::
 from argparse import ArgumentParser
 from collections import deque
 from contextlib import redirect_stdout
+from functools import partial
 from hashlib import md5
 from html.parser import HTMLParser
 from io import StringIO
@@ -351,10 +352,13 @@ def extract(root, items, pre=None):
     """
 
     def gen(value):
-        try:
-            return woodpecker(value['path'], value['reducer'])
-        except:
+        if isinstance(value, str):
             return lambda _: value
+        if 'path' in value:
+            return woodpecker(value['path'], value['reducer'])
+        if 'items' in value:
+            return partial(extract, items=value['items'], pre=value.get('pre'))
+        raise TypeError('Unknown value generator')
 
     # ElementTree doesn't support parent queries, so build a map for it
     parents = {c: p for p in root.iter() for c in p}
@@ -366,10 +370,13 @@ def extract(root, items, pre=None):
                 path = step['path']
                 _logger.debug('selecting new root using %s', path)
                 elements = xpath(root, path)
-                if len(elements) != 1:
-                    raise ValueError('Root expression must select exactly'
-                                     ' one element: {}.'.format(path))
-                root = elements[0]
+                if len(elements) > 1:
+                    raise ValueError('Root expression must not select'
+                                     ' multiple elements: {}.'.format(path))
+                if len(elements) == 0:
+                    _logger.debug('no matches, root not changed')
+                else:
+                    root = elements[0]
             elif op == 'remove':
                 path = step['path']
                 elements = xpath(root, path)
@@ -397,22 +404,18 @@ def extract(root, items, pre=None):
     data = {}
     for item in items:
         key_gen = gen(item['key'])
-        value_gen = gen(item['value'])
         foreach_key = item.get('foreach')
         subroots = [root] if foreach_key is None else xpath(root, foreach_key)
         for subroot in subroots:
             key = key_gen(subroot)
-            if isinstance(item['value'], list):
-                data[key] = extract(subroot, item['value'])
-                continue
-
+            value_gen = gen(item['value'])
             foreach_value = item['value'].get('foreach')
             if foreach_value is None:
                 value = value_gen(subroot)
                 if value is not None:
                     data[key] = value
             else:
-                values = [value_gen(n) for n in xpath(subroot, foreach_value)]
+                values = [value_gen(r) for r in xpath(subroot, foreach_value)]
                 if len(values) > 0:
                     data[key] = values
     return data

@@ -134,24 +134,31 @@
           }
         },
         {
-          "foreach": ".//div[@woody='tv_series']/div[@class='info-content']/a",
           "key": "series",
-          "value": [
-            {
-              "key": "id",
-              "value": {
-                "path": "./@href",
-                "reducer": "first"
+          "value": {
+            "pre": [
+              {
+                "op": "root",
+                "path": ".//div[@woody='tv_series']/div[@class='info-content']/a"
               }
-            },
-            {
-              "key": "long_title",
-              "value": {
-                "path": "./text()",
-                "reducer": "first"
+            ],
+            "items": [
+              {
+                "key": "id",
+                "value": {
+                  "path": "./@href",
+                  "reducer": "first"
+                }
+              },
+              {
+                "key": "long_title",
+                "value": {
+                  "path": "./text()",
+                  "reducer": "first"
+                }
               }
-            }
-          ]
+            ]
+          }
         },
         {
           "key": "original_air_date",
