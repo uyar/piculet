@@ -388,7 +388,7 @@ def extract(root, items, pre=None):
                     element.attrib[attr_name] = attr_value
             elif op == 'set_text':
                 path = step['path']
-                text_gen = gen(step['value'])
+                text_gen = gen(step['text'])
                 for element in xpath(root, path):
                     text_value = text_gen(element)
                     _logger.debug('setting text to %s on %s', text_value, element.tag)

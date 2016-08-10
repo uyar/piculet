@@ -30,7 +30,7 @@
         {
           "op": "set_text",
           "path": ".//div[@woody='also_known_as']//br",
-          "value": ":BR:"
+          "text": ":BR:"
         }
       ],
       "items": [
