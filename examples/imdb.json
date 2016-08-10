@@ -77,6 +77,34 @@
           }
         },
         {
+          "key": "episode_prev",
+          "value": {
+            "path": ".//a[@title='Previous Episode']/@href",
+            "reducer": "first"
+          }
+        },
+        {
+          "key": "episode_no",
+          "value": {
+            "path": ".//div[@id='tn15epnav']/text()",
+            "reducer": "clean"
+          }
+        },
+        {
+          "key": "episode_count",
+          "value": {
+            "path": ".//a[@title='Full Episode List']/text()",
+            "reducer": "clean"
+          }
+        },
+        {
+          "key": "episode_next",
+          "value": {
+            "path": ".//a[@title='Next Episode']/@href",
+            "reducer": "first"
+          }
+        },
+        {
           "key": "rating",
           "value": {
             "path": ".//div[@class='starbar-meta']/b/text()",

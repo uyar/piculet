@@ -28,6 +28,8 @@ def movies():
         'dr_who': 436992,               # TV series, continuing
         'dr_who_blink': 1000252,        # TV episode
         'house_md': 412142,             # TV series, ended
+        'house_md_first': 606035,       # first episode of House, MD
+        'house_md_last': 2121965,       # last episode of House, MD
         'if': 63850,                    # one genre, multiple colors
         'manos': 60666,                 # bottom 100, multiple certifications
         'matrix': 133093,               # top 250
@@ -176,6 +178,36 @@ def test_tv_extra_tv_episode_should_have_none(imdb, movies):
     assert 'tv_extra' not in data
 
 
+def test_tv_episode_prev_should_be_a_title(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+    assert data['episode_prev'] == '/title/tt1000256/'
+
+
+def test_tv_episode_prev_first_episode_should_have_none(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md_first'])
+    assert 'episode_prev' not in data
+
+
+def test_tv_episode_no_should_be_a_number(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+    assert data['episode_no'] == '« | 38 of | »'
+
+
+def test_tv_episode_count_should_be_a_number(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md_first'])
+    assert data['episode_count'] == '176 Episodes'
+
+
+def test_tv_episode_next_should_be_a_title(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+    assert data['episode_next'] == '/title/tt1000259/'
+
+
+def test_tv_episode_next_last_episode_should_have_none(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md_last'])
+    assert 'episode_next' not in data
+
+
 def test_rating_should_be_a_decimal_over_10(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert re.match(r'^[1-9]\.\d\/10$', data['rating'])
@@ -266,7 +298,6 @@ def test_plot_keywords_none_should_be_excluded(imdb, movies):
 
 def test_akas_should_be_titles(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
-    # if an aka exists there is always a see more link to the akas page
     assert data['also_known_as'] == \
         '"Манос: Руки судьбы" - Soviet Union (Russian title):BR:' \
         ' "Manos - As Mãos do Destino" - Brazil (imdb display title):BR:'
