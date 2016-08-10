@@ -389,6 +389,10 @@ def extract(root, items, pre=None):
         subroots = [root] if foreach_key is None else xpath(root, foreach_key)
         for subroot in subroots:
             key = key_gen(subroot)
+            if isinstance(item['value'], list):
+                data[key] = extract(subroot, item['value'])
+                continue
+
             foreach_value = item['value'].get('foreach')
             if foreach_value is None:
                 value = value_gen(subroot)

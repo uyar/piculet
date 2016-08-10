@@ -243,6 +243,17 @@ def test_rank_none_should_be_excluded(imdb, movies):
     assert 'rank' not in data
 
 
+def test_seasons_should_be_a_list_of_seasons(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md'])
+    assert data['seasons'] == ['episodes?season={}'.format(i) for i in range(1, 9)]
+
+
+def test_series_should_be_a_tv_series(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+    assert data['series'] == {'id': '/title/tt0436992/',
+                              'long_title': '"Doctor Who" (2005)'}
+
+
 def test_episode_original_air_date_should_include_season_and_episode(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
     assert data['original_air_date'] == '9 June 2007 (Season 3, Episode 10)'
