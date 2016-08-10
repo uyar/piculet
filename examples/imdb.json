@@ -23,13 +23,22 @@
           "path": ".//div[@class='info']/h5/..",
           "name": "woody",
           "value": {
-            "path": "./h5//text()",
+            "path": "./h5/text()",
             "reducer": "normalize"
           }
         },
         {
           "op": "set_text",
           "path": ".//div[@woody='also_known_as']//br",
+          "text": ":BR:"
+        },
+        {
+          "op": "remove",
+          "path": ".//a[@href='fullcredits#writers']"
+        },
+        {
+          "op": "set_text",
+          "path": ".//div[@woody='writers']//br",
           "text": ":BR:"
         }
       ],
@@ -148,6 +157,35 @@
           }
         },
         {
+          "key": "writers",
+          "value": {
+            "foreach": ".//div[@woody='writers']/div[@class='info-content']/a",
+            "items": [
+              {
+                "key": "url",
+                "value": {
+                  "path": "./@href",
+                  "reducer": "first"
+                }
+              },
+              {
+                "key": "name",
+                "value": {
+                  "path": "./text()",
+                  "reducer": "clean"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key": "writers_notes",
+          "value": {
+            "path": ".//div[@woody='writers']/div[@class='info-content']//text()",
+            "reducer": "clean"
+          }
+        },
+        {
           "key": "season_urls",
           "value": {
             "foreach": ".//div[@woody='seasons']/div[@class='info-content']/a",
@@ -229,7 +267,7 @@
         {
           "key": "mpaa",
           "value": {
-            "path": ".//div[@woody='mpaa']/div[@class='info-content']/text()",
+            "path": ".//a[@href='/mpaa']/../../div[@class='info-content']/text()",
             "reducer": "clean"
           }
         },
