@@ -46,7 +46,6 @@ can be used as part of a pipe::
   ...
 """
 
-
 from argparse import ArgumentParser
 from collections import deque
 from contextlib import redirect_stdout

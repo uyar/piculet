@@ -27,7 +27,7 @@ def movies():
         'band_of_brothers': 185906,     # mini-series, ended
         'dr_who': 436992,               # TV series, continuing
         'dr_who_blink': 1000252,        # TV episode
-        # 'house_md': 412142,             # TV series, ended
+        'house_md': 412142,             # TV series, ended
         'if': 63850,                    # one genre, multiple colors
         'manos': 60666,                 # bottom 100, multiple certifications
         'matrix': 133093,               # top 250
@@ -146,9 +146,34 @@ def test_year_should_be_a_year(imdb, movies):
     assert data['year'] == '1999'
 
 
+def test_year_tv_series_should_be_a_year(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+    assert data['year'] == '2005'
+
+
 def test_year_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['aslan'])
     assert 'year' not in data
+
+
+def test_tv_extra_tv_series_ended_should_have_type_and_end_year(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md'])
+    assert data['tv_extra'] == 'TV series 2004-2012'
+
+
+def test_tv_extra_tv_mini_series_ended_should_have_type_and_end_year(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['band_of_brothers'])
+    assert data['tv_extra'] == 'TV mini-series 2001-2001'
+
+
+def test_tv_extra_tv_series_continuing_should_have_no_end_year(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+    assert data['tv_extra'] == 'TV series 2005-'
+
+
+def test_tv_extra_tv_episode_should_have_none(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+    assert 'tv_extra' not in data
 
 
 def test_rating_should_be_a_decimal_over_10(imdb, movies):
