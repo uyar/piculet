@@ -13,11 +13,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Woody is a module for extracting data from XML documents using XPath queries.
-It also contains an HTML cleaner which can be used to convert HTML into XHTML
-so that web pages can also be parsed.
 
+"""
+Woody is a library for extracting data from XML documents using XPath queries.
+It also contains an HTML cleaner which can be used to convert HTML into XHTML
+so that web pages can also be parsed. Woody consists of a single source file
+without any dependencies other than the standard library.
 
 Command-Line Interface
 ----------------------
@@ -53,7 +54,6 @@ from hashlib import md5
 from html.parser import HTMLParser
 from io import StringIO
 from urllib.request import build_opener, Request
-from xml.etree import ElementTree
 
 import logging
 import os
@@ -62,6 +62,19 @@ import sys
 
 
 _logger = logging.getLogger(__name__)
+
+
+_USE_LXML = os.environ.get('WOODY_USE_LXML', '1')
+if _USE_LXML == '0':
+    from xml.etree import ElementTree
+    _logger.debug('using elementtree')
+else:
+    try:
+        import lxml.etree as ElementTree
+        _logger.debug('using lxml')
+    except ImportError:
+        from xml.etree import ElementTree
+        _logger.debug('lxml not found, falling back to elementtree')
 
 
 ###########################################################
