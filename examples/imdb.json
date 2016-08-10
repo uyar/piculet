@@ -42,7 +42,7 @@
           }
         },
         {
-          "key": "poster",
+          "key": "poster_url",
           "value": {
             "path": ".//img[@id='primary-poster']/@src",
             "reducer": "first"
@@ -77,7 +77,7 @@
           }
         },
         {
-          "key": "episode_prev",
+          "key": "episode_prev_url",
           "value": {
             "path": ".//a[@title='Previous Episode']/@href",
             "reducer": "first"
@@ -98,7 +98,7 @@
           }
         },
         {
-          "key": "episode_next",
+          "key": "episode_next_url",
           "value": {
             "path": ".//a[@title='Next Episode']/@href",
             "reducer": "first"
@@ -131,7 +131,7 @@
             "foreach": ".//div[@id='director-info']/div[@class='info-content']/a",
             "items": [
               {
-                "key": "id",
+                "key": "url",
                 "value": {
                   "path": "./@href",
                   "reducer": "first"
@@ -148,7 +148,7 @@
           }
         },
         {
-          "key": "seasons",
+          "key": "season_urls",
           "value": {
             "foreach": ".//div[@woody='seasons']/div[@class='info-content']/a",
             "path": "./@href",
@@ -166,7 +166,7 @@
             ],
             "items": [
               {
-                "key": "id",
+                "key": "url",
                 "value": {
                   "path": "./@href",
                   "reducer": "first"

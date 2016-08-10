@@ -90,12 +90,12 @@ def test_long_title_tv_episode_should_have_series_title_in_quotes(imdb, movies):
 
 def test_poster_should_have_url(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['poster'].endswith('._V1._SX94_SY140_.jpg')
+    assert data['poster_url'].endswith('._V1._SX94_SY140_.jpg')
 
 
 def test_poster_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
-    assert 'poster' not in data
+    assert 'poster_url' not in data
 
 
 def test_title_should_not_have_year(imdb, movies):
@@ -178,14 +178,14 @@ def test_tv_extra_tv_episode_should_have_none(imdb, movies):
     assert 'tv_extra' not in data
 
 
-def test_tv_episode_prev_should_be_a_title(imdb, movies):
+def test_tv_episode_prev_should_be_a_title_url(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
-    assert data['episode_prev'] == '/title/tt1000256/'
+    assert data['episode_prev_url'] == '/title/tt1000256/'
 
 
 def test_tv_episode_prev_first_episode_should_have_none(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md_first'])
-    assert 'episode_prev' not in data
+    assert 'episode_prev_url' not in data
 
 
 def test_tv_episode_no_should_be_a_number(imdb, movies):
@@ -198,14 +198,14 @@ def test_tv_episode_count_should_be_a_number(imdb, movies):
     assert data['episode_count'] == '176 Episodes'
 
 
-def test_tv_episode_next_should_be_a_title(imdb, movies):
+def test_tv_episode_next_should_be_a_title_url(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
-    assert data['episode_next'] == '/title/tt1000259/'
+    assert data['episode_next_url'] == '/title/tt1000259/'
 
 
 def test_tv_episode_next_last_episode_should_have_none(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md_last'])
-    assert 'episode_next' not in data
+    assert 'episode_next_url' not in data
 
 
 def test_rating_should_be_a_decimal_over_10(imdb, movies):
@@ -245,15 +245,15 @@ def test_rank_none_should_be_excluded(imdb, movies):
 
 def test_directors_single_should_be_a_list_of_persons(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
-    assert data['directors'] == [{'id': '/name/nm0000040/',
+    assert data['directors'] == [{'url': '/name/nm0000040/',
                                   'name': 'Stanley Kubrick'}]
 
 
 def test_directors_multiple_should_be_a_list_of_persons(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert data['directors'] == [
-        {'id': '/name/nm0905154/', 'name': 'Lana Wachowski'},
-        {'id': '/name/nm0905152/', 'name': 'Lilly Wachowski'}
+        {'url': '/name/nm0905154/', 'name': 'Lana Wachowski'},
+        {'url': '/name/nm0905152/', 'name': 'Lilly Wachowski'}
     ]
 
 
@@ -263,14 +263,14 @@ def test_directors_multiple_should_be_a_list_of_persons(imdb, movies):
 #     assert 'directors' not in data
 
 
-def test_seasons_should_be_a_list_of_seasons(imdb, movies):
+def test_seasons_should_be_a_list_of_season_urls(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md'])
-    assert data['seasons'] == ['episodes?season={}'.format(i) for i in range(1, 9)]
+    assert data['season_urls'] == ['episodes?season={}'.format(i) for i in range(1, 9)]
 
 
 def test_series_should_be_a_tv_series(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
-    assert data['series'] == {'id': '/title/tt0436992/',
+    assert data['series'] == {'url': '/title/tt0436992/',
                               'long_title': '"Doctor Who" (2005)'}
 
 
@@ -307,7 +307,7 @@ def test_tagline_none_should_be_excluded(imdb, movies):
 
 def test_plot_should_be_a_longer_text(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['plot'].startswith('A computer hacker learns ')
+    assert re.match('^A computer hacker .* against its controllers.$', data['plot'])
 
 
 def test_plot_none_should_be_excluded(imdb, movies):
