@@ -377,12 +377,15 @@ def test_runtime_none_should_be_excluded(imdb, movies):
 
 def test_countries_single_should_be_a_list_of_country_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['countries'] == ['USA']
+    assert data['countries'] == [{'name': 'USA', 'url': '/country/us'}]
 
 
 def test_countries_multiple_should_be_a_list_of_country_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
-    assert data['countries'] == ['USA', 'UK']
+    assert data['countries'] == [
+        {'name': 'USA', 'url': '/country/us'},
+        {'name': 'UK', 'url': '/country/gb'}
+    ]
 
 
 # TODO: find a movie with no country
@@ -391,62 +394,29 @@ def test_countries_multiple_should_be_a_list_of_country_names(imdb, movies):
 #     assert 'countries' not in data
 
 
-def test_country_codes_single_should_be_a_list_of_country_codes(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['country_codes'] == ['/country/us']
-
-
-def test_country_codes_multiple_should_be_a_list_of_country_names(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
-    assert data['country_codes'] == ['/country/us', '/country/gb']
-
-
-# TODO: find a movie with no country
-# def test_country_codes_none_should_be_excluded(imdb, movies):
-#     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
-#     assert 'country_codes' not in data
-
-
 def test_languages_single_should_be_a_list_of_language_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['languages'] == ['English']
+    assert data['languages'] == [{'name': 'English', 'url': '/language/en'}]
 
 
 def test_languages_many_should_be_a_list_of_language_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ace_in_the_hole'])
-    assert data['languages'] == ['English', 'Spanish', 'Latin']
+    assert data['languages'] == [
+        {'name': 'English', 'url': '/language/en'},
+        {'name': 'Spanish', 'url': '/language/es'},
+        {'name': 'Latin', 'url': '/language/la'}
+    ]
 
 
 def test_languages_single_none_is_a_language_name(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_short'])
-    assert data['languages'] == ['None']
+    assert data['languages'] == [{'name': 'None', 'url': '/language/zxx'}]
 
 
 # TODO: find a movie with no language
 # def test_languages_none_should_be_excluded(imdb, movies):
 #     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
 #     assert 'languages' not in data
-
-
-def test_language_codes_single_should_be_a_list_of_language_codes(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['language_codes'] == ['/language/en']
-
-
-def test_language_codes_many_should_be_a_list_of_language_codes(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ace_in_the_hole'])
-    assert data['language_codes'] == ['/language/en', '/language/es', '/language/la']
-
-
-def test_language_codes_single_none_has_a_language_code(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_short'])
-    assert data['language_codes'] == ['/language/zxx']
-
-
-# TODO: find a movie with no language
-# def test_language_codes_none_should_be_excluded(imdb, movies):
-#     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
-#     assert 'language_codes' not in data
 
 
 def test_color_single_should_be_a_color_types(imdb, movies):

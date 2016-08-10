@@ -244,32 +244,44 @@
           "key": "countries",
           "value": {
             "foreach": ".//div[@woody='country']/div[@class='info-content']/a",
-            "path": "./text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "country_codes",
-          "value": {
-            "foreach": ".//div[@woody='country']/div[@class='info-content']/a",
-            "path": "./@href",
-            "reducer": "first"
+            "items": [
+              {
+                "key": "name",
+                "value": {
+                  "path": "./text()",
+                  "reducer": "first"
+                }
+              },
+              {
+                "key": "url",
+                "value": {
+                  "path": "./@href",
+                  "reducer": "first"
+                }
+              }
+            ]
           }
         },
         {
           "key": "languages",
           "value": {
             "foreach": ".//div[@woody='language']/div[@class='info-content']/a",
-            "path": "./text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "language_codes",
-          "value": {
-            "foreach": ".//div[@woody='language']/div[@class='info-content']/a",
-            "path": "./@href",
-            "reducer": "first"
+            "items": [
+              {
+                "key": "name",
+                "value": {
+                  "path": "./text()",
+                  "reducer": "first"
+                }
+              },
+              {
+                "key": "url",
+                "value": {
+                  "path": "./@href",
+                  "reducer": "first"
+                }
+              }
+            ]
           }
         },
         {
