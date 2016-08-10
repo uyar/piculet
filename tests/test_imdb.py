@@ -22,6 +22,7 @@ def movies():
     """The IMDb movie ids."""
     return {
         'ace_in_the_hole': 43338,       # multiple languages, sound mix note
+        'aslan': 3629794,               # no year
         'ates_parcasi': 1863157,        # no poster, rating, votes, ...
         'band_of_brothers': 185906,     # mini-series, ended
         'dr_who': 436992,               # TV series, continuing
@@ -93,6 +94,61 @@ def test_poster_should_have_url(imdb, movies):
 def test_poster_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
     assert 'poster' not in data
+
+
+def test_title_should_not_have_year(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+    assert data['title'] == 'The Matrix'
+
+
+def test_title_video_movie_should_not_include_type(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_video'])
+    assert data['title'] == 'Armitage III: Poly Matrix'
+
+
+def test_title_tv_movie_should_not_include_type(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
+    assert data['title'] == 'The Matrix Defence'
+
+
+def test_title_video_game_should_not_include_type(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_vg'])
+    assert data['title'] == 'The Matrix Online'
+
+
+def test_title_tv_series_should_have_quotes(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+    assert data['title'] == '"Doctor Who"'
+
+
+def test_title_tv_mini_series_should_have_quotes(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['band_of_brothers'])
+    assert data['title'] == '"Band of Brothers"'
+
+
+def test_title_tv_episode_should_be_series_title_in_quotes(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+    assert data['title'] == '"Doctor Who"'
+
+
+def test_episode_title_should_not_have_series_title(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+    assert data['episode_title'] == 'Blink'
+
+
+def test_episode_title_tv_series_should_have_none(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+    assert 'episode_title' not in data
+
+
+def test_year_should_be_a_year(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+    assert data['year'] == '1999'
+
+
+def test_year_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['aslan'])
+    assert 'year' not in data
 
 
 def test_rating_should_be_a_decimal_over_10(imdb, movies):

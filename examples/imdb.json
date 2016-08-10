@@ -49,6 +49,27 @@
           }
         },
         {
+          "key": "title",
+          "value": {
+            "path": ".//div[@id='tn15title']/h1/text()",
+            "reducer": "clean"
+          }
+        },
+        {
+          "key": "episode_title",
+          "value": {
+            "path": ".//div[@id='tn15title']/h1/span/em/text()",
+            "reducer": "clean"
+          }
+        },
+        {
+          "key": "year",
+          "value": {
+            "path": ".//div[@id='tn15title']/h1/span/a/text()",
+            "reducer": "clean"
+          }
+        },
+        {
           "key": "rating",
           "value": {
             "path": ".//div[@class='starbar-meta']/b/text()",
