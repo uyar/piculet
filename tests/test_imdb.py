@@ -243,6 +243,11 @@ def test_rank_none_should_be_excluded(imdb, movies):
     assert 'rank' not in data
 
 
+def test_episode_original_air_date_should_include_season_and_episode(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+    assert data['original_air_date'] == '9 June 2007 (Season 3, Episode 10)'
+
+
 def test_genres_single_should_be_a_list_of_genre_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['if'])
     assert data['genres'] == ['Drama']

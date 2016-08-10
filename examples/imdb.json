@@ -126,6 +126,13 @@
           }
         },
         {
+          "key": "original_air_date",
+          "value": {
+            "path": ".//div[@woody='original_air_date']/div[@class='info-content']/text()",
+            "reducer": "clean"
+          }
+        },
+        {
           "key": "genres",
           "value": {
             "foreach": ".//div[@woody='genre']/div[@class='info-content']/a",
