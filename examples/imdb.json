@@ -26,6 +26,11 @@
             "path": "./h5//text()",
             "reducer": "normalize"
           }
+        },
+        {
+          "op": "set_text",
+          "path": ".//div[@woody='also_known_as']//br",
+          "value": ":BR:"
         }
       ],
       "items": [

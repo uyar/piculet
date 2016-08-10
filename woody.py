@@ -377,6 +377,13 @@ def extract(root, items, pre=None):
                     _logger.debug('setting %s attribute to %s on %s',
                                   attr_name, attr_value, element.tag)
                     element.attrib[attr_name] = attr_value
+            elif op == 'set_text':
+                path = step['path']
+                text_gen = gen(step['value'])
+                for element in xpath(root, path):
+                    text_value = text_gen(element)
+                    _logger.debug('setting text to %s on %s', text_value, element.tag)
+                    element.text = text_value
 
     data = {}
     for item in items:
