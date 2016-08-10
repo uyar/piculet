@@ -387,16 +387,16 @@ def extract(root, items, pre=None):
         key_gen = gen(item['key'])
         value_gen = gen(item['value'])
         foreach_key = item.get('foreach')
-        sections = [root] if foreach_key is None else xpath(root, foreach_key)
-        for section in sections:
-            key = key_gen(section)
+        subroots = [root] if foreach_key is None else xpath(root, foreach_key)
+        for subroot in subroots:
+            key = key_gen(subroot)
             foreach_value = item['value'].get('foreach')
             if foreach_value is None:
-                value = value_gen(section)
+                value = value_gen(subroot)
                 if value is not None:
                     data[key] = value
             else:
-                values = [value_gen(n) for n in xpath(section, foreach_value)]
+                values = [value_gen(n) for n in xpath(subroot, foreach_value)]
                 if len(values) > 0:
                     data[key] = values
     return data
