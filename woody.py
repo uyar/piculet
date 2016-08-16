@@ -44,9 +44,11 @@ _logger = logging.getLogger(__name__)
 
 try:
     import lxml.etree as ElementTree
+    _USE_LXML = True
     _logger.debug('using lxml')
 except ImportError:
     from xml.etree import ElementTree
+    _USE_LXML = False
     _logger.debug('lxml not found, falling back to elementtree')
 
 
@@ -236,35 +238,39 @@ def html_to_xhtml(content, omit_tags=None, omit_attrs=None):
 ###########################################################
 
 
-def xpath(element, path):
-    """Apply an XPath expression to an element.
+if _USE_LXML:
+    def xpath(element, path):
+        return element.xpath(path)
+else:
+    def xpath(element, path):
+        """Apply an XPath expression to an element.
 
-    This function is mainly needed to compensate for the lack of ``text()``
-    and ``@attr`` axis queries in ElementTree XPath support.
+        This function is mainly needed to compensate for the lack of ``text()``
+        and ``@attr`` axis queries in ElementTree XPath support.
 
-    :param element: Element to apply the expression to.
-    :param path: XPath expression to apply.
-    :return: Elements or strings resulting from the query.
-    """
-    if path.endswith('//text()'):
-        _logger.debug('handling descendant text path: %s', path)
-        result = [t for e in element.findall(path[:-8])
-                  for t in e.itertext() if t]
-    elif path.endswith('/text()'):
-        _logger.debug('handling child text path: %s', path)
-        result = [t for e in element.findall(path[:-7])
-                  for t in ([e.text] + [c.tail if c.tail else '' for c in e])
-                  if t]
-    else:
-        *epath, last_step = path.split('/')
-        if last_step.startswith('@'):
-            _logger.debug('handling attribute path: %s', path)
-            result = [e.attrib.get(last_step[1:])
-                      for e in element.findall('/'.join(epath))]
-            result = [r for r in result if r is not None]
+        :param element: Element to apply the expression to.
+        :param path: XPath expression to apply.
+        :return: Elements or strings resulting from the query.
+        """
+        if path.endswith('//text()'):
+            _logger.debug('handling descendant text path: %s', path)
+            result = [t for e in element.findall(path[:-8])
+                      for t in e.itertext() if t]
+        elif path.endswith('/text()'):
+            _logger.debug('handling child text path: %s', path)
+            result = [t for e in element.findall(path[:-7])
+                      for t in ([e.text] + [c.tail if c.tail else '' for c in e])
+                      if t]
         else:
-            result = element.findall(path)
-    return result
+            *epath, last_step = path.split('/')
+            if last_step.startswith('@'):
+                _logger.debug('handling attribute path: %s', path)
+                result = [e.attrib.get(last_step[1:])
+                          for e in element.findall('/'.join(epath))]
+                result = [r for r in result if r is not None]
+            else:
+                result = element.findall(path)
+        return result
 
 
 _REDUCERS = {

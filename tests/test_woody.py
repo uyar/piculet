@@ -1,10 +1,9 @@
 from pytest import fixture, mark, raises
 
-from xml.etree import ElementTree
-
 import os
 import time
 
+from woody import ElementTree
 from woody import _get_document, extract, scrape, woodpecker, xpath
 
 
