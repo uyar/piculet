@@ -42,17 +42,12 @@ import sys
 _logger = logging.getLogger(__name__)
 
 
-_USE_LXML = os.environ.get('WOODY_USE_LXML', '1')
-if _USE_LXML == '0':
+try:
+    import lxml.etree as ElementTree
+    _logger.debug('using lxml')
+except ImportError:
     from xml.etree import ElementTree
-    _logger.debug('using elementtree')
-else:
-    try:
-        import lxml.etree as ElementTree
-        _logger.debug('using lxml')
-    except ImportError:
-        from xml.etree import ElementTree
-        _logger.debug('lxml not found, falling back to elementtree')
+    _logger.debug('lxml not found, falling back to elementtree')
 
 
 ###########################################################
