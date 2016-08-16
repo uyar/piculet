@@ -1,19 +1,25 @@
 from setuptools import setup
 
 
+with open('README.rst') as readme_file:
+    readme = readme_file.read()
+
+with open('HISTORY.rst') as history_file:
+    history = history_file.read().replace('.. :changelog:', '')
+
 setup(
     name='woody',
     version='1.0a1',
     description='XML/HTML scraper using XPath queries.',
-    long_description='',
+    long_description=readme + '\n\n' + history,
     url='https://bitbucket.org/uyar/woody',
     author='H. Turgut Uyar',
     author_email='uyar@tekir.org',
     license='GPL',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
         'Programming Language :: Python :: 3.5'
     ],
     keywords='xml html xpath scrape',
