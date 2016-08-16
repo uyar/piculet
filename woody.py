@@ -329,13 +329,13 @@ def extract(root, items, pre=None):
     :return: Extracted data.
     """
 
-    def gen(value):
-        if isinstance(value, str):
-            return lambda _: value
-        if 'path' in value:
-            return woodpecker(value['path'], value['reducer'])
-        if 'items' in value:
-            return partial(extract, items=value['items'], pre=value.get('pre'))
+    def gen(val):
+        if isinstance(val, str):
+            return lambda _: val
+        if 'path' in val:
+            return woodpecker(val['path'], val['reducer'])
+        if 'items' in val:
+            return partial(extract, items=val['items'], pre=val.get('pre'))
         raise TypeError('Unknown value generator')
 
     # ElementTree doesn't support parent queries, so build a map for it
