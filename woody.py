@@ -338,8 +338,16 @@ def extract(root, items, pre=None):
             return partial(extract, items=val['items'], pre=val.get('pre'))
         raise TypeError('Unknown value generator')
 
-    # ElementTree doesn't support parent queries, so build a map for it
-    parents = {c: p for p in root.iter() for c in p}
+    def parent_getter():
+        if _USE_LXML:
+            return lambda e: e.getparent()
+        else:
+            # ElementTree doesn't support parent queries, so build a map for it
+            # TODO: this re-traverses tree on subrules
+            parents = {e: p for p in root.iter() for e in p}
+            return lambda e: parents[e]
+
+    get_parent = parent_getter()
 
     if pre is not None:
         for step in pre:
@@ -360,7 +368,7 @@ def extract(root, items, pre=None):
                 elements = xpath(root, path)
                 _logger.debug('removing %s elements using %s', len(elements), path)
                 for element in elements:
-                    parents[element].remove(element)
+                    get_parent(element).remove(element)
             elif op == 'set_attr':
                 path = step['path']
                 attr_name_gen = gen(step['name'])
