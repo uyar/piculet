@@ -44,14 +44,14 @@
       ],
       "items": [
         {
-          "key": "long_title",
+          "key": "title.full",
           "value": {
             "path": ".//div[@id='tn15crumbs']/b/text()",
             "reducer": "first"
           }
         },
         {
-          "key": "poster_url",
+          "key": "poster.link",
           "value": {
             "path": ".//img[@id='primary-poster']/@src",
             "reducer": "first"
@@ -65,7 +65,7 @@
           }
         },
         {
-          "key": "episode_title",
+          "key": "title.episode",
           "value": {
             "path": ".//div[@id='tn15title']/h1/span/em/text()",
             "reducer": "clean"
@@ -86,28 +86,28 @@
           }
         },
         {
-          "key": "episode_prev_url",
+          "key": "episode.prev.link",
           "value": {
             "path": ".//a[@title='Previous Episode']/@href",
             "reducer": "first"
           }
         },
         {
-          "key": "episode_no",
+          "key": "episode.number",
           "value": {
             "path": ".//div[@id='tn15epnav']/text()",
             "reducer": "clean"
           }
         },
         {
-          "key": "episode_count",
+          "key": "series.episode_count",
           "value": {
             "path": ".//a[@title='Full Episode List']/text()",
             "reducer": "clean"
           }
         },
         {
-          "key": "episode_next_url",
+          "key": "episode.next.link",
           "value": {
             "path": ".//a[@title='Next Episode']/@href",
             "reducer": "first"
@@ -140,7 +140,7 @@
             "foreach": ".//div[@id='director-info']/div[@class='info-content']/a",
             "items": [
               {
-                "key": "url",
+                "key": "link",
                 "value": {
                   "path": "./@href",
                   "reducer": "first"
@@ -162,7 +162,7 @@
             "foreach": ".//div[@woody='writers']/div[@class='info-content']/a",
             "items": [
               {
-                "key": "url",
+                "key": "link",
                 "value": {
                   "path": "./@href",
                   "reducer": "first"
@@ -179,7 +179,7 @@
           }
         },
         {
-          "key": "writers_notes",
+          "key": "writers.notes",
           "value": {
             "path": ".//div[@woody='writers']/div[@class='info-content']//text()",
             "reducer": "clean"
@@ -191,16 +191,16 @@
             "foreach": ".//div[@woody='seasons']/div[@class='info-content']/a",
             "items": [
               {
-                "key": "name",
+                "key": "link",
                 "value": {
-                  "path": "./text()",
+                  "path": "./@href",
                   "reducer": "first"
                 }
               },
               {
-                "key": "url",
+                "key": "name",
                 "value": {
-                  "path": "./@href",
+                  "path": "./text()",
                   "reducer": "first"
                 }
               }
@@ -218,14 +218,14 @@
             ],
             "items": [
               {
-                "key": "url",
+                "key": "link",
                 "value": {
                   "path": "./@href",
                   "reducer": "first"
                 }
               },
               {
-                "key": "long_title",
+                "key": "title.full",
                 "value": {
                   "path": "./text()",
                   "reducer": "first"

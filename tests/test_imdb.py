@@ -53,49 +53,49 @@ def get_imdb_pages(imdb, movies):
             _get_document(url)
 
 
-def test_long_title_should_have_title_and_year(imdb, movies):
+def test_full_title_should_have_title_and_year(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['long_title'] == 'The Matrix (1999)'
+    assert data['title.full'] == 'The Matrix (1999)'
 
 
-def test_long_title_video_movie_should_include_type(imdb, movies):
+def test_full_title_video_movie_should_include_type(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_video'])
-    assert data['long_title'] == 'Armitage III: Poly Matrix (1996) (V)'
+    assert data['title.full'] == 'Armitage III: Poly Matrix (1996) (V)'
 
 
-def test_long_title_tv_movie_should_include_type(imdb, movies):
+def test_full_title_tv_movie_should_include_type(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
-    assert data['long_title'] == 'The Matrix Defence (2003) (TV)'
+    assert data['title.full'] == 'The Matrix Defence (2003) (TV)'
 
 
-def test_long_title_video_game_should_include_type(imdb, movies):
+def test_full_title_video_game_should_include_type(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_vg'])
-    assert data['long_title'] == 'The Matrix Online (2005) (VG)'
+    assert data['title.full'] == 'The Matrix Online (2005) (VG)'
 
 
-def test_long_title_tv_series_should_have_quotes(imdb, movies):
+def test_full_title_tv_series_should_have_quotes(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
-    assert data['long_title'] == '"Doctor Who" (2005)'
+    assert data['title.full'] == '"Doctor Who" (2005)'
 
 
-def test_long_title_tv_mini_series_should_have_quotes(imdb, movies):
+def test_full_title_tv_mini_series_should_have_quotes(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['band_of_brothers'])
-    assert data['long_title'] == '"Band of Brothers" (2001)'
+    assert data['title.full'] == '"Band of Brothers" (2001)'
 
 
-def test_long_title_tv_episode_should_have_series_title_in_quotes(imdb, movies):
+def test_full_title_tv_episode_should_include_series_title_in_quotes(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
-    assert data['long_title'] == '"Doctor Who" Blink (2007)'
+    assert data['title.full'] == '"Doctor Who" Blink (2007)'
 
 
-def test_poster_should_have_url(imdb, movies):
+def test_poster_should_have_link(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['poster_url'].endswith('._V1._SX94_SY140_.jpg')
+    assert data['poster.link'].endswith('._V1._SX94_SY140_.jpg')
 
 
 def test_poster_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
-    assert 'poster_url' not in data
+    assert 'poster.link' not in data
 
 
 def test_title_should_not_have_year(imdb, movies):
@@ -133,22 +133,22 @@ def test_title_tv_episode_should_be_series_title_in_quotes(imdb, movies):
     assert data['title'] == '"Doctor Who"'
 
 
-def test_episode_title_should_not_have_series_title(imdb, movies):
+def test_episode_title_should_not_include_series_title(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
-    assert data['episode_title'] == 'Blink'
+    assert data['title.episode'] == 'Blink'
 
 
 def test_episode_title_tv_series_should_have_none(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
-    assert 'episode_title' not in data
+    assert 'title.episode' not in data
 
 
-def test_year_should_be_a_year(imdb, movies):
+def test_year_should_be_a_four_digit_number(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert data['year'] == '1999'
 
 
-def test_year_tv_series_should_be_a_year(imdb, movies):
+def test_year_tv_series_should_be_a_four_digit_number(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
     assert data['year'] == '2005'
 
@@ -178,37 +178,37 @@ def test_tv_extra_tv_episode_should_have_none(imdb, movies):
     assert 'tv_extra' not in data
 
 
-def test_tv_episode_prev_should_be_a_title_url(imdb, movies):
+def test_episode_prev_should_be_a_title_link(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
-    assert data['episode_prev_url'] == '/title/tt1000256/'
+    assert data['episode.prev.link'] == '/title/tt1000256/'
 
 
-def test_tv_episode_prev_first_episode_should_have_none(imdb, movies):
+def test_episode_prev_first_episode_should_have_none(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md_first'])
-    assert 'episode_prev_url' not in data
+    assert 'episode.prev.link' not in data
 
 
-def test_tv_episode_no_should_be_a_number(imdb, movies):
+def test_episode_number_should_be_a_number(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
-    assert data['episode_no'] == '« | 38 of | »'
+    assert data['episode.number'] == '« | 38 of | »'
 
 
-def test_tv_episode_count_should_be_a_number(imdb, movies):
+def test_episode_series_episode_count_should_be_a_number(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md_first'])
-    assert data['episode_count'] == '176 Episodes'
+    assert data['series.episode_count'] == '176 Episodes'
 
 
-def test_tv_episode_next_should_be_a_title_url(imdb, movies):
+def test_episode_next_should_be_a_title_url(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
-    assert data['episode_next_url'] == '/title/tt1000259/'
+    assert data['episode.next.link'] == '/title/tt1000259/'
 
 
-def test_tv_episode_next_last_episode_should_have_none(imdb, movies):
+def test_episode_next_last_episode_should_have_none(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md_last'])
-    assert 'episode_next_url' not in data
+    assert 'episode.next.link' not in data
 
 
-def test_rating_should_be_a_decimal_over_10(imdb, movies):
+def test_rating_should_be_a_decimal_number_over_10(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert re.match(r'^[1-9]\.\d\/10$', data['rating'])
 
@@ -243,17 +243,18 @@ def test_rank_none_should_be_excluded(imdb, movies):
     assert 'rank' not in data
 
 
-def test_directors_single_should_be_a_list_of_persons(imdb, movies):
+def test_directors_single_should_be_a_list_of_person_links_and_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
-    assert data['directors'] == [{'url': '/name/nm0000040/',
-                                  'name': 'Stanley Kubrick'}]
+    assert data['directors'] == [
+        {'link': '/name/nm0000040/', 'name': 'Stanley Kubrick'}
+    ]
 
 
-def test_directors_multiple_should_be_a_list_of_persons(imdb, movies):
+def test_directors_multiple_should_be_a_list_of_person_links_and_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert data['directors'] == [
-        {'url': '/name/nm0905154/', 'name': 'Lana Wachowski'},
-        {'url': '/name/nm0905152/', 'name': 'Lilly Wachowski'}
+        {'link': '/name/nm0905154/', 'name': 'Lana Wachowski'},
+        {'link': '/name/nm0905152/', 'name': 'Lilly Wachowski'}
     ]
 
 
@@ -263,19 +264,23 @@ def test_directors_multiple_should_be_a_list_of_persons(imdb, movies):
 #     assert 'directors' not in data
 
 
-def test_seasons_should_be_a_list_of_season_names_and_urls(imdb, movies):
+def test_seasons_should_be_a_list_of_season_links_and_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md'])
     assert data['seasons'] == [
-        {'name': str(i),
-         'url': 'episodes?season={}'.format(i)}
+        {'link': 'episodes?season={}'.format(i), 'name': str(i)}
         for i in range(1, 9)
     ]
 
 
-def test_series_should_be_a_tv_series(imdb, movies):
+def test_seasons_episodes_should_have_none(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
-    assert data['series'] == {'url': '/title/tt0436992/',
-                              'long_title': '"Doctor Who" (2005)'}
+    assert 'seasons' not in data
+
+
+def test_series_should_be_a_series_link_and_name(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+    assert data['series'] == {'link': '/title/tt0436992/',
+                              'title.full': '"Doctor Who" (2005)'}
 
 
 def test_episode_original_air_date_should_include_season_and_episode(imdb, movies):
