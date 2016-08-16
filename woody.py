@@ -239,8 +239,7 @@ def html_to_xhtml(content, omit_tags=None, omit_attrs=None):
 
 
 if _USE_LXML:
-    def xpath(element, path):
-        return element.xpath(path)
+    xpath = ElementTree._Element.xpath
 else:
     def xpath(element, path):
         """Apply an XPath expression to an element.
@@ -340,12 +339,12 @@ def extract(root, items, pre=None):
 
     def parent_getter():
         if _USE_LXML:
-            return lambda e: e.getparent()
+            return ElementTree._Element.getparent
         else:
             # ElementTree doesn't support parent queries, so build a map for it
             # TODO: this re-traverses tree on subrules
             parents = {e: p for p in root.iter() for e in p}
-            return lambda e: parents[e]
+            return parents.get
 
     get_parent = parent_getter()
 
