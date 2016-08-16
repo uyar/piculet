@@ -186,11 +186,25 @@
           }
         },
         {
-          "key": "season_urls",
+          "key": "seasons",
           "value": {
             "foreach": ".//div[@woody='seasons']/div[@class='info-content']/a",
-            "path": "./@href",
-            "reducer": "first"
+            "items": [
+              {
+                "key": "name",
+                "value": {
+                  "path": "./text()",
+                  "reducer": "first"
+                }
+              },
+              {
+                "key": "url",
+                "value": {
+                  "path": "./@href",
+                  "reducer": "first"
+                }
+              }
+            ]
           }
         },
         {

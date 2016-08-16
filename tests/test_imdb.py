@@ -263,9 +263,13 @@ def test_directors_multiple_should_be_a_list_of_persons(imdb, movies):
 #     assert 'directors' not in data
 
 
-def test_seasons_should_be_a_list_of_season_urls(imdb, movies):
+def test_seasons_should_be_a_list_of_season_names_and_urls(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md'])
-    assert data['season_urls'] == ['episodes?season={}'.format(i) for i in range(1, 9)]
+    assert data['seasons'] == [
+        {'name': str(i),
+         'url': 'episodes?season={}'.format(i)}
+        for i in range(1, 9)
+    ]
 
 
 def test_series_should_be_a_tv_series(imdb, movies):
