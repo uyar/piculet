@@ -19,6 +19,11 @@
           "path": ".//div[@class='info-content']//a[@class='tn15more']"
         },
         {
+          "op": "set_text",
+          "path": ".//a[@href='/wga']/..",
+          "text": "writers"
+        },
+        {
           "op": "set_attr",
           "path": ".//div[@class='info']/h5/..",
           "name": "woody",
@@ -28,17 +33,23 @@
           }
         },
         {
-          "op": "set_text",
-          "path": ".//div[@woody='also_known_as']//br",
-          "text": ":BR:"
-        },
-        {
           "op": "remove",
           "path": ".//a[@href='fullcredits#writers']"
         },
         {
+          "op": "set_attr",
+          "path": ".//div[@woody='writer']",
+          "name": "woody",
+          "value": "writers"
+        },
+        {
           "op": "set_text",
           "path": ".//div[@woody='writers']//br",
+          "text": ":BR:"
+        },
+        {
+          "op": "set_text",
+          "path": ".//div[@woody='also_known_as']//br",
           "text": ":BR:"
         }
       ],
@@ -68,21 +79,21 @@
           "key": "title.episode",
           "value": {
             "path": ".//div[@id='tn15title']/h1/span/em/text()",
-            "reducer": "clean"
+            "reducer": "first"
           }
         },
         {
           "key": "year",
           "value": {
             "path": ".//div[@id='tn15title']/h1/span/a/text()",
-            "reducer": "clean"
+            "reducer": "first"
           }
         },
         {
           "key": "tv_extra",
           "value": {
             "path": ".//span[@class='tv-extra']/text()",
-            "reducer": "clean"
+            "reducer": "first"
           }
         },
         {
@@ -103,7 +114,7 @@
           "key": "series.episode_count",
           "value": {
             "path": ".//a[@title='Full Episode List']/text()",
-            "reducer": "clean"
+            "reducer": "first"
           }
         },
         {
@@ -150,7 +161,7 @@
                 "key": "name",
                 "value": {
                   "path": "./text()",
-                  "reducer": "clean"
+                  "reducer": "first"
                 }
               }
             ]
@@ -172,7 +183,7 @@
                 "key": "name",
                 "value": {
                   "path": "./text()",
-                  "reducer": "clean"
+                  "reducer": "first"
                 }
               }
             ]

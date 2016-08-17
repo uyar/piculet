@@ -22,7 +22,7 @@ def movies():
     """The IMDb movie ids."""
     return {
         'ace_in_the_hole': 43338,       # multiple languages, sound mix note
-        'aslan': 3629794,               # no year
+        'aslan': 3629794,               # no year, no director
         'ates_parcasi': 1863157,        # no poster, rating, votes, ...
         'band_of_brothers': 185906,     # mini-series, ended
         'dr_who': 436992,               # TV series, continuing
@@ -178,12 +178,12 @@ def test_tv_extra_tv_episode_should_have_none(imdb, movies):
     assert 'tv_extra' not in data
 
 
-def test_episode_prev_should_be_a_title_link(imdb, movies):
+def test_episode_prev_link_should_be_a_title_link(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
     assert data['episode.prev.link'] == '/title/tt1000256/'
 
 
-def test_episode_prev_first_episode_should_have_none(imdb, movies):
+def test_episode_prev_link_first_episode_should_have_none(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md_first'])
     assert 'episode.prev.link' not in data
 
@@ -198,12 +198,12 @@ def test_episode_series_episode_count_should_be_a_number(imdb, movies):
     assert data['series.episode_count'] == '176 Episodes'
 
 
-def test_episode_next_should_be_a_title_url(imdb, movies):
+def test_episode_next_link_should_be_a_title_link(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
     assert data['episode.next.link'] == '/title/tt1000259/'
 
 
-def test_episode_next_last_episode_should_have_none(imdb, movies):
+def test_episode_next_link_last_episode_should_have_none(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md_last'])
     assert 'episode.next.link' not in data
 
@@ -258,10 +258,56 @@ def test_directors_multiple_should_be_a_list_of_person_links_and_names(imdb, mov
     ]
 
 
-# TODO: find a movie with no directors
+# TODO: find a movie with director notes
 # def test_directors_none_should_be_excluded(imdb, movies):
 #     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
-#     assert 'directors' not in data
+#     assert 'directors.notes' == '???'
+
+
+def test_directors_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['aslan'])
+    assert 'directors' not in data
+
+
+def test_writers_single_should_be_a_list_of_person_links_and_names(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+    assert data['writers'] == [
+        {'link': '/name/nm0912849/', 'name': 'Harold P. Warren'}
+    ]
+
+
+def test_writers_multiple_should_be_a_list_of_person_links_and_names(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
+    assert data['writers'] == [
+        {'link': '/name/nm0000175/', 'name': 'Stephen King'},
+        {'link': '/name/nm0000040/', 'name': 'Stanley Kubrick'}
+    ]
+
+
+def test_writers_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
+    assert 'writers.notes' not in data
+
+
+def test_writers_notes_single_should_include_writer_notes(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+    assert data['writers.notes'] == 'Harold P. Warren (screenplay):BR:'
+
+
+def test_writers_notes_multiple_should_include_writer_notes(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
+    assert data['writers.notes'] == \
+        'Stephen King (novel):BR: Stanley Kubrick (screenplay) ...:BR:'
+
+
+def test_writers_notes_none_should_be_just_person_names(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+    assert data['writers.notes'] == 'Recep Filiz :BR:'
+
+
+def test_writers_notes_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
+    assert 'writers.notes' not in data
 
 
 def test_seasons_should_be_a_list_of_season_links_and_names(imdb, movies):
