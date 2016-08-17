@@ -588,22 +588,32 @@ def test_sound_mix_notes_none_should_be_excluded(imdb, movies):
     assert 'sound_mix.notes' not in data
 
 
-def test_certification_single_should_have_context(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_vg'])
-    assert data['certification'] == 'USA:T'
-
-
-def test_certification_with_note_should_include_note(imdb, movies):
+def test_certifications_single_should_be_a_list_of_certificate_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
-    assert data['certification'] == 'UK:PG (DVD rating)'
+    assert data['certifications'] == ['UK:PG']
 
 
-def test_certification_multiple_should_be_pipe_separated(imdb, movies):
+def test_certifications_multiple_should_be_a_list_of_certificate_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
-    assert data['certification'] == \
+    assert data['certifications'] == ['Canada:G', 'Finland:K-18', 'USA:Not Rated']
+
+
+def test_certifications_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+    assert 'certifications' not in data
+
+
+def test_certifications_notes_single_include_note(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+    assert data['certifications.notes'] == 'UK:PG (DVD rating)'
+
+
+def test_certifications_notes_multiple_should_be_pipe_separated(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+    assert data['certifications.notes'] == \
         'Canada:G (Quebec) (2008) | Finland:K-18 (2008) (self applied) | USA:Not Rated'
 
 
-def test_certification_none_should_be_excluded(imdb, movies):
+def test_certifications_notes_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
-    assert 'certification' not in data
+    assert 'certifications,notes' not in data

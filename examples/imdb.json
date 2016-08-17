@@ -418,7 +418,15 @@
           }
         },
         {
-          "key": "certification",
+          "key": "certifications",
+          "value": {
+            "foreach": ".//div[@woody='certification']/div[@class='info-content']/a",
+            "path": "./text()",
+            "reducer": "first"
+          }
+        },
+        {
+          "key": "certifications.notes",
           "value": {
             "path": ".//div[@woody='certification']/div[@class='info-content']//text()",
             "reducer": "clean"
