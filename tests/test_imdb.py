@@ -558,24 +558,34 @@ def test_aspect_ratio_none_should_be_excluded(imdb, movies):
     assert 'aspect_ratio' not in data
 
 
-def test_sound_mix_single_should_be_a_sound_mix_type(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
-    assert data['sound_mix'] == 'Mono'
-
-
-def test_sound_mix_with_note_should_include_note(imdb, movies):
+def test_sound_mix_single_should_be_a_list_of_sound_mix_types(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ace_in_the_hole'])
-    assert data['sound_mix'] == 'Mono (Western Electric Recording)'
+    assert data['sound_mix'] == ['Mono']
 
 
-def test_sound_mix_multiple_should_be_pipe_separated(imdb, movies):
+def test_sound_mix_multiple_should_be_a_list_of_sound_mix_types(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['sound_mix'] == 'DTS | Dolby Digital | SDDS'
+    assert data['sound_mix'] == ['DTS', 'Dolby Digital', 'SDDS']
 
 
 def test_sound_mix_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
     assert 'sound_mix' not in data
+
+
+def test_sound_mix_notes_single_should_include_note(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ace_in_the_hole'])
+    assert data['sound_mix.notes'] == 'Mono (Western Electric Recording)'
+
+
+def test_sound_mix_notes_multiple_should_be_pipe_separated(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+    assert data['sound_mix.notes'] == 'DTS | Dolby Digital | SDDS'
+
+
+def test_sound_mix_notes_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+    assert 'sound_mix.notes' not in data
 
 
 def test_certification_single_should_have_context(imdb, movies):

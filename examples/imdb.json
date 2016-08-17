@@ -405,6 +405,14 @@
         {
           "key": "sound_mix",
           "value": {
+            "foreach": ".//div[@woody='sound_mix']/div[@class='info-content']/a",
+            "path": "./text()",
+            "reducer": "clean"
+          }
+        },
+        {
+          "key": "sound_mix.notes",
+          "value": {
             "path": ".//div[@woody='sound_mix']/div[@class='info-content']//text()",
             "reducer": "clean"
           }
