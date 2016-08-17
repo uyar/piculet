@@ -141,13 +141,6 @@
           }
         },
         {
-          "key": "writers.notes",
-          "value": {
-            "path": ".//div[@woody='writers']/div[@class='info-content']//text()",
-            "reducer": "clean"
-          }
-        },
-        {
           "key": "creators",
           "value": {
             "foreach": ".//div[@woody='creators']/div[@class='info-content']/a",
@@ -337,7 +330,7 @@
               {
                 "key": "notes",
                 "value": {
-                  "path": ".//td[3]/text()",
+                  "path": ".//td[3]//text()",
                   "reducer": "clean"
                 }
               }

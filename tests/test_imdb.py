@@ -463,6 +463,29 @@ def test_writers_none_should_be_excluded(imdb, movies):
     assert 'writers' not in data
 
 
+def test_producers_single_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+    assert data['producers'] == [
+        {'link': '/name/nm0912849/', 'name': 'Harold P. Warren',
+         'notes': 'producer'}
+    ]
+
+
+def test_producers_multiple_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+    assert data['producers'][-2:] == [
+        {'link': '/name/nm0905154/', 'name': 'Lana Wachowski',
+         'notes': 'executive producer (as Larry Wachowski)'},
+        {'link': '/name/nm0905152/', 'name': 'Lilly Wachowski',
+         'notes': 'executive producer (as Andy Wachowski)'}
+    ]
+
+
+def test_producers_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv_short'])
+    assert 'producers' not in data
+
+
 def test_aka_should_be_br_separated_titles(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
     assert data['title.aka'] == \
