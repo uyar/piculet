@@ -33,6 +33,7 @@ from html.parser import HTMLParser
 from io import StringIO
 from urllib.request import build_opener, Request
 
+import json
 import logging
 import os
 import re
@@ -490,6 +491,17 @@ def _get_parser():
                 content = f.read()
         print(html_to_xhtml(content), end='')
 
+    def scrape_doc(arguments):
+        with open(arguments.spec[0]) as f:
+            spec = json.loads(f.read())
+        params = {}
+        if arguments.param:
+            for p in arguments.param:
+                k, v = p.split('=')
+                params[k] = int(v)
+        data = scrape(spec, arguments.scraper[0], **params)
+        print(json.dumps(data, indent=2, sort_keys=True))
+
     parser = ArgumentParser()
     parser.add_argument('--debug', action='store_true',
                         help='enable debug messages')
@@ -499,6 +511,15 @@ def _get_parser():
     subparser = commands.add_parser('h2x', help='convert HTML to XHTML')
     subparser.set_defaults(func=h2x)
     subparser.add_argument('file', help='file to convert')
+
+    subparser = commands.add_parser('scrape', help='scrape a document')
+    subparser.set_defaults(func=scrape_doc)
+    subparser.add_argument('-c', nargs=1, dest='spec', required=True,
+                           help='configuration spec file')
+    subparser.add_argument('-s', nargs=1, dest='scraper', required=True,
+                           help='id of scraper in spec file')
+    subparser.add_argument('--param', action='append',
+                           help='parameters to pass to the scraper')
 
     return parser
 
