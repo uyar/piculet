@@ -48,6 +48,17 @@
           "text": ":BR:"
         },
         {
+          "op": "set_attr",
+          "path": ".//div[@woody='creator']",
+          "name": "woody",
+          "value": "creators"
+        },
+        {
+          "op": "set_text",
+          "path": ".//div[@woody='creators']//br",
+          "text": ":BR:"
+        },
+        {
           "op": "set_text",
           "path": ".//div[@woody='also_known_as']//br",
           "text": ":BR:"
@@ -171,6 +182,28 @@
           "key": "writers",
           "value": {
             "foreach": ".//div[@woody='writers']/div[@class='info-content']/a",
+            "items": [
+              {
+                "key": "link",
+                "value": {
+                  "path": "./@href",
+                  "reducer": "first"
+                }
+              },
+              {
+                "key": "name",
+                "value": {
+                  "path": "./text()",
+                  "reducer": "first"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key": "creators",
+          "value": {
+            "foreach": ".//div[@woody='creators']/div[@class='info-content']/a",
             "items": [
               {
                 "key": "link",
