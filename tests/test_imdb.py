@@ -425,6 +425,48 @@ def test_plot_keywords_none_should_be_excluded(imdb, movies):
     assert 'plot.keywords' not in data
 
 
+def test_cast_single_should_be_a_list_of_persons_and_characters(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
+    assert data['cast'] == [
+        {'link': '/name/nm0186469/', 'name': 'Kenneth Cranham',
+         'character': {'notes': 'Narrator'}}
+    ]
+
+
+def test_cast_multiple_should_be_a_list_of_persons_and_characters(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+    assert len(data['cast']) == 38
+    assert data['cast'][:2] == [
+        {'link': '/name/nm0000206/', 'name': 'Keanu Reeves',
+         'character': {'link': '/character/ch0000741/', 'name': 'Neo'}},
+        {'link': '/name/nm0000401/', 'name': 'Laurence Fishburne',
+         'character': {'link': '/character/ch0000746/', 'name': 'Morpheus'}}
+    ]
+
+
+def test_cast_character_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+    assert data['cast'][0] == {'link': '/name/nm0022342/', 'name': 'Zeki Alpan'}
+
+
+def test_cast_character_link_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+    assert data['cast'][1] == {'link': '/name/nm0351657/', 'name': 'Nejat Gürçen',
+                               'character': {'notes': 'Naci'}}
+
+
+def test_cast_character_notes_should_be_included(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+    assert data['cast'][14] == {'link': '/name/nm0336802/', 'name': 'Marc Aden Gray',
+                                'character': {'link': '/character/ch0030779/', 'name': 'Choi',
+                                              'notes': '(as Marc Gray)'}}
+
+
+def test_cast_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_short'])
+    assert 'cast' not in data
+
+
 def test_aka_should_be_br_separated_titles(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
     assert data['title.aka'] == \

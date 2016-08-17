@@ -316,6 +316,62 @@
           }
         },
         {
+          "key": "cast",
+          "value": {
+            "foreach": ".//table[@class='cast']//td[@class='nm']/..",
+            "items": [
+              {
+                "key": "link",
+                "value": {
+                  "path": "./td[@class='nm']/a/@href",
+                  "reducer": "first"
+                }
+              },
+              {
+                "key": "name",
+                "value": {
+                  "path": "./td[@class='nm']/a/text()",
+                  "reducer": "clean"
+                }
+              },
+              {
+                "key": "character",
+                "value": {
+                  "pre": [
+                    {
+                      "op": "root",
+                      "path": "./td[@class='char']"
+                    }
+                  ],
+                  "items": [
+                    {
+                      "key": "link",
+                      "value": {
+                        "path": "./a/@href",
+                        "reducer": "first"
+                      }
+                    },
+                    {
+                      "key": "name",
+                      "value": {
+                        "path": "./a/text()",
+                        "reducer": "clean"
+                      }
+                    },
+                    {
+                      "key": "notes",
+                      "value": {
+                        "path": "./text()",
+                        "reducer": "clean"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
           "key": "title.aka",
           "value": {
             "path": ".//div[@woody='also_known_as']/div[@class='info-content']//text()",
