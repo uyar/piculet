@@ -409,32 +409,32 @@ def test_plot_none_should_be_excluded(imdb, movies):
 
 
 # TODO: find a movie with only one plot keyword
-# def test_plot_keywords_single_should_be_a_list_of_words(imdb, movies):
+# def test_plot_keywords_single_should_be_a_list_of_keywords(imdb, movies):
 #     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
-#     assert data['plot_keywords'] == ['???']
+#     assert data['plot.keywords'] == ['???']
 
 
-def test_plot_keywords_multiple_should_be_a_list_of_words(imdb, movies):
+def test_plot_keywords_multiple_should_be_a_list_of_keywords(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['plot_keywords'] == \
+    assert data['plot.keywords'] == \
         ['Computer', 'Hacker', 'Reality', 'Matrix', 'Computer Hacker']
 
 
 def test_plot_keywords_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
-    assert 'plot_keywords' not in data
+    assert 'plot.keywords' not in data
 
 
-def test_akas_should_be_titles(imdb, movies):
+def test_aka_should_be_br_separated_titles(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
-    assert data['title.akas'] == \
+    assert data['title.aka'] == \
         '"Манос: Руки судьбы" - Soviet Union (Russian title):BR:' \
         ' "Manos - As Mãos do Destino" - Brazil (imdb display title):BR:'
 
 
-def test_akas_none_should_be_excluded(imdb, movies):
+def test_aka_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
-    assert 'title.akas' not in data
+    assert 'title.aka' not in data
 
 
 def test_mpaa_should_be_a_rating(imdb, movies):
@@ -468,14 +468,14 @@ def test_runtime_none_should_be_excluded(imdb, movies):
     assert 'runtime' not in data
 
 
-def test_countries_single_should_be_a_list_of_country_names(imdb, movies):
+def test_countries_single_should_be_a_list_of_country_links_and_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert data['countries'] == [
         {'link': '/country/us', 'name': 'USA'}
     ]
 
 
-def test_countries_multiple_should_be_a_list_of_country_names(imdb, movies):
+def test_countries_multiple_should_be_a_list_of_country_links_and_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
     assert data['countries'] == [
         {'link': '/country/us', 'name': 'USA'},
@@ -489,14 +489,14 @@ def test_countries_multiple_should_be_a_list_of_country_names(imdb, movies):
 #     assert 'countries' not in data
 
 
-def test_languages_single_should_be_a_list_of_language_names(imdb, movies):
+def test_languages_single_should_be_a_list_of_language_links_and_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert data['languages'] == [
         {'link': '/language/en', 'name': 'English'}
     ]
 
 
-def test_languages_many_should_be_a_list_of_language_names(imdb, movies):
+def test_languages_multiple_should_be_a_list_of_language_links_and_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ace_in_the_hole'])
     assert data['languages'] == [
         {'link': '/language/en', 'name': 'English'},
@@ -518,24 +518,34 @@ def test_languages_single_none_is_a_language_name(imdb, movies):
 #     assert 'languages' not in data
 
 
-def test_color_single_should_be_a_color_types(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['color'] == 'Color'
-
-
-def test_color_with_note_should_include_note(imdb, movies):
+def test_colors_single_should_be_a_list_of_color_types(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
-    assert data['color'] == 'Color (Eastmancolor)'
+    assert data['colors'] == ['Color']
 
 
-def test_color_multiple_should_be_pipe_separated(imdb, movies):
+def test_colors_multiple_should_be_a_list_of_color_types(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['if'])
-    assert data['color'] == 'Black and White | Color (Eastmancolor) (uncredited)'
+    assert data['colors'] == ['Black and White', 'Color']
 
 
-def test_color_none_should_be_excluded(imdb, movies):
+def test_colors_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
-    assert 'color' not in data
+    assert 'colors' not in data
+
+
+def test_colors_notes_single_should_include_color_note(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+    assert data['colors.notes'] == 'Color (Eastmancolor)'
+
+
+def test_colors_notes_multiple_should_be_pipe_separated(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['if'])
+    assert data['colors.notes'] == 'Black and White | Color (Eastmancolor) (uncredited)'
+
+
+def test_colors_notes_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
+    assert 'colors.notes' not in data
 
 
 def test_aspect_ratio_should_be_a_number_to_one(imdb, movies):

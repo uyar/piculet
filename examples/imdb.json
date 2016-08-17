@@ -308,7 +308,7 @@
           }
         },
         {
-          "key": "plot_keywords",
+          "key": "plot.keywords",
           "value": {
             "foreach": ".//div[@id='tn15plotkeywords']//a",
             "path": "./text()",
@@ -316,7 +316,7 @@
           }
         },
         {
-          "key": "title.akas",
+          "key": "title.aka",
           "value": {
             "path": ".//div[@woody='also_known_as']/div[@class='info-content']//text()",
             "reducer": "clean"
@@ -381,7 +381,15 @@
           }
         },
         {
-          "key": "color",
+          "key": "colors",
+          "value": {
+            "foreach": ".//div[@woody='color']/div[@class='info-content']/a",
+            "path": "./text()",
+            "reducer": "first"
+          }
+        },
+        {
+          "key": "colors.notes",
           "value": {
             "path": ".//div[@woody='color']/div[@class='info-content']//text()",
             "reducer": "clean"
