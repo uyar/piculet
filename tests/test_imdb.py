@@ -326,7 +326,7 @@ def test_creators_multiple_should_be_a_list_of_person_links_and_names(imdb, movi
     ]
 
 
-def test_creators_none_should_be_excluded(imdb, movies):
+def test_creators_episodes_should_have_none(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
     assert 'creators' not in data
 
@@ -339,6 +339,13 @@ def test_seasons_should_be_a_list_of_season_links_and_names(imdb, movies):
     ]
 
 
+def test_seasons_mini_series_should_have_only_one(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['band_of_brothers'])
+    assert data['seasons'] == [
+        {'link': 'episodes?season=1', 'name': '1'}
+    ]
+
+
 def test_seasons_episodes_should_have_none(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
     assert 'seasons' not in data
@@ -348,6 +355,11 @@ def test_series_should_be_a_series_link_and_name(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
     assert data['series'] == {'link': '/title/tt0436992/',
                               'title.full': '"Doctor Who" (2005)'}
+
+
+def test_series_tv_series_should_have_none(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+    assert 'series' not in data
 
 
 def test_episode_original_air_date_should_include_season_and_episode(imdb, movies):

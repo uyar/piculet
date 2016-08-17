@@ -359,9 +359,9 @@ def extract(root, items, pre=None):
                     raise ValueError('Root expression must not select'
                                      ' multiple elements: {}.'.format(path))
                 if len(elements) == 0:
-                    _logger.debug('no matches, root not changed')
-                else:
-                    root = elements[0]
+                    _logger.debug('no matches for new root, no data to extract')
+                    return {}
+                root = elements[0]
             elif op == 'remove':
                 path = step['path']
                 elements = xpath(root, path)
@@ -397,11 +397,12 @@ def extract(root, items, pre=None):
             foreach_value = item['value'].get('foreach')
             if foreach_value is None:
                 value = value_gen(subroot)
-                if value is not None:
+                if value:   # None from pecker or {} from extract
+                    # XXX: consider '', 0 and other non-truthy values
                     data[key] = value
             else:
                 values = [value_gen(r) for r in xpath(subroot, foreach_value)]
-                if len(values) > 0:
+                if values:
                     data[key] = values
     return data
 
