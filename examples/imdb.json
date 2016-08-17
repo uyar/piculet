@@ -279,7 +279,7 @@
           }
         },
         {
-          "key": "original_air_date",
+          "key": "date.airing",
           "value": {
             "path": ".//div[@woody='original_air_date']/div[@class='info-content']/text()",
             "reducer": "clean"
@@ -316,14 +316,14 @@
           }
         },
         {
-          "key": "also_known_as",
+          "key": "title.akas",
           "value": {
             "path": ".//div[@woody='also_known_as']/div[@class='info-content']//text()",
             "reducer": "clean"
           }
         },
         {
-          "key": "mpaa",
+          "key": "rating.mpaa",
           "value": {
             "path": ".//a[@href='/mpaa']/../../div[@class='info-content']/text()",
             "reducer": "clean"
@@ -342,16 +342,16 @@
             "foreach": ".//div[@woody='country']/div[@class='info-content']/a",
             "items": [
               {
-                "key": "name",
+                "key": "link",
                 "value": {
-                  "path": "./text()",
+                  "path": "./@href",
                   "reducer": "first"
                 }
               },
               {
-                "key": "url",
+                "key": "name",
                 "value": {
-                  "path": "./@href",
+                  "path": "./text()",
                   "reducer": "first"
                 }
               }
@@ -364,16 +364,16 @@
             "foreach": ".//div[@woody='language']/div[@class='info-content']/a",
             "items": [
               {
-                "key": "name",
+                "key": "link",
                 "value": {
-                  "path": "./text()",
+                  "path": "./@href",
                   "reducer": "first"
                 }
               },
               {
-                "key": "url",
+                "key": "name",
                 "value": {
-                  "path": "./@href",
+                  "path": "./text()",
                   "reducer": "first"
                 }
               }

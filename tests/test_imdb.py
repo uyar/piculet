@@ -364,7 +364,12 @@ def test_series_tv_series_should_have_none(imdb, movies):
 
 def test_episode_original_air_date_should_include_season_and_episode(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
-    assert data['original_air_date'] == '9 June 2007 (Season 3, Episode 10)'
+    assert data['date.airing'] == '9 June 2007 (Season 3, Episode 10)'
+
+
+def test_episode_original_air_date_tv_series_should_have_none(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+    assert 'date.airing' not in data
 
 
 def test_genres_single_should_be_a_list_of_genre_names(imdb, movies):
@@ -422,19 +427,19 @@ def test_plot_keywords_none_should_be_excluded(imdb, movies):
 
 def test_akas_should_be_titles(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
-    assert data['also_known_as'] == \
+    assert data['title.akas'] == \
         '"Манос: Руки судьбы" - Soviet Union (Russian title):BR:' \
         ' "Manos - As Mãos do Destino" - Brazil (imdb display title):BR:'
 
 
 def test_akas_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
-    assert 'also_known_as' not in data
+    assert 'title.akas' not in data
 
 
 def test_mpaa_should_be_a_rating(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['mpaa'] == 'Rated R for sci-fi violence and brief language'
+    assert data['rating.mpaa'] == 'Rated R for sci-fi violence and brief language'
 
 
 def test_mpaa_none_should_be_excluded(imdb, movies):
@@ -465,14 +470,16 @@ def test_runtime_none_should_be_excluded(imdb, movies):
 
 def test_countries_single_should_be_a_list_of_country_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['countries'] == [{'name': 'USA', 'url': '/country/us'}]
+    assert data['countries'] == [
+        {'link': '/country/us', 'name': 'USA'}
+    ]
 
 
 def test_countries_multiple_should_be_a_list_of_country_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
     assert data['countries'] == [
-        {'name': 'USA', 'url': '/country/us'},
-        {'name': 'UK', 'url': '/country/gb'}
+        {'link': '/country/us', 'name': 'USA'},
+        {'link': '/country/gb', 'name': 'UK'}
     ]
 
 
@@ -484,21 +491,25 @@ def test_countries_multiple_should_be_a_list_of_country_names(imdb, movies):
 
 def test_languages_single_should_be_a_list_of_language_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['languages'] == [{'name': 'English', 'url': '/language/en'}]
+    assert data['languages'] == [
+        {'link': '/language/en', 'name': 'English'}
+    ]
 
 
 def test_languages_many_should_be_a_list_of_language_names(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ace_in_the_hole'])
     assert data['languages'] == [
-        {'name': 'English', 'url': '/language/en'},
-        {'name': 'Spanish', 'url': '/language/es'},
-        {'name': 'Latin', 'url': '/language/la'}
+        {'link': '/language/en', 'name': 'English'},
+        {'link': '/language/es', 'name': 'Spanish'},
+        {'link': '/language/la', 'name': 'Latin'}
     ]
 
 
 def test_languages_single_none_is_a_language_name(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_short'])
-    assert data['languages'] == [{'name': 'None', 'url': '/language/zxx'}]
+    assert data['languages'] == [
+        {'link': '/language/zxx', 'name': 'None'}
+    ]
 
 
 # TODO: find a movie with no language
