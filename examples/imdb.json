@@ -19,11 +19,6 @@
           "path": ".//div[@class='info-content']//a[@class='tn15more']"
         },
         {
-          "op": "set_text",
-          "path": ".//a[@href='/wga']/..",
-          "text": "writers"
-        },
-        {
           "op": "set_attr",
           "path": ".//div[@class='info']/h5/..",
           "name": "woody",
@@ -35,17 +30,6 @@
         {
           "op": "remove",
           "path": ".//a[@href='fullcredits#writers']"
-        },
-        {
-          "op": "set_attr",
-          "path": ".//div[@woody='writer']",
-          "name": "woody",
-          "value": "writers"
-        },
-        {
-          "op": "set_text",
-          "path": ".//div[@woody='writers']//br",
-          "text": ":BR:"
         },
         {
           "op": "set_attr",
@@ -154,50 +138,6 @@
           "value": {
             "path": ".//div[@class='starbar-special']/a/text()",
             "reducer": "first"
-          }
-        },
-        {
-          "key": "directors",
-          "value": {
-            "foreach": ".//div[@id='director-info']/div[@class='info-content']/a",
-            "items": [
-              {
-                "key": "link",
-                "value": {
-                  "path": "./@href",
-                  "reducer": "first"
-                }
-              },
-              {
-                "key": "name",
-                "value": {
-                  "path": "./text()",
-                  "reducer": "first"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "key": "writers",
-          "value": {
-            "foreach": ".//div[@woody='writers']/div[@class='info-content']/a",
-            "items": [
-              {
-                "key": "link",
-                "value": {
-                  "path": "./@href",
-                  "reducer": "first"
-                }
-              },
-              {
-                "key": "name",
-                "value": {
-                  "path": "./text()",
-                  "reducer": "first"
-                }
-              }
-            ]
           }
         },
         {
@@ -366,6 +306,39 @@
                       }
                     }
                   ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "foreach": ".//a[@class='glossary']/../../../..",
+          "key": {
+            "path": ".//a[@class='glossary']/@name",
+            "reducer": "first"
+          },
+          "value": {
+            "foreach": "./tr/td[@valign='top']/..",
+            "items": [
+              {
+                "key": "link",
+                "value": {
+                  "path": ".//td[1]/a/@href",
+                  "reducer": "first"
+                }
+              },
+              {
+                "key": "name",
+                "value": {
+                  "path": ".//td[1]/a/text()",
+                  "reducer": "first"
+                }
+              },
+              {
+                "key": "notes",
+                "value": {
+                  "path": ".//td[3]/text()",
+                  "reducer": "clean"
                 }
               }
             ]

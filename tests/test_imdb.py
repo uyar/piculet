@@ -41,7 +41,8 @@ def movies():
         'roast_sheen': 1985970,         # TV Special, few plot keywords
         'shining': 81505,               # multiple runtimes, multiple countries
         'star_trek_ds9': 106145,        # TV series, multiple creators
-        'suspiria': 76786               # multiple country runtimes
+        'suspiria': 76786,              # multiple country runtimes
+        'west_side_story': 55614        # multiple directors
     }
 
 
@@ -244,81 +245,14 @@ def test_rank_none_should_be_excluded(imdb, movies):
     assert 'rank' not in data
 
 
-def test_directors_single_should_be_a_list_of_person_links_and_names(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
-    assert data['directors'] == [
-        {'link': '/name/nm0000040/', 'name': 'Stanley Kubrick'}
-    ]
-
-
-def test_directors_multiple_should_be_a_list_of_person_links_and_names(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['directors'] == [
-        {'link': '/name/nm0905154/', 'name': 'Lana Wachowski'},
-        {'link': '/name/nm0905152/', 'name': 'Lilly Wachowski'}
-    ]
-
-
-def test_directors_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['aslan'])
-    assert 'directors' not in data
-
-
-# TODO: find a movie with director notes
-# def test_directors_none_should_be_excluded(imdb, movies):
-#     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
-#     assert 'directors.notes' == '???'
-
-
-def test_writers_single_should_be_a_list_of_person_links_and_names(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
-    assert data['writers'] == [
-        {'link': '/name/nm0912849/', 'name': 'Harold P. Warren'}
-    ]
-
-
-def test_writers_multiple_should_be_a_list_of_person_links_and_names(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
-    assert data['writers'] == [
-        {'link': '/name/nm0000175/', 'name': 'Stephen King'},
-        {'link': '/name/nm0000040/', 'name': 'Stanley Kubrick'}
-    ]
-
-
-def test_writers_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
-    assert 'writers' not in data
-
-
-def test_writers_notes_single_should_include_writer_notes(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
-    assert data['writers.notes'] == 'Harold P. Warren (screenplay):BR:'
-
-
-def test_writers_notes_multiple_should_include_writer_notes(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
-    assert data['writers.notes'] == \
-        'Stephen King (novel):BR: Stanley Kubrick (screenplay) ...:BR:'
-
-
-def test_writers_notes_none_should_be_just_person_names(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
-    assert data['writers.notes'] == 'Recep Filiz :BR:'
-
-
-def test_writers_notes_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
-    assert 'writers.notes' not in data
-
-
-def test_creators_single_should_be_a_list_of_person_links_and_names(imdb, movies):
+def test_creators_single_should_be_a_list_of_persons(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
     assert data['creators'] == [
         {'link': '/name/nm0628285/', 'name': 'Sydney Newman'}
     ]
 
 
-def test_creators_multiple_should_be_a_list_of_person_links_and_names(imdb, movies):
+def test_creators_multiple_should_be_a_list_of_persons(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['star_trek_ds9'])
     assert data['creators'] == [
         {'link': '/name/nm0075834/', 'name': 'Rick Berman'},
@@ -331,7 +265,7 @@ def test_creators_episodes_should_have_none(imdb, movies):
     assert 'creators' not in data
 
 
-def test_seasons_should_be_a_list_of_season_links_and_names(imdb, movies):
+def test_seasons_should_be_a_list_of_seasons(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md'])
     assert data['seasons'] == [
         {'link': 'episodes?season={}'.format(i), 'name': str(i)}
@@ -351,7 +285,7 @@ def test_seasons_episodes_should_have_none(imdb, movies):
     assert 'seasons' not in data
 
 
-def test_series_should_be_a_series_link_and_name(imdb, movies):
+def test_series_should_be_a_series(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
     assert data['series'] == {'link': '/title/tt0436992/',
                               'title.full': '"Doctor Who" (2005)'}
@@ -467,6 +401,68 @@ def test_cast_none_should_be_excluded(imdb, movies):
     assert 'cast' not in data
 
 
+def test_directors_single_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
+    assert data['directors'] == [
+        {'link': '/name/nm0000040/', 'name': 'Stanley Kubrick'}
+    ]
+
+
+def test_directors_multiple_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['west_side_story'])
+    assert data['directors'] == [
+        {'link': '/name/nm0730385/', 'name': 'Jerome Robbins'},
+        {'link': '/name/nm0936404/', 'name': 'Robert Wise'}
+    ]
+
+
+def test_directors_with_notes_should_include_notes(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+    assert data['directors'] == [
+        {'link': '/name/nm0905154/', 'name': 'Lana Wachowski',
+         'notes': '(as The Wachowski Brothers)'},
+        {'link': '/name/nm0905152/', 'name': 'Lilly Wachowski',
+         'notes': '(as The Wachowski Brothers)'}
+    ]
+
+
+def test_directors_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['aslan'])
+    assert 'directors' not in data
+
+
+def test_writers_single_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+    assert data['writers'] == [
+        {'link': '/name/nm0277168/', 'name': 'Recep Filiz'}
+    ]
+
+
+def test_writers_notes_should_be_included(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+    assert data['writers'] == [
+        {'link': '/name/nm0912849/', 'name': 'Harold P. Warren',
+         'notes': '(screenplay)'}
+    ]
+
+
+def test_writers_multiple_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
+    assert data['writers'] == [
+        {'link': '/name/nm0000175/', 'name': 'Stephen King',
+         'notes': '(novel)'},
+        {'link': '/name/nm0000040/', 'name': 'Stanley Kubrick',
+         'notes': '(screenplay) &'},
+        {'link': '/name/nm0424956/', 'name': 'Diane Johnson',
+         'notes': '(screenplay)'}
+    ]
+
+
+def test_writers_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
+    assert 'writers' not in data
+
+
 def test_aka_should_be_br_separated_titles(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
     assert data['title.aka'] == \
@@ -510,14 +506,14 @@ def test_runtime_none_should_be_excluded(imdb, movies):
     assert 'runtime' not in data
 
 
-def test_countries_single_should_be_a_list_of_country_links_and_names(imdb, movies):
+def test_countries_single_should_be_a_list_of_countries(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert data['countries'] == [
         {'link': '/country/us', 'name': 'USA'}
     ]
 
 
-def test_countries_multiple_should_be_a_list_of_country_links_and_names(imdb, movies):
+def test_countries_multiple_should_be_a_list_of_countries(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
     assert data['countries'] == [
         {'link': '/country/us', 'name': 'USA'},
@@ -531,14 +527,14 @@ def test_countries_multiple_should_be_a_list_of_country_links_and_names(imdb, mo
 #     assert 'countries' not in data
 
 
-def test_languages_single_should_be_a_list_of_language_links_and_names(imdb, movies):
+def test_languages_single_should_be_a_list_of_languages(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert data['languages'] == [
         {'link': '/language/en', 'name': 'English'}
     ]
 
 
-def test_languages_multiple_should_be_a_list_of_language_links_and_names(imdb, movies):
+def test_languages_multiple_should_be_a_list_of_languages(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ace_in_the_hole'])
     assert data['languages'] == [
         {'link': '/language/en', 'name': 'English'},
@@ -575,7 +571,7 @@ def test_colors_none_should_be_excluded(imdb, movies):
     assert 'colors' not in data
 
 
-def test_colors_notes_single_should_include_color_note(imdb, movies):
+def test_colors_notes_single_should_include_note(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
     assert data['colors.notes'] == 'Color (Eastmancolor)'
 
