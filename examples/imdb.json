@@ -455,6 +455,27 @@
           }
         }
       ]
+    },
+    {
+      "id": "movie_keywords",
+      "url": "/title/tt{imdb_id:07}/keywords",
+      "format": "html",
+      "pre": [
+        {
+          "op": "root",
+          "path": ".//div[@id='keywords_content']"
+        }
+      ],
+      "items": [
+        {
+          "key": "keywords",
+          "value": {
+            "foreach": ".//div[@class='sodatext']/a",
+            "path": "./text()",
+            "reducer": "clean"
+          }
+        }
+      ]
     }
   ]
 }

@@ -55,6 +55,9 @@ def get_imdb_pages(imdb, movies):
             _get_document(url)
 
 
+# Movie combined page tests
+
+
 def test_full_title_should_have_title_and_year(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
     assert data['title.full'] == 'The Matrix (1999)'
@@ -677,4 +680,18 @@ def test_certifications_notes_multiple_should_be_pipe_separated(imdb, movies):
 
 def test_certifications_notes_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
-    assert 'certifications,notes' not in data
+    assert 'certifications.notes' not in data
+
+
+# Movie keywords page tests
+
+
+def test_keywords_should_be_a_list_of_keywords(imdb, movies):
+    data = scrape(imdb, 'movie_keywords', imdb_id=movies['matrix'])
+    for keyword in ('computer', 'messiah', 'artificial reality'):
+        assert keyword in data['keywords']
+
+
+def test_keywords_none_should_beexcluded(imdb, movies):
+    data = scrape(imdb, 'movie_keywords', imdb_id=movies['ates_parcasi'])
+    assert 'keywords' not in data
