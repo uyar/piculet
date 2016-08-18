@@ -75,6 +75,15 @@ def test_debug_mode_should_generate_debug_messages():
     assert b'running in debug mode' in stderr
 
 
+def test_h2x_should_require_input_argument():
+    command = ['woody', 'h2x']
+    process = Popen(command, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = process.communicate()
+    assert process.returncode == 2
+    assert stderr.startswith(b'usage:')
+    assert b'following arguments are required: file' in stderr
+
+
 def test_h2x_should_be_accessible():
     infile = os.path.join(os.path.dirname(__file__), 'files',
                           'utf-8_charset_utf-8.html')
