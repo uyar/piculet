@@ -272,17 +272,12 @@ def test_movie_combined_creators_episodes_should_have_none(imdb, movies):
 
 def test_movie_combined_seasons_should_be_a_list_of_seasons(imdb, movies):
     data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['house_md'])
-    assert data['seasons'] == [
-        {'link': 'episodes?season={}'.format(i), 'name': str(i)}
-        for i in range(1, 9)
-    ]
+    assert data['seasons'] == [str(i) for i in range(1, 9)]
 
 
 def test_movie_combined_seasons_mini_series_should_have_only_one(imdb, movies):
     data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['band_of_brothers'])
-    assert data['seasons'] == [
-        {'link': 'episodes?season=1', 'name': '1'}
-    ]
+    assert data['seasons'] == ['1']
 
 
 def test_movie_combined_seasons_episodes_should_have_none(imdb, movies):

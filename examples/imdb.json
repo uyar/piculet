@@ -166,22 +166,8 @@
           "key": "seasons",
           "value": {
             "foreach": ".//div[@woody='seasons']/div[@class='info-content']/a",
-            "items": [
-              {
-                "key": "link",
-                "value": {
-                  "path": "./@href",
-                  "reducer": "first"
-                }
-              },
-              {
-                "key": "name",
-                "value": {
-                  "path": "./text()",
-                  "reducer": "first"
-                }
-              }
-            ]
+            "path": "./text()",
+            "reducer": "first"
           }
         },
         {
