@@ -17,8 +17,10 @@
 """
 Woody is a library for extracting data from XML documents using XPath queries.
 It also contains an HTML cleaner which can be used to convert HTML into XHTML
-so that web pages can also be scraped. Woody consists of a single source file
-with no dependencies other than the standard library.
+so that web pages can also be scraped.
+
+Woody consists of this single file with no dependencies other than
+the standard library. Therefore it is very easy to bundle within applications.
 
 For more details, please refer to the documentation on:
 http://woody-docs.readthedocs.io/.
@@ -318,14 +320,16 @@ def woodpecker(path, reducer):
     return apply
 
 
-def extract(root, items, pre=None):
+def extract(content, items, pre=None):
     """Extract data from an XML document.
 
-    :param root: Root of the tree to extract the data from.
+    :param content: Content to extract the data from.
     :param items: Rules that specify how to extract the data items.
     :param pre: Preprocessing operations on the tree.
     :return: Extracted data.
     """
+
+    root = ElementTree.fromstring(content) if isinstance(content, str) else content
 
     def gen(val):
         if isinstance(val, str):
@@ -469,10 +473,7 @@ def scrape(spec, document_id, **kwargs):
         content = html_to_xhtml(content, omit_tags={'script'})
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', content)
 
-    root = ElementTree.fromstring(content)
-    # _logger.debug('=== TREE START ===\n%s\n=== TREE END===',
-    #               ElementTree.tostring(root, encoding='utf-8', method='xml'))
-    data = extract(root, document['items'], pre=document.get('pre'))
+    data = extract(content, document['items'], pre=document.get('pre'))
     return data
 
 
