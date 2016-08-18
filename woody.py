@@ -21,7 +21,7 @@ so that web pages can also be scraped. Woody consists of a single source file
 with no dependencies other than the standard library.
 
 For more details, please refer to the documentation on:
-http://woody.readthedocs.io/.
+http://woody-docs.readthedocs.io/.
 """
 
 from argparse import ArgumentParser
@@ -439,35 +439,35 @@ def _get_document(url):
     return content
 
 
-def scrape(spec, scraper_id, **kwargs):
+def scrape(spec, document, **kwargs):
     """Extract data from a document according to a specification.
 
     All keyword arguments will be used as parameters in the format string
-    of the scraper URL.
+    of the document URL.
 
     :param spec: Data extraction specification, a JSON list.
-    :param scraper_id: Selected scraper from the spec.
+    :param document: Selected document from the spec.
     :return: Extracted data.
     """
-    scrapers = [s for s in spec['scrapers'] if s['id'] == scraper_id]
-    if len(scrapers) != 1:
-        raise ValueError('Scraper ids must be unique: %s'.format(scraper_id))
-    scraper = scrapers[0]
-    _logger.debug('using scraper %s', scraper)
+    documents = [s for s in spec['documents'] if s['id'] == document]
+    if len(documents) != 1:
+        raise ValueError('Document ids must be unique: %s'.format(document))
+    document = documents[0]
+    _logger.debug('using document %s', document)
 
     base_url = spec['base_url']
-    url = base_url + scraper['url'].format(**kwargs)
+    url = base_url + document['url'].format(**kwargs)
     _logger.debug('scraping url %s', url)
 
     content = _get_document(url)
 
-    content_format = scraper.get('format', 'xml')
+    content_format = document.get('format', 'xml')
     if content_format == 'html':
         _logger.debug('converting html document to xml')
         content = html_to_xhtml(content, omit_tags={'script'})
 
     root = ElementTree.fromstring(content)
-    data = extract(root, scraper['items'], pre=scraper.get('pre'))
+    data = extract(root, document['items'], pre=document.get('pre'))
     return data
 
 
@@ -499,7 +499,7 @@ def _get_parser():
             for p in arguments.param:
                 k, v = p.split('=')
                 params[k] = int(v)
-        data = scrape(spec, arguments.scraper[0], **params)
+        data = scrape(spec, arguments.document[0], **params)
         print(json.dumps(data, indent=2, sort_keys=True))
 
     parser = ArgumentParser()
@@ -514,10 +514,10 @@ def _get_parser():
 
     subparser = commands.add_parser('scrape', help='scrape a document')
     subparser.set_defaults(func=scrape_doc)
-    subparser.add_argument('-c', nargs=1, dest='spec', required=True,
-                           help='configuration spec file')
-    subparser.add_argument('-s', nargs=1, dest='scraper', required=True,
-                           help='id of scraper in spec file')
+    subparser.add_argument('-s', nargs=1, dest='spec', required=True,
+                           help='spec file')
+    subparser.add_argument('-d', nargs=1, dest='document', required=True,
+                           help='selected document in spec file')
     subparser.add_argument('--param', action='append',
                            help='parameters to pass to the scraper')
 

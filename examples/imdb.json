@@ -1,8 +1,8 @@
 {
   "base_url": "http://akas.imdb.com",
-  "scrapers": [
+  "documents": [
     {
-      "id": "movie_combined_details",
+      "id": "movie_combined",
       "url": "/title/tt{imdb_id:07}/combined",
       "format": "html",
       "pre": [

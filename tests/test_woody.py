@@ -8,29 +8,29 @@ from woody import _get_document, extract, scrape, woodpecker, xpath
 
 
 @fixture(scope='module')
-def generic_xml():
+def generic_root():
     """Simple XML document with generic content."""
     content = '<d><t1>foo</t1><t1 a="v"><t2>bar</t2></t1></d>'
     return ElementTree.fromstring(content)
 
 
-def test_xpath_non_text_queries_should_return_nodes(generic_xml):
-    selected = xpath(generic_xml, './/t1')
+def test_xpath_non_text_queries_should_return_nodes(generic_root):
+    selected = xpath(generic_root, './/t1')
     assert [s.tag for s in selected] == ['t1', 't1']
 
 
-def test_xpath_child_text_queries_should_return_strings(generic_xml):
-    selected = xpath(generic_xml, './/t1/text()')
+def test_xpath_child_text_queries_should_return_strings(generic_root):
+    selected = xpath(generic_root, './/t1/text()')
     assert selected == ['foo']
 
 
-def test_xpath_descendant_text_queries_should_return_strings(generic_xml):
-    selected = xpath(generic_xml, './/t1//text()')
+def test_xpath_descendant_text_queries_should_return_strings(generic_root):
+    selected = xpath(generic_root, './/t1//text()')
     assert selected == ['foo', 'bar']
 
 
-def test_xpath_attr_queries_should_return_strings(generic_xml):
-    selected = xpath(generic_xml, './/t1/@a')
+def test_xpath_attr_queries_should_return_strings(generic_root):
+    selected = xpath(generic_root, './/t1/@a')
     assert selected == ['v']
 
 
@@ -109,7 +109,7 @@ def dummy_spec():
     """Dummy data extraction spec."""
     return {
         "base_url": TEST_SITE,
-        "scrapers": [
+        "documents": [
             {
                 "id": "dummy",
                 "url": "/",
@@ -122,13 +122,13 @@ def dummy_spec():
 @fixture(scope='module', autouse=True)
 def get_test_page(dummy_spec):
     """Store the test page in the cache."""
-    for scraper in dummy_spec['scrapers']:
-        url = dummy_spec['base_url'] + scraper['url']
+    for document in dummy_spec['documents']:
+        url = dummy_spec['base_url'] + document['url']
         _get_document(url)
 
 
 @mark.skip
-def test_scrape_url_uncached_should_retrieve_from_web(dummy_spec):
+def test_scrape_uncached_should_retrieve_from_web(dummy_spec):
     del os.environ['WOODY_WEB_CACHE']
     start = time.time()
     scrape(dummy_spec, 'dummy')
@@ -136,15 +136,15 @@ def test_scrape_url_uncached_should_retrieve_from_web(dummy_spec):
     assert end - start > 1
 
 
-def test_scrape_url_cached_should_read_from_disk(dummy_spec):
+def test_scrape_cached_should_read_from_disk(dummy_spec):
     start = time.time()
     scrape(dummy_spec, 'dummy')
     end = time.time()
     assert end - start < 1
 
 
-def test_scrape_url_multiple_ids_should_raise_error(dummy_spec):
-    scrapers = dummy_spec['scrapers']
-    scrapers.append(scrapers[0])
+def test_scrape_duplicate_document_ids_should_raise_error(dummy_spec):
+    documents = dummy_spec['documents']
+    documents.append(documents[0])
     with raises(ValueError):
         scrape(dummy_spec, 'dummy')

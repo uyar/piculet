@@ -49,329 +49,331 @@ def movies():
 @fixture(scope='module', autouse=True)
 def get_imdb_pages(imdb, movies):
     """Store all needed pages from the IMDb in the cache."""
-    for scraper in imdb['scrapers']:
+    for document in imdb['documents']:
         for movie_id in movies.values():
-            url = imdb['base_url'] + scraper['url'].format(imdb_id=movie_id)
+            url = imdb['base_url'] + document['url'].format(imdb_id=movie_id)
             _get_document(url)
 
 
-# Movie combined page tests
+# movie combined details page tests
+
+MOVIE_COMBINED = 'movie_combined'
 
 
-def test_full_title_should_have_title_and_year(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_full_title_should_have_title_and_year(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['title.full'] == 'The Matrix (1999)'
 
 
-def test_full_title_video_movie_should_include_type(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_video'])
+def test_movie_combined_full_title_video_movie_should_include_type(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_video'])
     assert data['title.full'] == 'Armitage III: Poly Matrix (1996) (V)'
 
 
-def test_full_title_tv_movie_should_include_type(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
+def test_movie_combined_full_title_tv_movie_should_include_type(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_tv'])
     assert data['title.full'] == 'The Matrix Defence (2003) (TV)'
 
 
-def test_full_title_video_game_should_include_type(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_vg'])
+def test_movie_combined_full_title_video_game_should_include_type(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_vg'])
     assert data['title.full'] == 'The Matrix Online (2005) (VG)'
 
 
-def test_full_title_tv_series_should_have_quotes(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+def test_movie_combined_full_title_tv_series_should_have_quotes(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who'])
     assert data['title.full'] == '"Doctor Who" (2005)'
 
 
-def test_full_title_tv_mini_series_should_have_quotes(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['band_of_brothers'])
+def test_movie_combined_full_title_tv_mini_series_should_have_quotes(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['band_of_brothers'])
     assert data['title.full'] == '"Band of Brothers" (2001)'
 
 
-def test_full_title_tv_episode_should_include_series_title_in_quotes(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+def test_movie_combined_full_title_tv_episode_should_include_series_title(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who_blink'])
     assert data['title.full'] == '"Doctor Who" Blink (2007)'
 
 
-def test_poster_should_have_link(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_poster_should_have_link(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['poster.link'].endswith('._V1._SX94_SY140_.jpg')
 
 
-def test_poster_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_poster_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'poster.link' not in data
 
 
-def test_title_should_not_have_year(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_title_should_not_have_year(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['title'] == 'The Matrix'
 
 
-def test_title_video_movie_should_not_include_type(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_video'])
+def test_movie_combined_title_video_movie_should_not_include_type(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_video'])
     assert data['title'] == 'Armitage III: Poly Matrix'
 
 
-def test_title_tv_movie_should_not_include_type(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
+def test_movie_combined_title_tv_movie_should_not_include_type(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_tv'])
     assert data['title'] == 'The Matrix Defence'
 
 
-def test_title_video_game_should_not_include_type(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_vg'])
+def test_movie_combined_title_video_game_should_not_include_type(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_vg'])
     assert data['title'] == 'The Matrix Online'
 
 
-def test_title_tv_series_should_have_quotes(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+def test_movie_combined_title_tv_series_should_have_quotes(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who'])
     assert data['title'] == '"Doctor Who"'
 
 
-def test_title_tv_mini_series_should_have_quotes(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['band_of_brothers'])
+def test_movie_combined_title_tv_mini_series_should_have_quotes(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['band_of_brothers'])
     assert data['title'] == '"Band of Brothers"'
 
 
-def test_title_tv_episode_should_be_series_title_in_quotes(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+def test_movie_combined_title_tv_episode_should_be_series_title(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who_blink'])
     assert data['title'] == '"Doctor Who"'
 
 
-def test_episode_title_should_not_include_series_title(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+def test_movie_combined_episode_title_should_not_include_series_title(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who_blink'])
     assert data['title.episode'] == 'Blink'
 
 
-def test_episode_title_tv_series_should_have_none(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+def test_movie_combined_episode_title_tv_series_should_have_none(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who'])
     assert 'title.episode' not in data
 
 
-def test_year_should_be_a_four_digit_number(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_year_should_be_a_four_digit_number(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['year'] == '1999'
 
 
-def test_year_tv_series_should_be_a_four_digit_number(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+def test_movie_combined_year_tv_series_should_be_beginning_year(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who'])
     assert data['year'] == '2005'
 
 
-def test_year_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['aslan'])
+def test_movie_combined_year_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['aslan'])
     assert 'year' not in data
 
 
-def test_tv_extra_tv_series_ended_should_have_type_and_end_year(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md'])
+def test_movie_combined_tv_extra_tv_series_should_have_type_and_end_year(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['house_md'])
     assert data['tv_extra'] == 'TV series 2004-2012'
 
 
-def test_tv_extra_tv_mini_series_ended_should_have_type_and_end_year(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['band_of_brothers'])
+def test_movie_combined_tv_extra_tv_mini_series_should_have_type_and_end_year(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['band_of_brothers'])
     assert data['tv_extra'] == 'TV mini-series 2001-2001'
 
 
-def test_tv_extra_tv_series_continuing_should_have_no_end_year(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+def test_movie_combined_tv_extra_continuing_tv_series_should_have_no_end_year(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who'])
     assert data['tv_extra'] == 'TV series 2005-'
 
 
-def test_tv_extra_tv_episode_should_have_none(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+def test_movie_combined_tv_extra_tv_episode_should_have_none(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who_blink'])
     assert 'tv_extra' not in data
 
 
-def test_episode_prev_link_should_be_a_title_link(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+def test_movie_combined_episode_prev_link_should_be_a_title_link(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who_blink'])
     assert data['episode.prev.link'] == '/title/tt1000256/'
 
 
-def test_episode_prev_link_first_episode_should_have_none(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md_first'])
+def test_movie_combined_episode_prev_link_first_episode_should_have_none(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['house_md_first'])
     assert 'episode.prev.link' not in data
 
 
-def test_episode_number_should_be_a_number(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+def test_movie_combined_episode_number_should_be_a_number(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who_blink'])
     assert data['episode.number'] == '« | 38 of | »'
 
 
-def test_episode_series_episode_count_should_be_a_number(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md_first'])
+def test_movie_combined_episode_series_episode_count_should_be_a_number(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['house_md_first'])
     assert data['series.episode_count'] == '176 Episodes'
 
 
-def test_episode_next_link_should_be_a_title_link(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+def test_movie_combined_episode_next_link_should_be_a_title_link(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who_blink'])
     assert data['episode.next.link'] == '/title/tt1000259/'
 
 
-def test_episode_next_link_last_episode_should_have_none(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md_last'])
+def test_movie_combined_episode_next_link_last_episode_should_have_none(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['house_md_last'])
     assert 'episode.next.link' not in data
 
 
-def test_rating_should_be_a_decimal_number_over_10(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_rating_should_be_a_decimal_number_over_10(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert re.match(r'^[1-9]\.\d\/10$', data['rating'])
 
 
-def test_rating_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_rating_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'rating' not in data
 
 
-def test_votes_should_be_a_thousands_separated_number(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_votes_should_be_a_thousands_separated_number(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert re.match(r'^[1-9][0-9,]* votes$', data['votes'])
 
 
-def test_votes_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_votes_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'votes' not in data
 
 
-def test_rank_top250_should_include_position_number(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_rank_top250_should_include_position_number(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert re.match(r'^Top 250: #\d+$', data['rank'])
 
 
-def test_rank_bottom100_should_include_position_number(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+def test_movie_combined_rank_bottom100_should_include_position_number(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['manos'])
     assert re.match(r'^Bottom 100: #\d+$', data['rank'])
 
 
-def test_rank_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_rank_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'rank' not in data
 
 
-def test_creators_single_should_be_a_list_of_persons(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+def test_movie_combined_creators_single_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who'])
     assert data['creators'] == [
         {'link': '/name/nm0628285/', 'name': 'Sydney Newman'}
     ]
 
 
-def test_creators_multiple_should_be_a_list_of_persons(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['star_trek_ds9'])
+def test_movie_combined_creators_multiple_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['star_trek_ds9'])
     assert data['creators'] == [
         {'link': '/name/nm0075834/', 'name': 'Rick Berman'},
         {'link': '/name/nm0683522/', 'name': 'Michael Piller'}
     ]
 
 
-def test_creators_episodes_should_have_none(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+def test_movie_combined_creators_episodes_should_have_none(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who_blink'])
     assert 'creators' not in data
 
 
-def test_seasons_should_be_a_list_of_seasons(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['house_md'])
+def test_movie_combined_seasons_should_be_a_list_of_seasons(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['house_md'])
     assert data['seasons'] == [
         {'link': 'episodes?season={}'.format(i), 'name': str(i)}
         for i in range(1, 9)
     ]
 
 
-def test_seasons_mini_series_should_have_only_one(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['band_of_brothers'])
+def test_movie_combined_seasons_mini_series_should_have_only_one(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['band_of_brothers'])
     assert data['seasons'] == [
         {'link': 'episodes?season=1', 'name': '1'}
     ]
 
 
-def test_seasons_episodes_should_have_none(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+def test_movie_combined_seasons_episodes_should_have_none(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who_blink'])
     assert 'seasons' not in data
 
 
-def test_series_should_be_a_series(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+def test_movie_combined_series_should_be_a_series(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who_blink'])
     assert data['series'] == {'link': '/title/tt0436992/',
                               'title.full': '"Doctor Who" (2005)'}
 
 
-def test_series_tv_series_should_have_none(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+def test_movie_combined_series_tv_series_should_have_none(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who'])
     assert 'series' not in data
 
 
-def test_episode_original_air_date_should_include_season_and_episode(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+def test_movie_combined_episode_air_date_should_include_season_and_episode(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who_blink'])
     assert data['date.airing'] == '9 June 2007 (Season 3, Episode 10)'
 
 
-def test_episode_original_air_date_tv_series_should_have_none(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who'])
+def test_movie_combined_episode_air_date_tv_series_should_have_none(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who'])
     assert 'date.airing' not in data
 
 
-def test_genres_single_should_be_a_list_of_genre_names(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['if'])
+def test_movie_combined_genres_single_should_be_a_list_of_genre_names(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['if'])
     assert data['genres'] == ['Drama']
 
 
-def test_genres_multiple_should_be_a_list_of_genre_names(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_genres_multiple_should_be_a_list_of_genre_names(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['genres'] == ['Action', 'Sci-Fi']
 
 
 # TODO: find a movie with no genre
-# def test_genres_none_should_be_excluded(imdb, movies):
-#     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
+# def test_movie_combined_genres_none_should_be_excluded(imdb, movies):
+#     data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['???'])
 #     assert 'genres' not in data
 
 
-def test_tagline_should_be_a_short_phrase(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_tagline_should_be_a_short_phrase(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['tagline'] == 'Free your mind'
 
 
-def test_tagline_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_tagline_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'tagline' not in data
 
 
-def test_plot_should_be_a_longer_text(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_plot_should_be_a_longer_text(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert re.match('^A computer hacker .* against its controllers.$', data['plot'])
 
 
-def test_plot_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_plot_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'plot' not in data
 
 
 # TODO: find a movie with only one plot keyword
-# def test_plot_keywords_single_should_be_a_list_of_keywords(imdb, movies):
-#     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
+# def test_movie_combined_plot_keywords_single_should_be_a_list_of_keywords(imdb, movies):
+#     data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['???'])
 #     assert data['plot.keywords'] == ['???']
 
 
-def test_plot_keywords_multiple_should_be_a_list_of_keywords(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
-    assert data['plot.keywords'] == \
-        ['Computer', 'Hacker', 'Reality', 'Matrix', 'Computer Hacker']
+def test_movie_combined_plot_keywords_multiple_should_be_a_list_of_keywords(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
+    assert data['plot.keywords'] == ['Computer', 'Hacker', 'Reality',
+                                     'Matrix', 'Computer Hacker']
 
 
-def test_plot_keywords_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_plot_keywords_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'plot.keywords' not in data
 
 
-def test_cast_single_should_be_a_list_of_persons_and_characters(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
+def test_movie_combined_cast_single_should_be_a_list_of_persons_and_characters(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_tv'])
     assert data['cast'] == [
         {'link': '/name/nm0186469/', 'name': 'Kenneth Cranham',
          'character': {'notes': 'Narrator'}}
     ]
 
 
-def test_cast_multiple_should_be_a_list_of_persons_and_characters(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_cast_multiple_should_be_a_list_of_persons_and_characters(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert len(data['cast']) == 38
     assert data['cast'][:2] == [
         {'link': '/name/nm0000206/', 'name': 'Keanu Reeves',
@@ -381,46 +383,46 @@ def test_cast_multiple_should_be_a_list_of_persons_and_characters(imdb, movies):
     ]
 
 
-def test_cast_character_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_cast_character_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert data['cast'][0] == {'link': '/name/nm0022342/', 'name': 'Zeki Alpan'}
 
 
-def test_cast_character_link_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_cast_character_link_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert data['cast'][1] == {'link': '/name/nm0351657/', 'name': 'Nejat Gürçen',
                                'character': {'notes': 'Naci'}}
 
 
-def test_cast_character_notes_should_be_included(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_cast_character_notes_should_be_included(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['cast'][14] == {'link': '/name/nm0336802/', 'name': 'Marc Aden Gray',
                                 'character': {'link': '/character/ch0030779/', 'name': 'Choi',
                                               'notes': '(as Marc Gray)'}}
 
 
-def test_cast_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_short'])
+def test_movie_combined_cast_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_short'])
     assert 'cast' not in data
 
 
-def test_directors_single_should_be_a_list_of_persons(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
+def test_movie_combined_directors_single_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['shining'])
     assert data['directors'] == [
         {'link': '/name/nm0000040/', 'name': 'Stanley Kubrick'}
     ]
 
 
-def test_directors_multiple_should_be_a_list_of_persons(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['west_side_story'])
+def test_movie_combined_directors_multiple_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['west_side_story'])
     assert data['directors'] == [
         {'link': '/name/nm0730385/', 'name': 'Jerome Robbins'},
         {'link': '/name/nm0936404/', 'name': 'Robert Wise'}
     ]
 
 
-def test_directors_with_notes_should_include_notes(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_directors_with_notes_should_include_notes(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['directors'] == [
         {'link': '/name/nm0905154/', 'name': 'Lana Wachowski',
          'notes': '(as The Wachowski Brothers)'},
@@ -429,28 +431,28 @@ def test_directors_with_notes_should_include_notes(imdb, movies):
     ]
 
 
-def test_directors_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['aslan'])
+def test_movie_combined_directors_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['aslan'])
     assert 'directors' not in data
 
 
-def test_writers_single_should_be_a_list_of_persons(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_writers_single_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert data['writers'] == [
         {'link': '/name/nm0277168/', 'name': 'Recep Filiz'}
     ]
 
 
-def test_writers_notes_should_be_included(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+def test_movie_combined_writers_notes_should_be_included(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['manos'])
     assert data['writers'] == [
         {'link': '/name/nm0912849/', 'name': 'Harold P. Warren',
          'notes': '(screenplay)'}
     ]
 
 
-def test_writers_multiple_should_be_a_list_of_persons(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
+def test_movie_combined_writers_multiple_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['shining'])
     assert data['writers'] == [
         {'link': '/name/nm0000175/', 'name': 'Stephen King',
          'notes': '(novel)'},
@@ -461,21 +463,21 @@ def test_writers_multiple_should_be_a_list_of_persons(imdb, movies):
     ]
 
 
-def test_writers_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
+def test_movie_combined_writers_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_tv'])
     assert 'writers' not in data
 
 
-def test_producers_single_should_be_a_list_of_persons(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+def test_movie_combined_producers_single_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['manos'])
     assert data['producers'] == [
         {'link': '/name/nm0912849/', 'name': 'Harold P. Warren',
          'notes': 'producer'}
     ]
 
 
-def test_producers_multiple_should_be_a_list_of_persons(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_producers_multiple_should_be_a_list_of_persons(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['producers'][-2:] == [
         {'link': '/name/nm0905154/', 'name': 'Lana Wachowski',
          'notes': 'executive producer (as Larry Wachowski)'},
@@ -484,63 +486,63 @@ def test_producers_multiple_should_be_a_list_of_persons(imdb, movies):
     ]
 
 
-def test_producers_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv_short'])
+def test_movie_combined_producers_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_tv_short'])
     assert 'producers' not in data
 
 
-def test_aka_should_be_br_separated_titles(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+def test_movie_combined_aka_should_be_br_separated_titles(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['manos'])
     assert data['title.aka'] == \
         '"Манос: Руки судьбы" - Soviet Union (Russian title):BR:' \
         ' "Manos - As Mãos do Destino" - Brazil (imdb display title):BR:'
 
 
-def test_aka_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_aka_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'title.aka' not in data
 
 
-def test_mpaa_should_be_a_rating(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_mpaa_should_be_a_rating(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['rating.mpaa'] == 'Rated R for sci-fi violence and brief language'
 
 
-def test_mpaa_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_mpaa_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'mpaa' not in data
 
 
-def test_runtime_single_should_be_a_number_in_minutes(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_runtime_single_should_be_a_number_in_minutes(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['runtime'] == '136 min'
 
 
-def test_runtime_multiple_should_be_pipe_separated(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
+def test_movie_combined_runtime_multiple_should_be_pipe_separated(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['shining'])
     assert data['runtime'] == \
         '144 min (cut) | 119 min (cut) (European version) | 146 min (original version)'
 
 
-def test_runtime_with_countries_should_include_context(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['suspiria'])
+def test_movie_combined_runtime_with_countries_should_include_context(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['suspiria'])
     assert data['runtime'] == '98 min | Germany:88 min | USA:92 min | Argentina:95 min'
 
 
-def test_runtime_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_vg'])
+def test_movie_combined_runtime_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_vg'])
     assert 'runtime' not in data
 
 
-def test_countries_single_should_be_a_list_of_countries(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_countries_single_should_be_a_list_of_countries(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['countries'] == [
         {'link': '/country/us', 'name': 'USA'}
     ]
 
 
-def test_countries_multiple_should_be_a_list_of_countries(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['shining'])
+def test_movie_combined_countries_multiple_should_be_a_list_of_countries(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['shining'])
     assert data['countries'] == [
         {'link': '/country/us', 'name': 'USA'},
         {'link': '/country/gb', 'name': 'UK'}
@@ -548,20 +550,20 @@ def test_countries_multiple_should_be_a_list_of_countries(imdb, movies):
 
 
 # TODO: find a movie with no country
-# def test_countries_none_should_be_excluded(imdb, movies):
-#     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
+# def test_movie_combined_countries_none_should_be_excluded(imdb, movies):
+#     data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['???'])
 #     assert 'countries' not in data
 
 
-def test_languages_single_should_be_a_list_of_languages(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_languages_single_should_be_a_list_of_languages(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['languages'] == [
         {'link': '/language/en', 'name': 'English'}
     ]
 
 
-def test_languages_multiple_should_be_a_list_of_languages(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ace_in_the_hole'])
+def test_movie_combined_languages_multiple_should_be_a_list_of_languages(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ace_in_the_hole'])
     assert data['languages'] == [
         {'link': '/language/en', 'name': 'English'},
         {'link': '/language/es', 'name': 'Spanish'},
@@ -569,129 +571,131 @@ def test_languages_multiple_should_be_a_list_of_languages(imdb, movies):
     ]
 
 
-def test_languages_single_none_is_a_language_name(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_short'])
+def test_movie_combined_languages_single_none_is_a_language_name(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_short'])
     assert data['languages'] == [
         {'link': '/language/zxx', 'name': 'None'}
     ]
 
 
 # TODO: find a movie with no language
-# def test_languages_none_should_be_excluded(imdb, movies):
-#     data = scrape(imdb, 'movie_combined_details', imdb_id=movies['???'])
+# def test_movie_combined_languages_none_should_be_excluded(imdb, movies):
+#     data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['???'])
 #     assert 'languages' not in data
 
 
-def test_colors_single_should_be_a_list_of_color_types(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+def test_movie_combined_colors_single_should_be_a_list_of_color_types(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['manos'])
     assert data['colors'] == ['Color']
 
 
-def test_colors_multiple_should_be_a_list_of_color_types(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['if'])
+def test_movie_combined_colors_multiple_should_be_a_list_of_color_types(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['if'])
     assert data['colors'] == ['Black and White', 'Color']
 
 
-def test_colors_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
+def test_movie_combined_colors_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_tv'])
     assert 'colors' not in data
 
 
-def test_colors_notes_single_should_include_note(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+def test_movie_combined_colors_notes_single_should_include_note(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['manos'])
     assert data['colors.notes'] == 'Color (Eastmancolor)'
 
 
-def test_colors_notes_multiple_should_be_pipe_separated(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['if'])
+def test_movie_combined_colors_notes_multiple_should_be_pipe_separated(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['if'])
     assert data['colors.notes'] == 'Black and White | Color (Eastmancolor) (uncredited)'
 
 
-def test_colors_notes_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix_tv'])
+def test_movie_combined_colors_notes_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix_tv'])
     assert 'colors.notes' not in data
 
 
-def test_aspect_ratio_should_be_a_number_to_one(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_aspect_ratio_should_be_a_number_to_one(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['aspect_ratio'] == '2.35 : 1'
 
 
-def test_aspect_ratio_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_aspect_ratio_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'aspect_ratio' not in data
 
 
-def test_sound_mix_single_should_be_a_list_of_sound_mix_types(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ace_in_the_hole'])
+def test_movie_combined_sound_mix_single_should_be_a_list_of_sound_mix_types(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ace_in_the_hole'])
     assert data['sound_mix'] == ['Mono']
 
 
-def test_sound_mix_multiple_should_be_a_list_of_sound_mix_types(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_sound_mix_multiple_should_be_a_list_of_sound_mix_types(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['sound_mix'] == ['DTS', 'Dolby Digital', 'SDDS']
 
 
-def test_sound_mix_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_sound_mix_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'sound_mix' not in data
 
 
-def test_sound_mix_notes_single_should_include_note(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ace_in_the_hole'])
+def test_movie_combined_sound_mix_notes_single_should_include_note(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ace_in_the_hole'])
     assert data['sound_mix.notes'] == 'Mono (Western Electric Recording)'
 
 
-def test_sound_mix_notes_multiple_should_be_pipe_separated(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['matrix'])
+def test_movie_combined_sound_mix_notes_multiple_should_be_pipe_separated(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['matrix'])
     assert data['sound_mix.notes'] == 'DTS | Dolby Digital | SDDS'
 
 
-def test_sound_mix_notes_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_sound_mix_notes_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'sound_mix.notes' not in data
 
 
-def test_certifications_single_should_be_a_list_of_certificate_names(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+def test_movie_combined_certifications_single_should_be_a_list_of_certificates(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who_blink'])
     assert data['certifications'] == ['UK:PG']
 
 
-def test_certifications_multiple_should_be_a_list_of_certificate_names(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+def test_movie_combined_certifications_multiple_should_be_a_list_of_certificates(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['manos'])
     assert data['certifications'] == ['Canada:G', 'Finland:K-18', 'USA:Not Rated']
 
 
-def test_certifications_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_certifications_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'certifications' not in data
 
 
-def test_certifications_notes_single_include_note(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['dr_who_blink'])
+def test_movie_combined_certifications_notes_single_include_note(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['dr_who_blink'])
     assert data['certifications.notes'] == 'UK:PG (DVD rating)'
 
 
-def test_certifications_notes_multiple_should_be_pipe_separated(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['manos'])
+def test_movie_combined_certifications_notes_multiple_should_be_pipe_separated(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['manos'])
     assert data['certifications.notes'] == \
         'Canada:G (Quebec) (2008) | Finland:K-18 (2008) (self applied) | USA:Not Rated'
 
 
-def test_certifications_notes_none_should_be_excluded(imdb, movies):
-    data = scrape(imdb, 'movie_combined_details', imdb_id=movies['ates_parcasi'])
+def test_movie_combined_certifications_notes_none_should_be_excluded(imdb, movies):
+    data = scrape(imdb, MOVIE_COMBINED, imdb_id=movies['ates_parcasi'])
     assert 'certifications.notes' not in data
 
 
-# Movie keywords page tests
+# movie keywords page tests
+
+MOVIE_KEYWORDS = 'movie_keywords'
 
 
-def test_keywords_should_be_a_list_of_keywords(imdb, movies):
-    data = scrape(imdb, 'movie_keywords', imdb_id=movies['matrix'])
+def test_movie_keywords_should_be_a_list_of_keywords(imdb, movies):
+    data = scrape(imdb, MOVIE_KEYWORDS, imdb_id=movies['matrix'])
     for keyword in ('computer', 'messiah', 'artificial reality'):
         assert keyword in data['keywords']
 
 
 def test_keywords_none_should_beexcluded(imdb, movies):
-    data = scrape(imdb, 'movie_keywords', imdb_id=movies['ates_parcasi'])
+    data = scrape(imdb, MOVIE_KEYWORDS, imdb_id=movies['ates_parcasi'])
     assert 'keywords' not in data
