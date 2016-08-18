@@ -27,7 +27,7 @@ def retrieve(
 
 def scrape(
         spec: Mapping[str, Any],
-        document: str,
+        document_id: str,
         **kwargs
 ) -> Mapping[str, Any]: ...
 

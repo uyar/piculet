@@ -28,7 +28,7 @@ clean-docs:
 	make -C docs clean
 
 lint:
-	flake8 woody tests
+	flake8 woody.py tests
 
 test:
 	py.test

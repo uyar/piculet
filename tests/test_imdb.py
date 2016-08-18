@@ -691,6 +691,6 @@ def test_movie_keywords_should_be_a_list_of_keywords(imdb, movies):
         assert keyword in data['keywords']
 
 
-def test_keywords_none_should_beexcluded(imdb, movies):
+def test_keywords_none_should_be_excluded(imdb, movies):
     data = scrape(imdb, MOVIE_KEYWORDS, imdb_id=movies['ates_parcasi'])
     assert 'keywords' not in data

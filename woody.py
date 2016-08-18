@@ -31,6 +31,7 @@ from functools import partial
 from hashlib import md5
 from html.parser import HTMLParser
 from io import StringIO
+from itertools import chain
 from urllib.request import build_opener, Request
 
 import json
@@ -78,7 +79,7 @@ def retrieve(url, charset=None, fallback_charset='utf-8'):
     :param fallback_charset: Character set to use if it can't be figured out.
     :return: Content of web page.
     """
-    _logger.debug('retrieving page: %s', url)
+    _logger.debug('retrieving page [%s]', url)
     opener = build_opener()
     request = Request(url)
     with opener.open(request) as response:
@@ -89,7 +90,7 @@ def retrieve(url, charset=None, fallback_charset='utf-8'):
         for key, tag in _CHARSET_TAGS.items():
             start = content.find(tag)
             if start >= 0:
-                _logger.debug('charset found in %s tag', key)
+                _logger.debug('charset found in [%s] tag', key)
                 charset_start = start + len(tag)
                 charset_end = content.find(b'"', charset_start)
                 charset = content[charset_start:charset_end].decode('ascii')
@@ -98,7 +99,7 @@ def retrieve(url, charset=None, fallback_charset='utf-8'):
             _logger.debug('charset not found, using fallback')
             charset = fallback_charset
 
-    _logger.debug('decoding for charset: %s', charset)
+    _logger.debug('decoding for charset [%s]', charset)
     return content.decode(charset)
 
 
@@ -126,9 +127,6 @@ class _HTMLNormalizer(HTMLParser):
     }
     """Additional entity references to replace in attributes."""
 
-    # FIXME: what if it's the last attribute?
-    _RE_QUOTE_FIXER = re.compile(r'\s\w+="(".*?)"\s+\w+=')
-
     def __init__(self, omit_tags=None, omit_attrs=None):
         # let the HTML parser convert entity refs to unicode chars
         super().__init__(convert_charrefs=True)
@@ -142,27 +140,30 @@ class _HTMLNormalizer(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         if tag in self.omit_tags:
-            _logger.debug('omitting tag: %s', tag)
+            _logger.debug('omitting [%s] tag', tag)
             self._open_omitted_tags.append(tag)
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             if (tag == 'li') and (self._open_tags[-1] == 'li'):
-                _logger.debug('opened li without closing previous li, adding closing tag')
+                _logger.debug('opened [li] without closing previous [li], adding closing tag')
                 self.handle_endtag('li')
             attribs = []
             for attr_name, attr_value in attrs:
                 if attr_name in self.omit_attrs:
-                    _logger.debug('omitting attribute: %s', attr_name)
+                    _logger.debug('omitting [%s] attribute of [%s] tag', attr_name, tag)
                 else:
-                    if not attr_value:
-                        _logger.debug('no value for %s attribute, adding empty value',
-                                      attr_name)
+                    if attr_value is None:
+                        _logger.debug('no value for [%s] attribute of [%s] tag'
+                                      ', adding empty value', attr_name, tag)
                         attr_value = ''
                     else:
-                        for e, r in self.ENTITY_REFS.items():
-                            attr_value = attr_value.replace(e, r)
-                        for e, r in self.ATTR_ENTITY_REFS.items():
-                            attr_value = attr_value.replace(e, r)
+                        for e, r in chain(self.ENTITY_REFS.items(),
+                                          self.ATTR_ENTITY_REFS.items()):
+                            if e in attr_value:
+                                _logger.debug('replacing [%s] with [%s]'
+                                              ' in [%s] value of [%s] tag',
+                                              e, r, attr_value, tag)
+                                attr_value = attr_value.replace(e, r)
                     attribs.append((attr_name, attr_value))
             line = '<{tag}{attrs}{slash}>'.format(
                 tag=tag,
@@ -180,18 +181,18 @@ class _HTMLNormalizer(HTMLParser):
             if tag not in self.SELF_CLOSING_TAGS:
                 last = self._open_tags[-1]
                 if (tag == 'ul') and (last == 'li'):
-                    _logger.debug('closing ul without closing last li, adding closing tag')
+                    _logger.debug('closing [ul] without closing last [li], adding closing tag')
                     self.handle_endtag('li')
                 if tag == last:
                     # expected end tag
                     print('</{t}>'.format(t=tag), end='')
                     self._open_tags.pop()
                 elif tag not in self._open_tags:
-                    _logger.debug('end tag without a start tag: %s', tag)
+                    _logger.debug('end tag [%s] without start tag', tag)
                     # XXX: for <a><b></a></b>, this case gets invoked
                     #      after the case below
                 elif tag == self._open_tags[-2]:
-                    _logger.debug('unexpected end tag: %s instead of %s, closing both',
+                    _logger.debug('unexpected end tag [%s] instead of [%s], closing both',
                                   tag, last)
                     print('</{t}>'.format(t=last), end='')
                     print('</{t}>'.format(t=tag), end='')
@@ -209,9 +210,6 @@ class _HTMLNormalizer(HTMLParser):
             print(data, end='')
 
     def feed(self, data):
-        # fix for quotes in attribute values
-        for problem in self._RE_QUOTE_FIXER.findall(data):
-            data = data.replace(problem, problem.replace('"', '&quot;'))
         super().feed(data)
         # close all remaining open tags
         # for tag in reversed(self._open_tags):
@@ -226,7 +224,7 @@ def html_to_xhtml(content, omit_tags=None, omit_attrs=None):
     :param omit_attrs: Attributes to exclude from the output.
     :return: Normalized XHTML content.
     """
-    _logger.debug('cleaning HTML and converting to XHTML')
+    _logger.debug('cleaning html and converting to xhtml')
     out = StringIO()
     normalizer = _HTMLNormalizer(omit_tags=omit_tags, omit_attrs=omit_attrs)
     with redirect_stdout(out):
@@ -299,7 +297,7 @@ def woodpecker(path, reducer):
     try:
         reduce = _REDUCERS[reducer]
     except KeyError:
-        raise ValueError('Unknown reducer: %s', reducer)
+        raise ValueError('Unknown reducer [%s]', reducer)
 
     def apply(element):
         """Extract a value from an element.
@@ -312,9 +310,9 @@ def woodpecker(path, reducer):
             _logger.debug('no match for %s', path)
             return None
 
-        _logger.debug('extracted value: %s', values)
+        _logger.debug('extracted value [%s]', values)
         value = reduce(values)
-        _logger.debug('applied %s reducer, new value: %s', reducer, value)
+        _logger.debug('applied [%s] reducer, new value [%s]', reducer, value)
         return value
 
     return apply
@@ -423,7 +421,7 @@ def _get_document(url):
         _logger.debug('no caching, retrieving document')
         content = retrieve(url)
     else:
-        _logger.debug('using cache dir %s', cache_dir)
+        _logger.debug('using cache dir [%s]', cache_dir)
         os.makedirs(cache_dir, exist_ok=True)
         key = md5(url.encode('utf-8')).hexdigest()
         cache_file = os.path.join(cache_dir, key)
@@ -439,25 +437,29 @@ def _get_document(url):
     return content
 
 
-def scrape(spec, document, **kwargs):
+def scrape(spec, document_id, **kwargs):
     """Extract data from a document according to a specification.
 
     All keyword arguments will be used as parameters in the format string
     of the document URL.
 
     :param spec: Data extraction specification, a JSON list.
-    :param document: Selected document from the spec.
+    :param document_id: Id of selected document type from the spec.
     :return: Extracted data.
     """
-    documents = [s for s in spec['documents'] if s['id'] == document]
-    if len(documents) != 1:
-        raise ValueError('Document ids must be unique: %s'.format(document))
-    document = documents[0]
-    _logger.debug('using document %s', document)
+    document_ids = [s for s in spec['documents'] if s['id'] == document_id]
+    if len(document_ids) != 1:
+        raise ValueError('Document ids must be unique: %s'.format(document_id))
+    document = document_ids[0]
+    _logger.debug('using document [%s]', document_id)
 
     base_url = spec['base_url']
+    document_url = document['url']
+    for arg in kwargs:
+        if ('{%s:0' % arg) in document_url:
+            kwargs[arg] = int(kwargs[arg])
     url = base_url + document['url'].format(**kwargs)
-    _logger.debug('scraping url %s', url)
+    _logger.debug('scraping url [%s]', url)
 
     content = _get_document(url)
 
@@ -465,8 +467,11 @@ def scrape(spec, document, **kwargs):
     if content_format == 'html':
         _logger.debug('converting html document to xml')
         content = html_to_xhtml(content, omit_tags={'script'})
+        # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', content)
 
     root = ElementTree.fromstring(content)
+    # _logger.debug('=== TREE START ===\n%s\n=== TREE END===',
+    #               ElementTree.tostring(root, encoding='utf-8', method='xml'))
     data = extract(root, document['items'], pre=document.get('pre'))
     return data
 
@@ -498,7 +503,7 @@ def _get_parser():
         if arguments.param:
             for p in arguments.param:
                 k, v = p.split('=')
-                params[k] = int(v)
+                params[k] = v
         data = scrape(spec, arguments.document[0], **params)
         print(json.dumps(data, indent=2, sort_keys=True))
 
