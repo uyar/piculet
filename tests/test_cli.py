@@ -21,6 +21,16 @@ def test_start_through_module_should_be_accessible():
     assert stderr == b''
 
 
+def test_start_through_main_script_should_be_accessible():
+    script_file = os.path.join(os.path.dirname(__file__), '..', 'woody.py')
+    command = ['python', script_file]
+    process = Popen(command, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = process.communicate()
+    assert process.returncode == 1
+    assert stdout.startswith(b'usage:')
+    assert stderr == b''
+
+
 def test_dash_h_should_output_usage_string():
     command = ['woody', '-h']
     process = Popen(command, stdout=PIPE, stderr=PIPE)
