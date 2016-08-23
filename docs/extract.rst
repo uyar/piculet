@@ -9,15 +9,16 @@ start by explaining how that works:
 
 We'll use the following (X)HTML document in our examples:
 
-.. literalinclude:: matrix.html
+.. literalinclude:: shining.html
    :language: html
 
-Assuming this file is saved as :file:`matrix.html`, let's get the content:
+Assuming this file is saved as :file:`shining.html`, let's get the content:
 
 .. code-block:: python
 
-   with open('matrix.html') as f:
-       document = f.read()
+   >>> with open('shining.html') as f:
+   ...     document = f.read()
+   ...
 
 The extraction function takes an XML document and a list of extraction rules.
 It converts the document into an XML tree and applies the rules to the root
@@ -31,24 +32,9 @@ of a path query and a reducer function. The query gets applied to the root
 of the tree and produces a list of strings. Then the reducer function
 transforms this list into a single string. [#]_
 
-For example, to extract the title data out of the sample document, we can
-write the following rule where ``first`` is a predefined reducer that selects
+For example, to extract the title and year out of the sample document, we can
+write the following rules where ``first`` is a predefined reducer that selects
 the first element of a list:
-
->>> items = [
-...     {
-...         "key": "title",
-...         "value": {
-...             "path": ".//title/text()",
-...             "reducer": "first"
-...         }
-...     }
-... ]
->>> extract(document, items)
-{'title': 'The Matrix'}
-
-Other common predefined reducing operations are joining and cleaning.
-The ``join`` reducer joins all selected strings into one:
 
 >>> items = [
 ...     {
@@ -59,6 +45,21 @@ The ``join`` reducer joins all selected strings into one:
 ...         }
 ...     },
 ...     {
+...         "key": "year",
+...         "value": {
+...             "path": ".//span[@class='year']/text()",
+...             "reducer": "first"
+...         }
+...     }
+... ]
+>>> extract(document, items)
+{'title': 'The Shining', 'year': '1980'}
+
+Other common predefined reducing operations are joining and cleaning.
+The ``join`` reducer joins all selected strings into one:
+
+>>> items = [
+...     {
 ...         "key": "full_title",
 ...         "value": {
 ...             "path": ".//h1//text()",
@@ -67,7 +68,7 @@ The ``join`` reducer joins all selected strings into one:
 ...     }
 ... ]
 >>> extract(document, items)
-{'title': 'The Matrix', 'full_title': 'The Matrix (1999)'}
+{'full_title': 'The Shining (1980)'}
 
 Joining the strings will cause extra whitespace to be preserved in the value.
 If you want to get rid of these, use the ``clean`` reducer. After joining
@@ -105,7 +106,85 @@ For example, to get the genres of the movie, we can write:
 ...     }
 ... ]
 >>> extract(document, items)
-{'genres': ['Action', 'Sci-Fi']}
+{'genres': ['Horror', 'Drama']}
+
+Subrules
+--------
+
+Nested structures can be created by writing subrules as value specifiers. If
+the value specifier is a mapping that contains an ``items`` key, then this will
+be interpreted as a subrule and the generated mapping will be the value for
+the key.
+
+>>> items = [
+...     {
+...         "key": "title",
+...         "value": {
+...             "path": ".//title/text()",
+...             "reducer": "first"
+...         }
+...     },
+...     {
+...         "key": "director",
+...         "value": {
+...             "items": [
+...                 {
+...                     "key": "name",
+...                     "value": {
+...                         "path": ".//div[@class='director']//a/text()",
+...                         "reducer": "first"
+...                     }
+...                 },
+...                 {
+...                     "key": "link",
+...                     "value": {
+...                         "path": ".//div[@class='director']//a/@href",
+...                         "reducer": "first"
+...                     }
+...                 }
+...             ]
+...         }
+...     }
+... ]
+>>> extract(document, items)
+{'title': 'The Shining', 'director': {'name': 'Stanley Kubrick', 'link': '/people/1'}}
+
+Subrules can also be combined with lists:
+
+>>> items = [
+...     {
+...         "key": "cast",
+...         "value": {
+...             "foreach": ".//table[@class='cast']/tr",
+...             "items": [
+...                 {
+...                     "key": "name",
+...                     "value": {
+...                         "path": "./td[1]/a/text()",
+...                         "reducer": "first"
+...                     }
+...                 },
+...                 {
+...                     "key": "link",
+...                     "value": {
+...                         "path": "./td[1]/a/@href",
+...                         "reducer": "first"
+...                     }
+...                 },
+...                 {
+...                     "key": "character",
+...                     "value": {
+...                         "path": "./td[2]/text()",
+...                         "reducer": "first"
+...                     }
+...                 }
+...             ]
+...         }
+...     }
+... ]
+>>> extract(document, items)
+{'cast': [{'name': 'Jack Nicholson', 'link': '/people/2', 'character': 'Jack Torrance'}, {'name': 'Shelley Duvall', 'link': '/people/3', 'character': 'Wendy Torrance'}]}
+
 
 .. [#]
       This means that the query has to end with either ``text()`` or some

@@ -48,12 +48,12 @@ also be used to invoke the command-line interface::
    $ woody scrape -s wikipedia.json -d person --param name=John_Lennon
 
 For a more complicated example, get the `imdb.json`_ specification and
-run the following command to get details about the movie `The Matrix`_::
+run the following command to get details about the movie `The Shining`_::
 
-   $ woody scrape -s imdb.json -d movie_combined --param imdb_id=133093
+   $ woody scrape -s imdb.json -d movie_combined --param imdb_id=81505
 
 .. _wikipedia.json: https://bitbucket.org/uyar/woody/src/tip/examples/wikipedia.json
 .. _David Bowie: https://en.wikipedia.org/wiki/David_Bowie
 
 .. _imdb.json: https://bitbucket.org/uyar/woody/src/tip/examples/imdb.json
-.. _The Matrix: http://akas.imdb.com/title/tt0133093/combined
+.. _The Shining: http://akas.imdb.com/title/tt0081505/combined
