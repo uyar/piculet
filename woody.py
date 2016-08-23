@@ -34,7 +34,6 @@ from functools import partial
 from hashlib import md5
 from html.parser import HTMLParser
 from io import StringIO
-from itertools import chain
 from urllib.request import build_opener, Request
 
 import json
@@ -118,16 +117,16 @@ class _HTMLNormalizer(HTMLParser):
     SELF_CLOSING_TAGS = {'br', 'hr', 'img', 'input', 'link', 'meta'}
     """Tags to handle as self-closing."""
 
-    ENTITY_REFS = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;'
-    }
+    ENTITY_REFS = (
+        ('&', '&amp;'),
+        ('<', '&lt;'),
+        ('>', '&gt;')
+    )
     """Entity references to replace."""
 
-    ATTR_ENTITY_REFS = {
-        '"': '&quot;'
-    }
+    ATTR_ENTITY_REFS = (
+        ('"', '&quot;'),
+    )
     """Additional entity references to replace in attributes."""
 
     def __init__(self, omit_tags=(), omit_attrs=()):
@@ -148,7 +147,6 @@ class _HTMLNormalizer(HTMLParser):
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             if (tag == 'li') and (self._open_tags[-1] == 'li'):
-                # TODO: check whether this special case is really needed
                 _logger.debug('opened [li] without closing previous [li], adding closing tag')
                 self.handle_endtag('li')
             attribs = []
@@ -161,8 +159,7 @@ class _HTMLNormalizer(HTMLParser):
                                   attr_name, tag)
                     attr_value = ''
                 else:
-                    for e, r in chain(self.ENTITY_REFS.items(),
-                                      self.ATTR_ENTITY_REFS.items()):
+                    for e, r in (self.ENTITY_REFS + self.ATTR_ENTITY_REFS):
                         if e in attr_value:
                             _logger.debug('replacing [%s] with [%s] in [%s] value of [%s] tag',
                                           e, r, attr_value, tag)
@@ -184,7 +181,6 @@ class _HTMLNormalizer(HTMLParser):
             if tag not in self.SELF_CLOSING_TAGS:
                 last = self._open_tags[-1]
                 if (tag == 'ul') and (last == 'li'):
-                    # TODO: check whether this special case is really needed
                     _logger.debug('closing [ul] without closing last [li], adding closing tag')
                     self.handle_endtag('li')
                 if tag == last:
@@ -208,7 +204,7 @@ class _HTMLNormalizer(HTMLParser):
     def handle_data(self, data):
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
-            for e, r in self.ENTITY_REFS.items():
+            for e, r in self.ENTITY_REFS:
                 data = data.replace(e, r)
             print(data, end='')
 

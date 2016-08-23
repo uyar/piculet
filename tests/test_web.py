@@ -179,3 +179,45 @@ def test_html_to_xhtml_incorrect_nesting_should_be_reordered():
     content = '''<html><div><p></div></p></html>'''
     normalized = html_to_xhtml(content)
     assert normalized == '''<html><div><p></p></div></html>'''
+
+
+def test_html_to_xhtml_ampersands_should_be_replaced_in_data():
+    content = '''<html><p>&</p></html>'''
+    normalized = html_to_xhtml(content)
+    assert normalized == '''<html><p>&amp;</p></html>'''
+
+
+def test_html_to_xhtml_lts_should_be_replaced_in_data():
+    content = '''<html><p><</p></html>'''
+    normalized = html_to_xhtml(content)
+    assert normalized == '''<html><p>&lt;</p></html>'''
+
+
+def test_html_to_xhtml_gts_should_be_replaced_in_data():
+    content = '''<html><p>></p></html>'''
+    normalized = html_to_xhtml(content)
+    assert normalized == '''<html><p>&gt;</p></html>'''
+
+
+def test_html_to_xhtml_ampersands_should_be_replaced_in_attribute_values():
+    content = '''<html><p id="&"></p></html>'''
+    normalized = html_to_xhtml(content)
+    assert normalized == '''<html><p id="&amp;"></p></html>'''
+
+
+def test_html_to_xhtml_lts_should_be_replaced_in_attribute_values():
+    content = '''<html><p id="<"></p></html>'''
+    normalized = html_to_xhtml(content)
+    assert normalized == '''<html><p id="&lt;"></p></html>'''
+
+
+def test_html_to_xhtml_gts_should_be_replaced_in_attribute_values():
+    content = '''<html><p id=">"></p></html>'''
+    normalized = html_to_xhtml(content)
+    assert normalized == '''<html><p id="&gt;"></p></html>'''
+
+
+# def test_html_to_xhtml_quotes_should_be_replaced_in_attribute_values():
+#     content = '''<html><p id="""></p></html>'''
+#     normalized = html_to_xhtml(content)
+#     assert normalized == '''<html><p id="&quot;"></p></html>'''
