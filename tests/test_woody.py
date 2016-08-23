@@ -110,8 +110,18 @@ def dummy_spec():
         "base_url": TEST_SITE,
         "scrapers": [
             {
-                "id": "dummy",
+                "id": "s1",
                 "url": "/",
+                "items": []
+            },
+            {
+                "id": "s2",
+                "url": "/{p}",
+                "items": []
+            },
+            {
+                "id": "s3",
+                "url": "/{n:02}",
                 "items": []
             }
         ]
@@ -120,10 +130,10 @@ def dummy_spec():
 
 @fixture(scope='module', autouse=True)
 def get_test_pages(dummy_spec):
-    """Store the test page in the cache."""
-    for scraper in dummy_spec['scrapers']:
-        url = dummy_spec['base_url'] + scraper['url']
-        _get_document(url)
+    """Store the test pages in the cache."""
+    scrapers = dummy_spec['scrapers']
+    url = dummy_spec['base_url'] + scrapers[0]['url']
+    _get_document(url)
 
 
 @mark.skip
@@ -131,7 +141,7 @@ def test_scrape_uncached_should_retrieve_from_web(dummy_spec):
     cache_dir = os.environ['WOODY_WEB_CACHE']   # backup cache dir
     del os.environ['WOODY_WEB_CACHE']
     start = time.time()
-    scrape(dummy_spec, 'dummy')
+    scrape(dummy_spec, 's1')
     end = time.time()                           # restore cache dir
     os.environ['WOODY_WEB_CACHE'] = cache_dir
     assert end - start > 1
@@ -139,13 +149,18 @@ def test_scrape_uncached_should_retrieve_from_web(dummy_spec):
 
 def test_scrape_cached_should_read_from_disk(dummy_spec):
     start = time.time()
-    scrape(dummy_spec, 'dummy')
+    scrape(dummy_spec, 's1')
     end = time.time()
     assert end - start < 1
 
 
-def test_scrape_duplicate_document_ids_should_raise_error(dummy_spec):
+def test_scrape_missing_scrapers_should_raise_error(dummy_spec):
+    with raises(ValueError):
+        scrape(dummy_spec, 's0')
+
+
+def test_scrape_duplicate_scrapers_should_raise_error(dummy_spec):
     scrapers = dummy_spec['scrapers']
     scrapers.append(scrapers[0])
     with raises(ValueError):
-        scrape(dummy_spec, 'dummy')
+        scrape(dummy_spec, 's1')
