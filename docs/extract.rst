@@ -185,6 +185,40 @@ Subrules can also be combined with lists:
 >>> extract(document, items)
 {'cast': [{'name': 'Jack Nicholson', 'link': '/people/2', 'character': 'Jack Torrance'}, {'name': 'Shelley Duvall', 'link': '/people/3', 'character': 'Wendy Torrance'}]}
 
+Generating Keys from Content
+----------------------------
+
+You can generate items in the result mapping where the key value also comes
+from the content. Consider for example how you would get the runtime and
+the language from the sample document. One way of achieving this would be
+to select the ``div`` elements with the ``info`` class and using the ``h3``
+text as the key. Such sections in the document can be specified using
+``foreach`` specifications in the keys. This will cause a new item to be
+generated for each of the selected elements. To get the key value, we can use
+paths and reducers that will be applied to each selected element. In the below
+example, the ``normalize`` reducer joins the strings, converts it to lowercase,
+replaces spaces with underscores and strips other non-alphanumeric characters:
+
+>>> items = [
+...     {
+...         "foreach": ".//div[@class='info']",
+...         "key": {
+...             "path": "./h3/text()",
+...             "reducer": "normalize"
+...         },
+...         "value": {
+...             "path": "./div//text()",
+...             "reducer": "clean"
+...         }
+...     }
+... ]
+>>> extract(document, items)
+{'language': 'English', 'runtime': '144 minutes'}
+
+You could also give a string instead of a path and reducer for the key.
+In this case, the elements would still be traversed; only the last one would
+set the final value for the item. This could make sense if you are sure
+that there is only one element that matches the ``foreach`` path of the key.
 
 .. [#]
       This means that the query has to end with either ``text()`` or some
