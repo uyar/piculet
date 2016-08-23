@@ -15,14 +15,12 @@
 
 
 """
-Woody is a library for extracting data from XML documents using XPath queries.
-It also contains an HTML cleaner which can be used to convert HTML into XHTML
-so that web pages can also be scraped.
+Woody is a package for extracting data from XML documents using XPath queries.
+It can also scrape web pages by first converting the HTML source into XHTML.
+Woody consists of a single source file with no dependencies other than
+the standard library, which makes it very easy to integrate into applications.
 
-Woody consists of this single file with no dependencies other than
-the standard library. Therefore it is very easy to bundle within applications.
-
-For more details, please refer to the documentation on:
+For more details, please refer to the documentation:
 http://woody-docs.readthedocs.io/.
 """
 
