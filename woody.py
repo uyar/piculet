@@ -26,6 +26,7 @@ For more details, please refer to the documentation on:
 http://woody-docs.readthedocs.io/.
 """
 
+
 from argparse import ArgumentParser
 from collections import deque
 from contextlib import redirect_stdout
@@ -47,11 +48,11 @@ _logger = logging.getLogger(__name__)
 
 
 try:
-    import lxml.etree as ElementTree
+    from lxml.etree.ElementTree import fromstring as build_tree
     _USE_LXML = True
     _logger.debug('using lxml')
 except ImportError:
-    from xml.etree import ElementTree
+    from xml.etree.ElementTree import fromstring as build_tree
     _USE_LXML = False
     _logger.debug('lxml not found, falling back to elementtree')
 
@@ -129,12 +130,12 @@ class _HTMLNormalizer(HTMLParser):
     }
     """Additional entity references to replace in attributes."""
 
-    def __init__(self, omit_tags=None, omit_attrs=None):
+    def __init__(self, omit_tags=(), omit_attrs=()):
         # let the HTML parser convert entity refs to unicode chars
         super().__init__(convert_charrefs=True)
 
-        self.omit_tags = omit_tags if omit_tags is not None else set()
-        self.omit_attrs = omit_attrs if omit_attrs is not None else set()
+        self.omit_tags = set(omit_tags)
+        self.omit_attrs = set(omit_attrs)
 
         # stacks used during normalization
         self._open_tags = deque()
@@ -147,26 +148,26 @@ class _HTMLNormalizer(HTMLParser):
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             if (tag == 'li') and (self._open_tags[-1] == 'li'):
+                # TODO: check whether this special case is really needed
                 _logger.debug('opened [li] without closing previous [li], adding closing tag')
                 self.handle_endtag('li')
             attribs = []
             for attr_name, attr_value in attrs:
                 if attr_name in self.omit_attrs:
                     _logger.debug('omitting [%s] attribute of [%s] tag', attr_name, tag)
+                    continue
+                if attr_value is None:
+                    _logger.debug('no value for [%s] attribute of [%s] tag, adding empty value',
+                                  attr_name, tag)
+                    attr_value = ''
                 else:
-                    if attr_value is None:
-                        _logger.debug('no value for [%s] attribute of [%s] tag'
-                                      ', adding empty value', attr_name, tag)
-                        attr_value = ''
-                    else:
-                        for e, r in chain(self.ENTITY_REFS.items(),
-                                          self.ATTR_ENTITY_REFS.items()):
-                            if e in attr_value:
-                                _logger.debug('replacing [%s] with [%s]'
-                                              ' in [%s] value of [%s] tag',
-                                              e, r, attr_value, tag)
-                                attr_value = attr_value.replace(e, r)
-                    attribs.append((attr_name, attr_value))
+                    for e, r in chain(self.ENTITY_REFS.items(),
+                                      self.ATTR_ENTITY_REFS.items()):
+                        if e in attr_value:
+                            _logger.debug('replacing [%s] with [%s] in [%s] value of [%s] tag',
+                                          e, r, attr_value, tag)
+                            attr_value = attr_value.replace(e, r)
+                attribs.append((attr_name, attr_value))
             line = '<{tag}{attrs}{slash}>'.format(
                 tag=tag,
                 attrs=''.join([' {name}="{value}"'.format(name=n, value=v)
@@ -183,6 +184,7 @@ class _HTMLNormalizer(HTMLParser):
             if tag not in self.SELF_CLOSING_TAGS:
                 last = self._open_tags[-1]
                 if (tag == 'ul') and (last == 'li'):
+                    # TODO: check whether this special case is really needed
                     _logger.debug('closing [ul] without closing last [li], adding closing tag')
                     self.handle_endtag('li')
                 if tag == last:
@@ -191,8 +193,7 @@ class _HTMLNormalizer(HTMLParser):
                     self._open_tags.pop()
                 elif tag not in self._open_tags:
                     _logger.debug('end tag [%s] without start tag', tag)
-                    # XXX: for <a><b></a></b>, this case gets invoked
-                    #      after the case below
+                    # XXX: for <a><b></a></b>, this case gets invoked after the case below
                 elif tag == self._open_tags[-2]:
                     _logger.debug('unexpected end tag [%s] instead of [%s], closing both',
                                   tag, last)
@@ -218,10 +219,10 @@ class _HTMLNormalizer(HTMLParser):
         #     print('</{t}>'.format(t=tag), end='')
 
 
-def html_to_xhtml(content, omit_tags=None, omit_attrs=None):
+def html_to_xhtml(document, omit_tags=(), omit_attrs=()):
     """Clean HTML and convert to XHTML.
 
-    :param content: HTML content to clean and convert.
+    :param document: HTML document to clean and convert.
     :param omit_tags: Tags to exclude from the output.
     :param omit_attrs: Attributes to exclude from the output.
     :return: Normalized XHTML content.
@@ -230,7 +231,7 @@ def html_to_xhtml(content, omit_tags=None, omit_attrs=None):
     out = StringIO()
     normalizer = _HTMLNormalizer(omit_tags=omit_tags, omit_attrs=omit_attrs)
     with redirect_stdout(out):
-        normalizer.feed(content)
+        normalizer.feed(document)
     return out.getvalue()
 
 
@@ -240,7 +241,9 @@ def html_to_xhtml(content, omit_tags=None, omit_attrs=None):
 
 
 if _USE_LXML:
-    xpath = ElementTree._Element.xpath
+    # xpath = ElementTree._Element.xpath
+    def xpath(element, path):
+        return element.xpath(path)
 else:
     def xpath(element, path):
         """Apply an XPath expression to an element.
@@ -253,24 +256,25 @@ else:
         :return: Elements or strings resulting from the query.
         """
         if path.endswith('//text()'):
-            _logger.debug('handling descendant text path: %s', path)
-            result = [t for e in element.findall(path[:-8])
-                      for t in e.itertext() if t]
-        elif path.endswith('/text()'):
-            _logger.debug('handling child text path: %s', path)
-            result = [t for e in element.findall(path[:-7])
-                      for t in ([e.text] + [c.tail if c.tail else '' for c in e])
-                      if t]
-        else:
-            *epath, last_step = path.split('/')
-            if last_step.startswith('@'):
-                _logger.debug('handling attribute path: %s', path)
-                result = [e.attrib.get(last_step[1:])
-                          for e in element.findall('/'.join(epath))]
-                result = [r for r in result if r is not None]
-            else:
-                result = element.findall(path)
-        return result
+            _logger.debug('handling descendant text path [%s]', path)
+            return [t for e in element.findall(path[:-8])
+                    for t in e.itertext() if t]
+
+        if path.endswith('/text()'):
+            _logger.debug('handling child text path [%s]', path)
+            return [t for e in element.findall(path[:-7])
+                    for t in ([e.text] + [c.tail if c.tail else '' for c in e])
+                    if t]
+
+        *epath, last_step = path.split('/')
+        if last_step.startswith('@'):
+            _logger.debug('handling attribute path [%s]', path)
+            result = [e.attrib.get(last_step[1:])
+                      for e in element.findall('/'.join(epath))]
+            return [r for r in result if r is not None]
+
+        _logger.debug('handling element producing path [%s]', path)
+        return element.findall(path)
 
 
 _REDUCERS = {
@@ -286,11 +290,10 @@ _REDUCERS = {
 def woodpecker(path, reducer):
     """A value extractor that combines an XPath query with a reducing function.
 
-    This function returns a callable that takes an element as parameter and
-    applies the XPath query to that element. The result of this is expected
-    to be a list of strings; therefore the query has to end with ``text()`` or
-    ``@attr``. The list will then be passed to the reducer function to generate
-    a single string as the result.
+    This function returns a callable that takes an XML element as parameter and
+    applies the XPath query to that element to get a list of strings; therefore
+    the query has to end with ``text()`` or ``@attr``. The list will then be
+    passed to the reducer function to generate a single string as the result.
 
     :param path: XPath query to select the values.
     :param reducer: Name of reducer function.
@@ -309,7 +312,7 @@ def woodpecker(path, reducer):
         """
         values = xpath(element, path)
         if len(values) == 0:
-            _logger.debug('no match for %s', path)
+            _logger.debug('no match for [%s]', path)
             return None
 
         _logger.debug('extracted value [%s]', values)
@@ -320,29 +323,43 @@ def woodpecker(path, reducer):
     return apply
 
 
-def extract(content, items, pre=None):
+def extract(document, items, pre=()):
     """Extract data from an XML document.
 
-    :param content: Content to extract the data from.
+    This will convert the document into an XML tree -if it's not already
+    converted- and extract the data items according to the supplied rules.
+    If given, it will use the ``pre`` parameter to carry out preprocessing
+    operations on the tree before starting data extraction.
+
+    :param document: Document to extract the data from.
     :param items: Rules that specify how to extract the data items.
-    :param pre: Preprocessing operations on the tree.
+    :param pre: Preprocessing operations on the document tree.
     :return: Extracted data.
     """
 
-    root = ElementTree.fromstring(content) if isinstance(content, str) else content
+    root = build_tree(document) if isinstance(document, str) else document
 
     def gen(val):
+        """Value generator function.
+
+        It takes a value generator description and returns a callable that
+        takes an XML element and returns a value.
+        """
         if isinstance(val, str):
+            # constant function
             return lambda _: val
         if 'path' in val:
+            # xpath and reducer
             return woodpecker(val['path'], val['reducer'])
         if 'items' in val:
-            return partial(extract, items=val['items'], pre=val.get('pre'))
+            # recursive function for applying subrules
+            return partial(extract, items=val['items'], pre=val.get('pre', ()))
         raise TypeError('Unknown value generator')
 
     def parent_getter():
         if _USE_LXML:
-            return ElementTree._Element.getparent
+            # return ElementTree._Element.getparent
+            return lambda e: e.getparent
         else:
             # ElementTree doesn't support parent queries, so build a map for it
             # TODO: this re-traverses tree on subrules
@@ -351,44 +368,48 @@ def extract(content, items, pre=None):
 
     get_parent = parent_getter()
 
-    if pre is not None:
-        for step in pre:
-            op = step['op']
-            if op == 'root':
-                path = step['path']
-                _logger.debug('selecting new root using %s', path)
-                elements = xpath(root, path)
-                if len(elements) > 1:
-                    raise ValueError('Root expression must not select'
-                                     ' multiple elements: {}.'.format(path))
-                if len(elements) == 0:
-                    _logger.debug('no matches for new root, no data to extract')
-                    return {}
-                root = elements[0]
-            elif op == 'remove':
-                path = step['path']
-                elements = xpath(root, path)
-                _logger.debug('removing %s elements using %s', len(elements), path)
-                for element in elements:
-                    get_parent(element).remove(element)
-            elif op == 'set_attr':
-                path = step['path']
-                attr_name_gen = gen(step['name'])
-                attr_value_gen = gen(step['value'])
-                for element in xpath(root, path):
-                    attr_name = attr_name_gen(element)
-                    attr_value = attr_value_gen(element)
-                    _logger.debug('setting %s attribute to %s on %s',
-                                  attr_name, attr_value, element.tag)
-                    element.attrib[attr_name] = attr_value
-            elif op == 'set_text':
-                path = step['path']
-                text_gen = gen(step['text'])
-                for element in xpath(root, path):
-                    text_value = text_gen(element)
-                    _logger.debug('setting text to %s on %s', text_value, element.tag)
-                    element.text = text_value
+    # do the preprocessing operations
+    for step in pre:
+        op = step['op']
+        if op == 'root':
+            path = step['path']
+            _logger.debug('selecting new root using [%s]', path)
+            elements = xpath(root, path)
+            if len(elements) > 1:
+                raise ValueError('Root expression must not select'
+                                 ' multiple elements: {}.'.format(path))
+            if len(elements) == 0:
+                _logger.debug('no matches for new root, no data to extract')
+                return {}
+            root = elements[0]
+        elif op == 'remove':
+            path = step['path']
+            elements = xpath(root, path)
+            _logger.debug('removing %s elements using [%s]', len(elements), path)
+            for element in elements:
+                # XXX: could this be hazardous? parent removed in earlier iteration?
+                get_parent(element).remove(element)
+        elif op == 'set_attr':
+            path = step['path']
+            attr_name_gen = gen(step['name'])
+            attr_value_gen = gen(step['value'])
+            for element in xpath(root, path):
+                attr_name = attr_name_gen(element)
+                attr_value = attr_value_gen(element)
+                _logger.debug('setting [%s] attribute to [%s] on [%s] element',
+                              attr_name, attr_value, element.tag)
+                element.attrib[attr_name] = attr_value
+        elif op == 'set_text':
+            path = step['path']
+            text_gen = gen(step['text'])
+            for element in xpath(root, path):
+                text_value = text_gen(element)
+                _logger.debug('setting text to [%s] on [%s] element', text_value, element.tag)
+                element.text = text_value
+        else:
+            raise ValueError('Unknown preprocessing operation %s' % op)
 
+    # actual extraction part
     data = {}
     for item in items:
         key_gen = gen(item['key'])
@@ -400,8 +421,8 @@ def extract(content, items, pre=None):
             foreach_value = item['value'].get('foreach')
             if foreach_value is None:
                 value = value_gen(subroot)
-                if value:   # None from pecker or {} from extract
-                    # XXX: consider '', 0 and other non-truthy values
+                if value:   # None from pecker, or {} from extract
+                    # XXX: consider '', 0, and other non-truthy values
                     data[key] = value
             else:
                 values = [value_gen(r) for r in xpath(subroot, foreach_value)]
@@ -441,39 +462,41 @@ def _get_document(url):
     return content
 
 
-def scrape(spec, document_id, **kwargs):
+def scrape(spec, scraper, **kwargs):
     """Extract data from a document according to a specification.
 
-    All keyword arguments will be used as parameters in the format string
-    of the document URL.
+    All keyword arguments will be passed as parameters to the format string
+    of the document URL template.
 
-    :param spec: Data extraction specification, a JSON list.
-    :param document_id: Id of selected document type from the spec.
+    :param spec: Data extraction specification.
+    :param scraper: Scraper name in the spec for the selected document type.
     :return: Extracted data.
     """
-    document_ids = [s for s in spec['documents'] if s['id'] == document_id]
-    if len(document_ids) != 1:
-        raise ValueError('Document ids must be unique: %s'.format(document_id))
-    document = document_ids[0]
-    _logger.debug('using document [%s]', document_id)
+    matched_scrapers = [s for s in spec['scrapers'] if s['id'] == scraper]
+    if len(matched_scrapers) == 0:
+        raise ValueError('Scraper with given id not found: %s'.format(scraper))
+    if len(matched_scrapers) > 1:
+        raise ValueError('Scraper ids must be unique: %s'.format(scraper))
+    matched_scraper = matched_scrapers[0]
+    _logger.debug('using scraper [%s]', scraper)
 
-    base_url = spec['base_url']
-    document_url = document['url']
+    url_template = spec['base_url'] + matched_scraper['url']
     for arg in kwargs:
-        if ('{%s:0' % arg) in document_url:
+        if ('{%s:0' % arg) in url_template:
             kwargs[arg] = int(kwargs[arg])
-    url = base_url + document['url'].format(**kwargs)
+    url = url_template.format(**kwargs)
     _logger.debug('scraping url [%s]', url)
 
-    content = _get_document(url)
+    document = _get_document(url)
 
-    content_format = document.get('format', 'xml')
+    content_format = matched_scraper.get('format', 'xml')
     if content_format == 'html':
         _logger.debug('converting html document to xml')
-        content = html_to_xhtml(content, omit_tags={'script'})
-        # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', content)
+        document = html_to_xhtml(document)
+        # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
 
-    data = extract(content, document['items'], pre=document.get('pre'))
+    data = extract(document, matched_scraper['items'],
+                   pre=matched_scraper.get('pre', ()))
     return data
 
 
@@ -486,13 +509,13 @@ def _get_parser():
     """Get a parser for command line arguments."""
 
     def h2x(arguments):
-        _logger.debug('converting HTML to XHTML')
+        _logger.debug('converting html to xhtml')
         if arguments.file == '-':
             _logger.debug('reading from stdin')
             content = sys.stdin.read()
         else:
             filename = os.path.abspath(arguments.file)
-            _logger.debug('reading from file: %s', filename)
+            _logger.debug('reading from file [%s]', filename)
             with open(filename) as f:
                 content = f.read()
         print(html_to_xhtml(content), end='')

@@ -3,15 +3,14 @@ from pytest import fixture, mark, raises
 import os
 import time
 
-from woody import ElementTree
-from woody import _get_document, extract, scrape, woodpecker, xpath
+from woody import _get_document, build_tree, extract, scrape, woodpecker, xpath
 
 
 @fixture(scope='module')
 def generic_root():
     """Simple XML document with generic content."""
     content = '<d><t1>foo</t1><t1 a="v"><t2>bar</t2></t1></d>'
-    return ElementTree.fromstring(content)
+    return build_tree(content)
 
 
 def test_xpath_non_text_queries_should_return_nodes(generic_root):
@@ -38,7 +37,7 @@ def test_xpath_attr_queries_should_return_strings(generic_root):
 def people_root():
     """XML document to represent the data of a person."""
     content = '<p><p1><n>John Smith</n><a>42</a></p1><p2><n>Jane Doe</n></p2></p>'
-    return ElementTree.fromstring(content)
+    return build_tree(content)
 
 
 def test_peck_reducer_first_should_return_first_element(people_root):
@@ -109,7 +108,7 @@ def dummy_spec():
     """Dummy data extraction spec."""
     return {
         "base_url": TEST_SITE,
-        "documents": [
+        "scrapers": [
             {
                 "id": "dummy",
                 "url": "/",
@@ -122,8 +121,8 @@ def dummy_spec():
 @fixture(scope='module', autouse=True)
 def get_test_page(dummy_spec):
     """Store the test page in the cache."""
-    for document in dummy_spec['documents']:
-        url = dummy_spec['base_url'] + document['url']
+    for scraper in dummy_spec['scrapers']:
+        url = dummy_spec['base_url'] + scraper['url']
         _get_document(url)
 
 
@@ -144,7 +143,7 @@ def test_scrape_cached_should_read_from_disk(dummy_spec):
 
 
 def test_scrape_duplicate_document_ids_should_raise_error(dummy_spec):
-    documents = dummy_spec['documents']
-    documents.append(documents[0])
+    scrapers = dummy_spec['scrapers']
+    scrapers.append(scrapers[0])
     with raises(ValueError):
         scrape(dummy_spec, 'dummy')

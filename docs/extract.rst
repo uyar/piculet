@@ -10,7 +10,7 @@ Each rule is itself a mapping. The ``key`` specifies the key for the entry
 in the output mapping and the ``value`` specifies how to extract the data
 to set as the value for the entry. Typically, a value specifier consists
 of an XPath query (``path``) and a ``reducer`` function. The query gets applied
-to the root of the tree and a produces a list of strings. Then the reducer
+to the root of the tree and produces a list of strings. Then the reducer
 function transforms this list into a single string. For example, the ``first``
 reducer selects the first string of the list.
 

@@ -1,20 +1,20 @@
 from typing import Any, Callable, Optional, Union
-from typing import Iterable, List, Mapping, Set
+from typing import Iterable, List, Mapping
 
 from xml.etree import ElementTree
 
 
 def extract(
-        content: Union[str, ElementTree.Element],
+        document: Union[str, ElementTree.Element],
         items: Iterable[Mapping[str, Any]],
-        pre: Optional[Iterable[Mapping[str, str]]] = None
-) -> Mapping[str, str]: ...
+        pre: Optional[Iterable[Mapping[str, Any]]] = ()
+) -> Mapping[str, Any]: ...
 
 
 def html_to_xhtml(
-        content: str,
-        omit_tags: Optional[Set[str]] = None,
-        omit_attrs: Optional[Set[str]] = None
+        document: str,
+        omit_tags: Optional[Iterable[str]] = (),
+        omit_attrs: Optional[Iterable[str]] = ()
 ) -> str: ...
 
 
@@ -27,7 +27,7 @@ def retrieve(
 
 def scrape(
         spec: Mapping[str, Any],
-        document_id: str,
+        scraper: str,
         **kwargs
 ) -> Mapping[str, Any]: ...
 

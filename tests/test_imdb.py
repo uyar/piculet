@@ -49,9 +49,9 @@ def movies():
 @fixture(scope='module', autouse=True)
 def get_imdb_pages(imdb, movies):
     """Store all needed pages from the IMDb in the cache."""
-    for document in imdb['documents']:
+    for scraper in imdb['scrapers']:
         for movie_id in movies.values():
-            url = imdb['base_url'] + document['url'].format(imdb_id=movie_id)
+            url = imdb['base_url'] + scraper['url'].format(imdb_id=movie_id)
             _get_document(url)
 
 

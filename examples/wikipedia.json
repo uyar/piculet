@@ -1,6 +1,6 @@
 {
   "base_url": "https://en.wikipedia.org",
-  "documents": [
+  "scrapers": [
     {
       "id": "person",
       "url": "/wiki/{name}",
