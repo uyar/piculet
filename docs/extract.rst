@@ -7,12 +7,12 @@ start by explaining how that works:
 
 >>> from woody import extract
 
-We will use the following (X)HTML document to illustrate our examples:
+We'll use the following (X)HTML document in our examples:
 
 .. literalinclude:: matrix.html
    :language: html
 
-Assuming this file is saved as :file:`matrix.html`, let's get its content:
+Assuming this file is saved as :file:`matrix.html`, let's get the content:
 
 .. code-block:: python
 
@@ -27,29 +27,44 @@ one of the rules.
 Each rule is itself a mapping. The ``key`` specifies the key for the entry
 in the output mapping and the ``value`` specifies how to extract the data
 to set as the value for the entry. Typically, a value specifier consists
-of an XPath query (``path``) and a ``reducer`` function. The query gets applied
-to the root of the tree and produces a list of strings. Then the reducer
-function transforms this list into a single string. For example, the ``first``
-reducer selects the first string of the list:
+of a path query and a reducer function. The query gets applied to the root
+of the tree and produces a list of strings. Then the reducer function
+transforms this list into a single string. [#]_
+
+For example, to extract the title data out of the sample document, we can
+write the following rule where ``first`` is a predefined reducer that selects
+the first element of a list:
 
 >>> items = [
-...     {"key": "title",
-...      "value": {"path": ".//title/text()",
-...                "reducer": "first"}}
+...     {
+...         "key": "title",
+...         "value": {
+...             "path": ".//title/text()",
+...             "reducer": "first"
+...         }
+...     }
 ... ]
 >>> extract(document, items)
 {'title': 'The Matrix'}
 
-Other common reducing operations are joining and cleaning. The ``join`` reducer
-joins all selected strings into one string:
+Other common predefined reducing operations are joining and cleaning.
+The ``join`` reducer joins all selected strings into one:
 
 >>> items = [
-...     {"key": "title",
-...      "value": {"path": ".//title/text()",
-...                "reducer": "first"}},
-...     {"key": "full_title",
-...      "value": {"path": ".//h1//text()",
-...                "reducer": "join"}}
+...     {
+...         "key": "title",
+...         "value": {
+...             "path": ".//title/text()",
+...             "reducer": "first"
+...         }
+...     },
+...     {
+...         "key": "full_title",
+...         "value": {
+...             "path": ".//h1//text()",
+...             "reducer": "join"
+...         }
+...     }
 ... ]
 >>> extract(document, items)
 {'title': 'The Matrix', 'full_title': 'The Matrix (1999)'}
@@ -60,11 +75,43 @@ the strings, this will remove leading and trailing whitespace and replace
 multiple whitespace characters with a single space:
 
 >>> items = [
-...     {"key": "review",
-...      "value": {"path": ".//div[@class='review']//text()",
-...                "reducer": "clean"}}
+...     {
+...         "key": "review",
+...         "value": {
+...             "path": ".//div[@class='review']//text()",
+...             "reducer": "clean"
+...         }
+...     }
 ... ]
 {'review': 'Fantastic movie.'}
 
-In this example, using the ``join`` reducer would have given the value:
+In this example, using the ``join`` reducer would have produced the value
 ``'\n      Fantastic movie.\n    '``
+
+To create a list of values, a ``foreach`` key can be given to the value
+specifier. This is a path expression to select elements from the tree.
+The ``path`` and ``reducer`` will be applied as before to each selected
+element and the obtained values will be the members of the result list. [#]_
+For example, to get the genres of the movie, we can write:
+
+>>> items = [
+...     {
+...         "key": "genres",
+...         "value": {
+...             "foreach": ".//ul[@class='genres']/li",
+...             "path": "./text()",
+...             "reducer": "first"
+...         }
+...     }
+... ]
+>>> extract(document, items)
+{'genres': ['Action', 'Sci-Fi']}
+
+.. [#]
+      This means that the query has to end with either ``text()`` or some
+      attribute value as in ``@attr``. And the reducer function should be
+      implemented so that it takes a list of strings and returns a string.
+
+.. [#]
+      This means that the ``foreach`` query has to select elements, therefore
+      **not** end in ``text()`` or ``@attr``.
