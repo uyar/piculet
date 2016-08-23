@@ -130,8 +130,7 @@ class _HTMLNormalizer(HTMLParser):
     """Additional entity references to replace in attributes."""
 
     def __init__(self, omit_tags=(), omit_attrs=()):
-        # let the HTML parser convert entity refs to unicode chars
-        super().__init__(convert_charrefs=True)
+        super().__init__()
 
         self.omit_tags = set(omit_tags)
         self.omit_attrs = set(omit_attrs)
