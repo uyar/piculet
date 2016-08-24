@@ -8,11 +8,11 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read().replace('.. :changelog:', '')
 
 setup(
-    name='woody',
+    name='piculet',
     version='1.0a1',
     description='XML/HTML scraper using XPath queries.',
     long_description=readme + '\n\n' + history,
-    url='https://bitbucket.org/uyar/woody',
+    url='https://bitbucket.org/uyar/piculet',
     author='H. Turgut Uyar',
     author_email='uyar@tekir.org',
     license='GPL',
@@ -24,11 +24,11 @@ setup(
         'Programming Language :: Python :: 3.4'
     ],
     keywords='xml html xpath scrape',
-    py_modules=['woody'],
+    py_modules=['piculet'],
     install_requires=[],
     tests_require=['pytest', 'pytest-cov', 'flake8'],
     entry_points="""
         [console_scripts]
-        woody=woody:main
+        piculet=piculet:main
     """
 )

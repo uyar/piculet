@@ -33,7 +33,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Woody'
+project = 'Piculet'
 copyright = '2016, H. Turgut Uyar'
 author = 'H. Turgut Uyar'
 
@@ -82,7 +82,7 @@ exclude_patterns = ['_build']
 pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
-modindex_common_prefix = ['woody.']
+modindex_common_prefix = ['piculet.']
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 # keep_warnings = False
@@ -188,7 +188,7 @@ html_static_path = ['_static']
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'woodydoc'
+htmlhelp_basename = 'piculetdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -210,7 +210,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'woody.tex', 'Woody Documentation',
+    (master_doc, 'piculet.tex', 'Piculet Documentation',
      'H. Turgut Uyar', 'manual'),
 ]
 
@@ -240,7 +240,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'woody', 'Woody Documentation',
+    (master_doc, 'piculet', 'Piculet Documentation',
      [author], 1)
 ]
 
@@ -254,8 +254,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Woody', 'Woody Documentation',
-     author, 'Woody', 'XML/HTML scraper using XPath queries.',
+    (master_doc, 'Piculet', 'Piculet Documentation',
+     author, 'Piculet', 'XML/HTML scraper using XPath queries.',
      'Miscellaneous'),
 ]
 

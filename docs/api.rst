@@ -1,7 +1,7 @@
 API
 ===
 
-.. automodule:: woody
+.. automodule:: piculet
    :members:
    :undoc-members:
    :show-inheritance:

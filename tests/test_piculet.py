@@ -3,7 +3,7 @@ from pytest import fixture, mark, raises
 import os
 import time
 
-from woody import _get_document, build_tree, extract, scrape, woodpecker, xpath
+from piculet import _get_document, build_tree, extract, scrape, woodpecker, xpath
 
 
 ########################################

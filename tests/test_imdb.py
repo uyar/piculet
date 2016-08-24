@@ -4,7 +4,7 @@ import json
 import os
 import re
 
-from woody import _get_document, scrape
+from piculet import _get_document, scrape
 
 
 @fixture(scope='module')

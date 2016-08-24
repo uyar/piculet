@@ -3,8 +3,8 @@ Command-Line Interface
 
 The command line interface provides usage help::
 
-   $ woody -h
-   usage: woody [-h] [--debug] command ...
+   $ piculet -h
+   usage: piculet [-h] [--debug] command ...
 
    positional arguments:
      command
@@ -18,8 +18,8 @@ The command line interface provides usage help::
 The :command:`scrape` command scrapes a URL based on a specification and prints
 the result::
 
-   $ woody scrape -h
-   usage: woody scrape [-h] -s SPEC -r RULES [--html] url
+   $ piculet scrape -h
+   usage: piculet scrape [-h] -s SPEC -r RULES [--html] url
 
    positional arguments:
      url         URL to scrape
@@ -35,7 +35,7 @@ name as input and prints the converted content to stdout. If the input file
 name is given as ``-`` it will read the content from stdin and therefore it
 can be used as part of a pipe::
 
-   $ woody h2x foo.html
+   $ piculet h2x foo.html
    ...
-   $ cat foo.html | woody h2x -
+   $ cat foo.html | piculet h2x -
    ...

@@ -4,7 +4,7 @@ import os
 
 
 def test_no_arguments_should_fail_with_usage_string():
-    command = ['woody']
+    command = ['piculet']
     process = Popen(command, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     assert process.returncode == 1
@@ -13,7 +13,7 @@ def test_no_arguments_should_fail_with_usage_string():
 
 
 def test_start_through_module_should_be_accessible():
-    command = ['python', '-m', 'woody']
+    command = ['python', '-m', 'piculet']
     process = Popen(command, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     assert process.returncode == 1
@@ -22,7 +22,7 @@ def test_start_through_module_should_be_accessible():
 
 
 def test_start_through_main_script_should_be_accessible():
-    script_file = os.path.join(os.path.dirname(__file__), '..', 'woody.py')
+    script_file = os.path.join(os.path.dirname(__file__), '..', 'piculet.py')
     command = ['python', script_file]
     process = Popen(command, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
@@ -32,7 +32,7 @@ def test_start_through_main_script_should_be_accessible():
 
 
 def test_dash_h_should_output_usage_string():
-    command = ['woody', '-h']
+    command = ['piculet', '-h']
     process = Popen(command, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     assert process.returncode == 0
@@ -41,7 +41,7 @@ def test_dash_h_should_output_usage_string():
 
 
 def test_double_dash_help_should_output_usage_string():
-    command = ['woody', '--help']
+    command = ['piculet', '--help']
     process = Popen(command, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     assert process.returncode == 0
@@ -50,7 +50,7 @@ def test_double_dash_help_should_output_usage_string():
 
 
 def test_unrecognized_arguments_should_fail_with_error_message():
-    command = ['woody', '--foo']
+    command = ['piculet', '--foo']
     process = Popen(command, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     assert process.returncode == 2
@@ -59,7 +59,7 @@ def test_unrecognized_arguments_should_fail_with_error_message():
 
 
 def test_unknown_command_should_fail_with_error_message():
-    command = ['woody', 'foo']
+    command = ['piculet', 'foo']
     process = Popen(command, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     assert process.returncode == 2
@@ -68,7 +68,7 @@ def test_unknown_command_should_fail_with_error_message():
 
 
 def test_debug_mode_should_generate_debug_messages():
-    command = ['woody', '--debug']
+    command = ['piculet', '--debug']
     process = Popen(command, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     assert process.returncode == 1
@@ -76,7 +76,7 @@ def test_debug_mode_should_generate_debug_messages():
 
 
 def test_h2x_should_require_input_argument():
-    command = ['woody', 'h2x']
+    command = ['piculet', 'h2x']
     process = Popen(command, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     assert process.returncode == 2
@@ -89,7 +89,7 @@ def test_h2x_should_be_accessible():
                           'utf-8_charset_utf-8.html')
     with open(infile) as f:
         content = f.read()
-    command = ['woody', 'h2x', infile]
+    command = ['piculet', 'h2x', infile]
     process = Popen(command, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     assert process.returncode == 0
@@ -101,7 +101,7 @@ def test_h2x_should_be_accessible_from_stdin():
                           'utf-8_charset_utf-8.html')
     with open(infile) as f:
         content = f.read()
-    command = 'cat {} | woody h2x -'.format(infile)
+    command = 'cat {} | piculet h2x -'.format(infile)
     process = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     assert process.returncode == 0

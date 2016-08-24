@@ -6,7 +6,7 @@ from urllib.error import HTTPError
 
 import os
 
-from woody import retrieve, html_to_xhtml
+from piculet import retrieve, html_to_xhtml
 
 
 @fixture(scope='module')

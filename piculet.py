@@ -15,13 +15,14 @@
 
 
 """
-Woody is a package for extracting data from XML documents using XPath queries.
-It can also scrape web pages by first converting the HTML source into XHTML.
-Woody consists of a single source file with no dependencies other than
-the standard library, which makes it very easy to integrate into applications.
+Piculet is a package for extracting data from XML documents using XPath
+queries. It can also scrape web pages by first converting the HTML source
+into XHTML. Piculet consists of this single source file with no dependencies
+other than the standard library, which makes it very easy to integrate
+into applications.
 
 For more details, please refer to the documentation:
-http://woody-docs.readthedocs.io/.
+http://piculet.readthedocs.io/.
 """
 
 

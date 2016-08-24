@@ -1,11 +1,11 @@
 Data Extraction
 ===============
 
-Although application will mostly use the higher-level ``scrape`` function,
+Although applications will mostly use the higher-level ``scrape`` function,
 it is the ``extract`` function that handles the data extraction. So we'll
 start by explaining how that works:
 
->>> from woody import extract
+>>> from piculet import extract
 
 We'll use the following (X)HTML document in our examples:
 
@@ -33,9 +33,9 @@ of the tree and produces a list of strings. Then the reducer function
 transforms this list into a single string. [#]_
 
 .. note::
-      Woody uses the `ElementTree`_ module for building and querying XML trees.
-      Therefore, the XPath queries you write are limited by
-      `whatever ElementTree supports`_. However, Woody will make use of
+      Piculet uses the `ElementTree`_ module for building and querying
+      XML trees. Therefore, the XPath queries you write are limited by
+      `whatever ElementTree supports`_. However, Piculet will make use of
       the `lxml`_ package if it is installed and in that case, you can use
       a `much wider range of XPath constructs`_.
 

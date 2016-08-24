@@ -28,7 +28,7 @@ clean-docs:
 	make -C docs clean
 
 lint:
-	flake8 woody.py tests
+	flake8 piculet.py tests
 
 test:
 	py.test
@@ -37,10 +37,10 @@ test-all:
 	tox
 
 coverage:
-	py.test --cov=woody tests
+	py.test --cov=piculet tests
 
 docs:
-	# sphinx-apidoc --no-toc -o docs/modules/ woody
+	# sphinx-apidoc --no-toc -o docs/modules/ piculet
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	# open docs/_build/html/index.html
