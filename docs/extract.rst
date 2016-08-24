@@ -12,7 +12,7 @@ We'll use the following (X)HTML document in our examples:
 .. literalinclude:: shining.html
    :language: html
 
-Assuming this file is saved as :file:`shining.html`, let's get the content:
+Assuming this file is saved as :file:`shining.html`, let's get its content:
 
 .. code-block:: python
 
@@ -31,6 +31,18 @@ to set as the value for the entry. Typically, a value specifier consists
 of a path query and a reducer function. The query gets applied to the root
 of the tree and produces a list of strings. Then the reducer function
 transforms this list into a single string. [#]_
+
+.. note::
+      Woody uses the `ElementTree`_ module for building and querying XML trees.
+      Therefore, the XPath queries you write are limited by
+      `whatever ElementTree supports`_. However, Woody will make use of
+      the `lxml`_ package if it is installed and in that case, you can use
+      a `much wider range of XPath constructs`_.
+
+.. _ElementTree: https://docs.python.org/3/library/xml.etree.elementtree.html
+.. _whatever ElementTree supports: https://docs.python.org/3/library/xml.etree.elementtree.html#xpath-support
+.. _lxml: http://lxml.de/
+.. _much wider range of XPath constructs: http://lxml.de/xpathxslt.html#xpath
 
 For example, to extract the title and year out of the sample document, we can
 write the following rules where ``first`` is a predefined reducer that selects

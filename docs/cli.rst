@@ -15,18 +15,20 @@ The command line interface provides usage help::
      -h, --help  show this help message and exit
      --debug     enable debug messages
 
-The :command:`scrape` command takes a specification document and the scraper
-type (the "document" type), extracts the data according to the specification
-and prints out the result::
+The :command:`scrape` command scrapes a URL based on a specification and prints
+the result::
 
    $ woody scrape -h
-   usage: woody scrape [-h] -s SPEC -d DOCUMENT [--param PARAM]
+   usage: woody scrape [-h] -s SPEC -r RULES [--html] url
+
+   positional arguments:
+     url         URL to scrape
 
    optional arguments:
-     -h, --help     show this help message and exit
-     -s SPEC        spec file
-     -d DOCUMENT    selected document in spec file
-     --param PARAM  parameters to pass to the scraper
+     -h, --help  show this help message and exit
+     -s SPEC     spec file
+     -r RULES    selected rule set in spec
+     --html      document content is html
 
 The :command:`h2x` command converts an HTML input to XHTML. It takes the file
 name as input and prints the converted content to stdout. If the input file
