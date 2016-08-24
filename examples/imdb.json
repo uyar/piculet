@@ -1,467 +1,458 @@
 {
-  "base_url": "http://akas.imdb.com",
-  "scrapers": [
-    {
-      "id": "movie_combined",
-      "url": "/title/tt{imdb_id:07}/combined",
-      "format": "html",
-      "pre": [
-        {
-          "op": "root",
-          "path": ".//div[@id='tn15']"
-        },
-        {
-          "op": "remove",
-          "path": ".//a[@class='tn15more inline']"
-        },
-        {
-          "op": "remove",
-          "path": ".//div[@class='info-content']//a[@class='tn15more']"
-        },
-        {
-          "op": "set_attr",
-          "path": ".//div[@class='info']/h5/..",
-          "name": "woody",
-          "value": {
-            "path": "./h5/text()",
-            "reducer": "normalize"
-          }
-        },
-        {
-          "op": "remove",
-          "path": ".//a[@href='fullcredits#writers']"
-        },
-        {
-          "op": "set_attr",
-          "path": ".//div[@woody='creator']",
-          "name": "woody",
-          "value": "creators"
-        },
-        {
-          "op": "set_text",
-          "path": ".//div[@woody='creators']//br",
-          "text": ":BR:"
-        },
-        {
-          "op": "set_text",
-          "path": ".//div[@woody='also_known_as']//br",
-          "text": ":BR:"
+  "movie_combined": {
+    "pre": [
+      {
+        "op": "root",
+        "path": ".//div[@id='tn15']"
+      },
+      {
+        "op": "remove",
+        "path": ".//a[@class='tn15more inline']"
+      },
+      {
+        "op": "remove",
+        "path": ".//div[@class='info-content']//a[@class='tn15more']"
+      },
+      {
+        "op": "set_attr",
+        "path": ".//div[@class='info']/h5/..",
+        "name": "woody",
+        "value": {
+          "path": "./h5/text()",
+          "reducer": "normalize"
         }
-      ],
-      "items": [
-        {
-          "key": "title.full",
-          "value": {
-            "path": ".//div[@id='tn15crumbs']/b/text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "poster.link",
-          "value": {
-            "path": ".//img[@id='primary-poster']/@src",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "title",
-          "value": {
-            "path": ".//div[@id='tn15title']/h1/text()",
-            "reducer": "clean"
-          }
-        },
-        {
-          "key": "title.episode",
-          "value": {
-            "path": ".//div[@id='tn15title']/h1/span/em/text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "year",
-          "value": {
-            "path": ".//div[@id='tn15title']/h1/span/a/text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "tv_extra",
-          "value": {
-            "path": ".//span[@class='tv-extra']/text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "episode.prev.link",
-          "value": {
-            "path": ".//a[@title='Previous Episode']/@href",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "episode.number",
-          "value": {
-            "path": ".//div[@id='tn15epnav']/text()",
-            "reducer": "clean"
-          }
-        },
-        {
-          "key": "series.episode_count",
-          "value": {
-            "path": ".//a[@title='Full Episode List']/text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "episode.next.link",
-          "value": {
-            "path": ".//a[@title='Next Episode']/@href",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "rating",
-          "value": {
-            "path": ".//div[@class='starbar-meta']/b/text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "votes",
-          "value": {
-            "path": ".//div[@class='starbar-meta']/a/text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "rank",
-          "value": {
-            "path": ".//div[@class='starbar-special']/a/text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "creators",
-          "value": {
-            "foreach": ".//div[@woody='creators']/div[@class='info-content']/a",
-            "items": [
-              {
-                "key": "link",
-                "value": {
-                  "path": "./@href",
-                  "reducer": "first"
-                }
-              },
-              {
-                "key": "name",
-                "value": {
-                  "path": "./text()",
-                  "reducer": "first"
-                }
+      },
+      {
+        "op": "remove",
+        "path": ".//a[@href='fullcredits#writers']"
+      },
+      {
+        "op": "set_attr",
+        "path": ".//div[@woody='creator']",
+        "name": "woody",
+        "value": "creators"
+      },
+      {
+        "op": "set_text",
+        "path": ".//div[@woody='creators']//br",
+        "text": ":BR:"
+      },
+      {
+        "op": "set_text",
+        "path": ".//div[@woody='also_known_as']//br",
+        "text": ":BR:"
+      }
+    ],
+    "items": [
+      {
+        "key": "title.full",
+        "value": {
+          "path": ".//div[@id='tn15crumbs']/b/text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "poster.link",
+        "value": {
+          "path": ".//img[@id='primary-poster']/@src",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "title",
+        "value": {
+          "path": ".//div[@id='tn15title']/h1/text()",
+          "reducer": "clean"
+        }
+      },
+      {
+        "key": "title.episode",
+        "value": {
+          "path": ".//div[@id='tn15title']/h1/span/em/text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "year",
+        "value": {
+          "path": ".//div[@id='tn15title']/h1/span/a/text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "tv_extra",
+        "value": {
+          "path": ".//span[@class='tv-extra']/text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "episode.prev.link",
+        "value": {
+          "path": ".//a[@title='Previous Episode']/@href",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "episode.number",
+        "value": {
+          "path": ".//div[@id='tn15epnav']/text()",
+          "reducer": "clean"
+        }
+      },
+      {
+        "key": "series.episode_count",
+        "value": {
+          "path": ".//a[@title='Full Episode List']/text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "episode.next.link",
+        "value": {
+          "path": ".//a[@title='Next Episode']/@href",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "rating",
+        "value": {
+          "path": ".//div[@class='starbar-meta']/b/text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "votes",
+        "value": {
+          "path": ".//div[@class='starbar-meta']/a/text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "rank",
+        "value": {
+          "path": ".//div[@class='starbar-special']/a/text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "creators",
+        "value": {
+          "foreach": ".//div[@woody='creators']/div[@class='info-content']/a",
+          "items": [
+            {
+              "key": "link",
+              "value": {
+                "path": "./@href",
+                "reducer": "first"
               }
-            ]
-          }
-        },
-        {
-          "key": "seasons",
-          "value": {
-            "foreach": ".//div[@woody='seasons']/div[@class='info-content']/a",
-            "path": "./text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "series",
-          "value": {
-            "pre": [
-              {
-                "op": "root",
-                "path": ".//div[@woody='tv_series']/div[@class='info-content']/a"
+            },
+            {
+              "key": "name",
+              "value": {
+                "path": "./text()",
+                "reducer": "first"
               }
-            ],
-            "items": [
-              {
-                "key": "link",
-                "value": {
-                  "path": "./@href",
-                  "reducer": "first"
-                }
-              },
-              {
-                "key": "title.full",
-                "value": {
-                  "path": "./text()",
-                  "reducer": "first"
-                }
+            }
+          ]
+        }
+      },
+      {
+        "key": "seasons",
+        "value": {
+          "foreach": ".//div[@woody='seasons']/div[@class='info-content']/a",
+          "path": "./text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "series",
+        "value": {
+          "pre": [
+            {
+              "op": "root",
+              "path": ".//div[@woody='tv_series']/div[@class='info-content']/a"
+            }
+          ],
+          "items": [
+            {
+              "key": "link",
+              "value": {
+                "path": "./@href",
+                "reducer": "first"
               }
-            ]
-          }
-        },
-        {
-          "key": "date.airing",
-          "value": {
-            "path": ".//div[@woody='original_air_date']/div[@class='info-content']/text()",
-            "reducer": "clean"
-          }
-        },
-        {
-          "key": "genres",
-          "value": {
-            "foreach": ".//div[@woody='genre']/div[@class='info-content']/a",
-            "path": "./text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "tagline",
-          "value": {
-            "path": ".//div[@woody='tagline']/div[@class='info-content']/text()",
-            "reducer": "clean"
-          }
-        },
-        {
-          "key": "plot",
-          "value": {
-            "path": ".//div[@woody='plot']/div[@class='info-content']/text()",
-            "reducer": "clean"
-          }
-        },
-        {
-          "key": "plot.keywords",
-          "value": {
-            "foreach": ".//div[@id='tn15plotkeywords']//a",
-            "path": "./text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "cast",
-          "value": {
-            "foreach": ".//table[@class='cast']//td[@class='nm']/..",
-            "items": [
-              {
-                "key": "link",
-                "value": {
-                  "path": "./td[@class='nm']/a/@href",
-                  "reducer": "first"
-                }
-              },
-              {
-                "key": "name",
-                "value": {
-                  "path": "./td[@class='nm']/a/text()",
-                  "reducer": "clean"
-                }
-              },
-              {
-                "key": "character",
-                "value": {
-                  "pre": [
-                    {
-                      "op": "root",
-                      "path": "./td[@class='char']"
+            },
+            {
+              "key": "title.full",
+              "value": {
+                "path": "./text()",
+                "reducer": "first"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "key": "date.airing",
+        "value": {
+          "path": ".//div[@woody='original_air_date']/div[@class='info-content']/text()",
+          "reducer": "clean"
+        }
+      },
+      {
+        "key": "genres",
+        "value": {
+          "foreach": ".//div[@woody='genre']/div[@class='info-content']/a",
+          "path": "./text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "tagline",
+        "value": {
+          "path": ".//div[@woody='tagline']/div[@class='info-content']/text()",
+          "reducer": "clean"
+        }
+      },
+      {
+        "key": "plot",
+        "value": {
+          "path": ".//div[@woody='plot']/div[@class='info-content']/text()",
+          "reducer": "clean"
+        }
+      },
+      {
+        "key": "plot.keywords",
+        "value": {
+          "foreach": ".//div[@id='tn15plotkeywords']//a",
+          "path": "./text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "cast",
+        "value": {
+          "foreach": ".//table[@class='cast']//td[@class='nm']/..",
+          "items": [
+            {
+              "key": "link",
+              "value": {
+                "path": "./td[@class='nm']/a/@href",
+                "reducer": "first"
+              }
+            },
+            {
+              "key": "name",
+              "value": {
+                "path": "./td[@class='nm']/a/text()",
+                "reducer": "clean"
+              }
+            },
+            {
+              "key": "character",
+              "value": {
+                "pre": [
+                  {
+                    "op": "root",
+                    "path": "./td[@class='char']"
+                  }
+                ],
+                "items": [
+                  {
+                    "key": "link",
+                    "value": {
+                      "path": "./a/@href",
+                      "reducer": "first"
                     }
-                  ],
-                  "items": [
-                    {
-                      "key": "link",
-                      "value": {
-                        "path": "./a/@href",
-                        "reducer": "first"
-                      }
-                    },
-                    {
-                      "key": "name",
-                      "value": {
-                        "path": "./a/text()",
-                        "reducer": "clean"
-                      }
-                    },
-                    {
-                      "key": "notes",
-                      "value": {
-                        "path": "./text()",
-                        "reducer": "clean"
-                      }
+                  },
+                  {
+                    "key": "name",
+                    "value": {
+                      "path": "./a/text()",
+                      "reducer": "clean"
                     }
-                  ]
-                }
+                  },
+                  {
+                    "key": "notes",
+                    "value": {
+                      "path": "./text()",
+                      "reducer": "clean"
+                    }
+                  }
+                ]
               }
-            ]
-          }
-        },
-        {
-          "foreach": ".//a[@class='glossary']/../../../..",
-          "key": {
-            "path": ".//a[@class='glossary']/@name",
-            "reducer": "first"
-          },
-          "value": {
-            "foreach": "./tr/td[@valign='top']/..",
-            "items": [
-              {
-                "key": "link",
-                "value": {
-                  "path": ".//td[1]/a/@href",
-                  "reducer": "first"
-                }
-              },
-              {
-                "key": "name",
-                "value": {
-                  "path": ".//td[1]/a/text()",
-                  "reducer": "first"
-                }
-              },
-              {
-                "key": "notes",
-                "value": {
-                  "path": ".//td[3]//text()",
-                  "reducer": "clean"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "key": "title.aka",
-          "value": {
-            "path": ".//div[@woody='also_known_as']/div[@class='info-content']//text()",
-            "reducer": "clean"
-          }
-        },
-        {
-          "key": "rating.mpaa",
-          "value": {
-            "path": ".//a[@href='/mpaa']/../../div[@class='info-content']/text()",
-            "reducer": "clean"
-          }
-        },
-        {
-          "key": "runtime",
-          "value": {
-            "path": ".//div[@woody='runtime']/div[@class='info-content']/text()",
-            "reducer": "clean"
-          }
-        },
-        {
-          "key": "countries",
-          "value": {
-            "foreach": ".//div[@woody='country']/div[@class='info-content']/a",
-            "items": [
-              {
-                "key": "link",
-                "value": {
-                  "path": "./@href",
-                  "reducer": "first"
-                }
-              },
-              {
-                "key": "name",
-                "value": {
-                  "path": "./text()",
-                  "reducer": "first"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "key": "languages",
-          "value": {
-            "foreach": ".//div[@woody='language']/div[@class='info-content']/a",
-            "items": [
-              {
-                "key": "link",
-                "value": {
-                  "path": "./@href",
-                  "reducer": "first"
-                }
-              },
-              {
-                "key": "name",
-                "value": {
-                  "path": "./text()",
-                  "reducer": "first"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "key": "colors",
-          "value": {
-            "foreach": ".//div[@woody='color']/div[@class='info-content']/a",
-            "path": "./text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "colors.notes",
-          "value": {
-            "path": ".//div[@woody='color']/div[@class='info-content']//text()",
-            "reducer": "clean"
-          }
-        },
-        {
-          "key": "aspect_ratio",
-          "value": {
-            "path": ".//div[@woody='aspect_ratio']/div[@class='info-content']/text()",
-            "reducer": "clean"
-          }
-        },
-        {
-          "key": "sound_mix",
-          "value": {
-            "foreach": ".//div[@woody='sound_mix']/div[@class='info-content']/a",
-            "path": "./text()",
-            "reducer": "clean"
-          }
-        },
-        {
-          "key": "sound_mix.notes",
-          "value": {
-            "path": ".//div[@woody='sound_mix']/div[@class='info-content']//text()",
-            "reducer": "clean"
-          }
-        },
-        {
-          "key": "certifications",
-          "value": {
-            "foreach": ".//div[@woody='certification']/div[@class='info-content']/a",
-            "path": "./text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "certifications.notes",
-          "value": {
-            "path": ".//div[@woody='certification']/div[@class='info-content']//text()",
-            "reducer": "clean"
-          }
+            }
+          ]
         }
-      ]
-    },
-    {
-      "id": "movie_keywords",
-      "url": "/title/tt{imdb_id:07}/keywords",
-      "format": "html",
-      "pre": [
-        {
-          "op": "root",
-          "path": ".//div[@id='keywords_content']"
+      },
+      {
+        "foreach": ".//a[@class='glossary']/../../../..",
+        "key": {
+          "path": ".//a[@class='glossary']/@name",
+          "reducer": "first"
+        },
+        "value": {
+          "foreach": "./tr/td[@valign='top']/..",
+          "items": [
+            {
+              "key": "link",
+              "value": {
+                "path": ".//td[1]/a/@href",
+                "reducer": "first"
+              }
+            },
+            {
+              "key": "name",
+              "value": {
+                "path": ".//td[1]/a/text()",
+                "reducer": "first"
+              }
+            },
+            {
+              "key": "notes",
+              "value": {
+                "path": ".//td[3]//text()",
+                "reducer": "clean"
+              }
+            }
+          ]
         }
-      ],
-      "items": [
-        {
-          "key": "keywords",
-          "value": {
-            "foreach": ".//div[@class='sodatext']/a",
-            "path": "./text()",
-            "reducer": "clean"
-          }
+      },
+      {
+        "key": "title.aka",
+        "value": {
+          "path": ".//div[@woody='also_known_as']/div[@class='info-content']//text()",
+          "reducer": "clean"
         }
-      ]
-    }
-  ]
+      },
+      {
+        "key": "rating.mpaa",
+        "value": {
+          "path": ".//a[@href='/mpaa']/../../div[@class='info-content']/text()",
+          "reducer": "clean"
+        }
+      },
+      {
+        "key": "runtime",
+        "value": {
+          "path": ".//div[@woody='runtime']/div[@class='info-content']/text()",
+          "reducer": "clean"
+        }
+      },
+      {
+        "key": "countries",
+        "value": {
+          "foreach": ".//div[@woody='country']/div[@class='info-content']/a",
+          "items": [
+            {
+              "key": "link",
+              "value": {
+                "path": "./@href",
+                "reducer": "first"
+              }
+            },
+            {
+              "key": "name",
+              "value": {
+                "path": "./text()",
+                "reducer": "first"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "key": "languages",
+        "value": {
+          "foreach": ".//div[@woody='language']/div[@class='info-content']/a",
+          "items": [
+            {
+              "key": "link",
+              "value": {
+                "path": "./@href",
+                "reducer": "first"
+              }
+            },
+            {
+              "key": "name",
+              "value": {
+                "path": "./text()",
+                "reducer": "first"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "key": "colors",
+        "value": {
+          "foreach": ".//div[@woody='color']/div[@class='info-content']/a",
+          "path": "./text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "colors.notes",
+        "value": {
+          "path": ".//div[@woody='color']/div[@class='info-content']//text()",
+          "reducer": "clean"
+        }
+      },
+      {
+        "key": "aspect_ratio",
+        "value": {
+          "path": ".//div[@woody='aspect_ratio']/div[@class='info-content']/text()",
+          "reducer": "clean"
+        }
+      },
+      {
+        "key": "sound_mix",
+        "value": {
+          "foreach": ".//div[@woody='sound_mix']/div[@class='info-content']/a",
+          "path": "./text()",
+          "reducer": "clean"
+        }
+      },
+      {
+        "key": "sound_mix.notes",
+        "value": {
+          "path": ".//div[@woody='sound_mix']/div[@class='info-content']//text()",
+          "reducer": "clean"
+        }
+      },
+      {
+        "key": "certifications",
+        "value": {
+          "foreach": ".//div[@woody='certification']/div[@class='info-content']/a",
+          "path": "./text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "certifications.notes",
+        "value": {
+          "path": ".//div[@woody='certification']/div[@class='info-content']//text()",
+          "reducer": "clean"
+        }
+      }
+    ]
+  },
+  "movie_keywords": {
+    "pre": [
+      {
+        "op": "root",
+        "path": ".//div[@id='keywords_content']"
+      }
+    ],
+    "items": [
+      {
+        "key": "keywords",
+        "value": {
+          "foreach": ".//div[@class='sodatext']/a",
+          "path": "./text()",
+          "reducer": "clean"
+        }
+      }
+    ]
+  }
 }

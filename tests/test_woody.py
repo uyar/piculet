@@ -6,6 +6,11 @@ import time
 from woody import _get_document, build_tree, extract, scrape, woodpecker, xpath
 
 
+########################################
+# xpath tests
+########################################
+
+
 @fixture(scope='module')
 def generic_root():
     """Simple XML document with generic content."""
@@ -31,6 +36,11 @@ def test_xpath_descendant_text_queries_should_return_strings(generic_root):
 def test_xpath_attr_queries_should_return_strings(generic_root):
     selected = xpath(generic_root, './/t1/@a')
     assert selected == ['v']
+
+
+########################################
+# woodpecker tests
+########################################
 
 
 @fixture(scope='module')
@@ -63,7 +73,12 @@ def test_peck_non_matching_path_should_return_none(people_root):
     assert data is None
 
 
-def test_scrape_no_subroot_should_return_all(people_root):
+########################################
+# extract tests
+########################################
+
+
+def test_extract_no_subroot_should_return_all(people_root):
     rules = [
         {'key': 'name', 'value': {'path': './p2/n/text()', 'reducer': 'first'}},
         {'key': 'age', 'value': {'path': './p1/a/text()', 'reducer': 'first'}}
@@ -72,7 +87,7 @@ def test_scrape_no_subroot_should_return_all(people_root):
     assert data == {'name': 'Jane Doe', 'age': '42'}
 
 
-def test_scrape_subroot_should_exclude_unselected_parts(people_root):
+def test_extract_subroot_should_exclude_unselected_parts(people_root):
     rules = [
         {'key': 'name', 'value': {'path': './/n/text()', 'reducer': 'first'}},
         {'key': 'age', 'value': {'path': './/a/text()', 'reducer': 'first'}}
@@ -81,7 +96,7 @@ def test_scrape_subroot_should_exclude_unselected_parts(people_root):
     assert data == {'name': 'John Smith', 'age': '42'}
 
 
-def test_scrape_missing_data_should_be_excluded(people_root):
+def test_extract_missing_data_should_be_excluded(people_root):
     rules = [
         {'key': 'name', 'value': {'path': './/n/text()', 'reducer': 'first'}},
         {'key': 'age', 'value': {'path': './/a/text()', 'reducer': 'first'}}
@@ -90,14 +105,19 @@ def test_scrape_missing_data_should_be_excluded(people_root):
     assert data == {'name': 'Jane Doe'}
 
 
-def test_scrape_subroot_should_select_one_element(people_root):
+def test_extract_subroot_should_select_one_element(people_root):
     with raises(ValueError):
         extract(people_root, items=[], pre=[{'op': 'root', 'path': './/n'}])
 
 
-def test_scrape_no_rules_should_return_empty_result(people_root):
+def test_extract_no_rules_should_return_empty_result(people_root):
     data = extract(people_root, items=[])
     assert data == {}
+
+
+########################################
+# scrape tests
+########################################
 
 
 TEST_SITE = 'http://en.wikipedia.org'
@@ -106,34 +126,13 @@ TEST_SITE = 'http://en.wikipedia.org'
 @fixture(scope='module')
 def dummy_spec():
     """Dummy data extraction spec."""
-    return {
-        "base_url": TEST_SITE,
-        "scrapers": [
-            {
-                "id": "s1",
-                "url": "/",
-                "items": []
-            },
-            {
-                "id": "s2",
-                "url": "/{p}",
-                "items": []
-            },
-            {
-                "id": "s3",
-                "url": "/{n:02}",
-                "items": []
-            }
-        ]
-    }
+    return {"s1": {"items": []}}
 
 
 @fixture(scope='module', autouse=True)
-def get_test_pages(dummy_spec):
-    """Store the test pages in the cache."""
-    scrapers = dummy_spec['scrapers']
-    url = dummy_spec['base_url'] + scrapers[0]['url']
-    _get_document(url)
+def get_test_page():
+    """Store the test page in the cache."""
+    _get_document(TEST_SITE)
 
 
 @mark.skip
@@ -141,7 +140,7 @@ def test_scrape_uncached_should_retrieve_from_web(dummy_spec):
     cache_dir = os.environ['WOODY_WEB_CACHE']   # backup cache dir
     del os.environ['WOODY_WEB_CACHE']
     start = time.time()
-    scrape(dummy_spec, 's1')
+    scrape(TEST_SITE, dummy_spec, 's1')
     end = time.time()                           # restore cache dir
     os.environ['WOODY_WEB_CACHE'] = cache_dir
     assert end - start > 1
@@ -149,18 +148,11 @@ def test_scrape_uncached_should_retrieve_from_web(dummy_spec):
 
 def test_scrape_cached_should_read_from_disk(dummy_spec):
     start = time.time()
-    scrape(dummy_spec, 's1')
+    scrape(TEST_SITE, dummy_spec, 's1')
     end = time.time()
     assert end - start < 1
 
 
 def test_scrape_missing_scrapers_should_raise_error(dummy_spec):
     with raises(ValueError):
-        scrape(dummy_spec, 's0')
-
-
-def test_scrape_duplicate_scrapers_should_raise_error(dummy_spec):
-    scrapers = dummy_spec['scrapers']
-    scrapers.append(scrapers[0])
-    with raises(ValueError):
-        scrape(dummy_spec, 's1')
+        scrape(TEST_SITE, dummy_spec, 's0')

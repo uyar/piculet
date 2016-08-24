@@ -26,9 +26,10 @@ def retrieve(
 
 
 def scrape(
+        url: str,
         spec: Mapping[str, Any],
         scraper: str,
-        **kwargs
+        content_format: Optional[str] = 'xml'
 ) -> Mapping[str, Any]: ...
 
 

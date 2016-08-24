@@ -456,34 +456,23 @@ def _get_document(url):
     return content
 
 
-def scrape(spec, scraper, **kwargs):
+def scrape(url, spec, scraper, content_format='xml'):
     """Extract data from a document according to a specification.
 
-    All keyword arguments will be passed as parameters to the format string
-    of the document URL template.
-
+    :param url: Address of document to scrape.
     :param spec: Data extraction specification.
     :param scraper: Scraper name in the spec for the selected document type.
+    :param content_format: Format of the content, XML or HTML.
     :return: Extracted data.
     """
-    matched_scrapers = [s for s in spec['scrapers'] if s['id'] == scraper]
-    if len(matched_scrapers) == 0:
+    matched_scraper = spec.get(scraper)
+    if matched_scraper is None:
         raise ValueError('Scraper with given id not found: %s'.format(scraper))
-    if len(matched_scrapers) > 1:
-        raise ValueError('Scraper ids must be unique: %s'.format(scraper))
-    matched_scraper = matched_scrapers[0]
     _logger.debug('using scraper [%s]', scraper)
 
-    url_template = spec['base_url'] + matched_scraper['url']
-    for arg in kwargs:
-        if ('{%s:0' % arg) in url_template:
-            kwargs[arg] = int(kwargs[arg])
-    url = url_template.format(**kwargs)
     _logger.debug('scraping url [%s]', url)
-
     document = _get_document(url)
 
-    content_format = matched_scraper.get('format', 'xml')
     if content_format == 'html':
         _logger.debug('converting html document to xml')
         document = html_to_xhtml(document)
@@ -517,12 +506,9 @@ def _get_parser():
     def scrape_doc(arguments):
         with open(arguments.spec[0]) as f:
             spec = json.loads(f.read())
-        params = {}
-        if arguments.param:
-            for p in arguments.param:
-                k, v = p.split('=')
-                params[k] = v
-        data = scrape(spec, arguments.document[0], **params)
+        content_format = 'html' if arguments.html else 'xml'
+        data = scrape(arguments.url, spec, arguments.rules[0],
+                      content_format=content_format)
         print(json.dumps(data, indent=2, sort_keys=True))
 
     parser = ArgumentParser()
@@ -537,12 +523,13 @@ def _get_parser():
 
     subparser = commands.add_parser('scrape', help='scrape a document')
     subparser.set_defaults(func=scrape_doc)
+    subparser.add_argument('url', help='URL to scrape')
     subparser.add_argument('-s', nargs=1, dest='spec', required=True,
                            help='spec file')
-    subparser.add_argument('-d', nargs=1, dest='document', required=True,
-                           help='selected document in spec file')
-    subparser.add_argument('--param', action='append',
-                           help='parameters to pass to the scraper')
+    subparser.add_argument('-r', nargs=1, dest='rules', required=True,
+                           help='selected rule set in spec')
+    subparser.add_argument('--html', action='store_true',
+                           help='document content is html')
 
     return parser
 

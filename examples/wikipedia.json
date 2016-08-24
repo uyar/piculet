@@ -1,48 +1,42 @@
 {
-  "base_url": "https://en.wikipedia.org",
-  "scrapers": [
-    {
-      "id": "person",
-      "url": "/wiki/{name}",
-      "format": "html",
-      "items": [
-        {
-          "key": "name",
-          "value": {
-            "path": ".//span[@class='fn']/text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "born",
-          "value": {
-            "path": ".//span[@class='bday']/text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "birthplace",
-          "value": {
-            "path": ".//span[@class='birthplace']//text()",
-            "reducer": "clean"
-          }
-        },
-        {
-          "key": "died",
-          "value": {
-            "path": ".//span[@class='dday deathdate']/text()",
-            "reducer": "first"
-          }
-        },
-        {
-          "key": "occupation",
-          "value": {
-            "foreach": ".//td[@class='role']//li",
-            "path": "./text()",
-            "reducer": "clean"
-          }
+  "person": {
+    "items": [
+      {
+        "key": "name",
+        "value": {
+          "path": ".//span[@class='fn']/text()",
+          "reducer": "first"
         }
-      ]
-    }
-  ]
+      },
+      {
+        "key": "born",
+        "value": {
+          "path": ".//span[@class='bday']/text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "birthplace",
+        "value": {
+          "path": ".//span[@class='birthplace']//text()",
+          "reducer": "clean"
+        }
+      },
+      {
+        "key": "died",
+        "value": {
+          "path": ".//span[@class='dday deathdate']/text()",
+          "reducer": "first"
+        }
+      },
+      {
+        "key": "occupation",
+        "value": {
+          "foreach": ".//td[@class='role']//li",
+          "path": "./text()",
+          "reducer": "clean"
+        }
+      }
+    ]
+  }
 }

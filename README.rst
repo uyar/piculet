@@ -29,7 +29,7 @@ about how Woody works, get the `wikipedia.json`_ specification example
 and run the command given below to get some data out of the Wikipedia page
 for `David Bowie`_::
 
-   $ python woody.py scrape -s wikipedia.json -d person --param name=David_Bowie
+   $ python woody.py scrape "https://en.wikipedia.org/wiki/David_Bowie" -s wikipedia.json -r person --html
    {
      "birthplace": "Brixton, London, England",
      "born": "1947-01-08",
@@ -45,12 +45,12 @@ for `David Bowie`_::
 Installing Woody through pip will create a script named ``woody`` which can
 also be used to invoke the command-line interface::
 
-   $ woody scrape -s wikipedia.json -d person --param name=John_Lennon
+   $ woody scrape "https://en.wikipedia.org/wiki/John_Lennon" -s wikipedia.json -r person --html
 
 For a more complicated example, get the `imdb.json`_ specification and
 run the following command to get details about the movie `The Shining`_::
 
-   $ woody scrape -s imdb.json -d movie_combined --param imdb_id=81505
+   $ woody scrape "http://akas.imdb.com/title/tt0081505/combined" -s imdb.json -r movie_combined --html
 
 .. _wikipedia.json: https://bitbucket.org/uyar/woody/src/tip/examples/wikipedia.json
 .. _David Bowie: https://en.wikipedia.org/wiki/David_Bowie
