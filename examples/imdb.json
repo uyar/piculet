@@ -437,6 +437,32 @@
       }
     ]
   },
+  "movie_taglines": {
+    "pre": [
+      {
+        "op": "root",
+        "path": ".//div[@id='taglines_content']"
+      },
+      {
+        "op": "remove",
+        "path": "./div[@class='header']"
+      },
+      {
+        "op": "remove",
+        "path": "./div[@id='no_content']"
+      }
+    ],
+    "items": [
+      {
+        "key": "taglines",
+        "value": {
+          "foreach": "./div",
+          "path": ".//text()",
+          "reducer": "clean"
+        }
+      }
+    ]
+  },
   "movie_plot_summary": {
     "pre": [
       {

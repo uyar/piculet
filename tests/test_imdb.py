@@ -50,8 +50,10 @@ BASE_URL = 'http://akas.imdb.com'
 TITLE_BASE_URL = '{}/title/tt{{imdb_id:07}}'.format(BASE_URL)
 TITLE_COMBINED_URL = '{}/combined'.format(TITLE_BASE_URL)
 TITLE_KEYWORDS_URL = '{}/keywords'.format(TITLE_BASE_URL)
+TITLE_TAGLINES_URL = '{}/taglines'.format(TITLE_BASE_URL)
 TITLE_PLOT_SUMMARY_URL = '{}/plotsummary'.format(TITLE_BASE_URL)
-TITLE_URLS = (TITLE_COMBINED_URL, TITLE_KEYWORDS_URL, TITLE_PLOT_SUMMARY_URL)
+TITLE_URLS = (TITLE_COMBINED_URL, TITLE_TAGLINES_URL, TITLE_PLOT_SUMMARY_URL,
+              TITLE_KEYWORDS_URL)
 
 
 @fixture(scope='module', autouse=True)
@@ -802,24 +804,30 @@ def test_movie_combined_certifications_notes_none_should_be_excluded(imdb, movie
 
 
 ########################################
-# movie keywords page tests
+# movie taglines page tests
 ########################################
 
 
-MOVIE_KEYWORDS = 'movie_keywords'
+MOVIE_TAGLINES = 'movie_taglines'
 
 
-def test_movie_keywords_should_be_a_list_of_keywords(imdb, movies):
-    url = TITLE_KEYWORDS_URL.format(imdb_id=movies['matrix'])
-    data = scrape(url, imdb, MOVIE_KEYWORDS, content_format='html')
-    for keyword in ('computer', 'messiah', 'artificial reality'):
-        assert keyword in data['keywords']
+def test_movie_taglines_single_should_be_a_list_of_phrases(imdb, movies):
+    url = TITLE_TAGLINES_URL.format(imdb_id=movies['if'])
+    data = scrape(url, imdb, MOVIE_TAGLINES, content_format='html')
+    assert data['taglines'] == ['Which side will you be on?']
 
 
-def test_movie_keywords_none_should_be_excluded(imdb, movies):
-    url = TITLE_KEYWORDS_URL.format(imdb_id=movies['ates_parcasi'])
-    data = scrape(url, imdb, MOVIE_KEYWORDS, content_format='html')
-    assert 'keywords' not in data
+def test_movie_taglines_multiple_should_be_a_list_of_phrases(imdb, movies):
+    url = TITLE_TAGLINES_URL.format(imdb_id=movies['manos'])
+    data = scrape(url, imdb, MOVIE_TAGLINES, content_format='html')
+    assert len(data['taglines']) == 3
+    assert data['taglines'][0] == "It's Shocking! It's Beyond Your Imagination!"
+
+
+def test_movie_taglines_none_should_be_excluded(imdb, movies):
+    url = TITLE_TAGLINES_URL.format(imdb_id=movies['ates_parcasi'])
+    data = scrape(url, imdb, MOVIE_TAGLINES, content_format='html')
+    assert 'taglines' not in data
 
 
 ########################################
@@ -842,3 +850,24 @@ def test_movie_plot_summaries_none_should_be_excluded(imdb, movies):
     url = TITLE_PLOT_SUMMARY_URL.format(imdb_id=movies['ates_parcasi'])
     data = scrape(url, imdb, MOVIE_PLOT_SUMMARY, content_format='html')
     assert 'plot_summaries' not in data
+
+
+########################################
+# movie keywords page tests
+########################################
+
+
+MOVIE_KEYWORDS = 'movie_keywords'
+
+
+def test_movie_keywords_should_be_a_list_of_keywords(imdb, movies):
+    url = TITLE_KEYWORDS_URL.format(imdb_id=movies['matrix'])
+    data = scrape(url, imdb, MOVIE_KEYWORDS, content_format='html')
+    for keyword in ('computer', 'messiah', 'artificial reality'):
+        assert keyword in data['keywords']
+
+
+def test_movie_keywords_none_should_be_excluded(imdb, movies):
+    url = TITLE_KEYWORDS_URL.format(imdb_id=movies['ates_parcasi'])
+    data = scrape(url, imdb, MOVIE_KEYWORDS, content_format='html')
+    assert 'keywords' not in data
