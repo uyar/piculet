@@ -50,14 +50,17 @@ BASE_URL = 'http://akas.imdb.com'
 TITLE_BASE_URL = '{}/title/tt{{imdb_id:07}}'.format(BASE_URL)
 TITLE_COMBINED_URL = '{}/combined'.format(TITLE_BASE_URL)
 TITLE_KEYWORDS_URL = '{}/keywords'.format(TITLE_BASE_URL)
+TITLE_PLOT_SUMMARY_URL = '{}/plotsummary'.format(TITLE_BASE_URL)
+TITLE_URLS = (TITLE_COMBINED_URL, TITLE_KEYWORDS_URL, TITLE_PLOT_SUMMARY_URL)
 
 
 @fixture(scope='module', autouse=True)
 def get_imdb_pages(imdb, movies):
     """Store all needed pages from the IMDb in the cache."""
     for movie_id in movies.values():
-        url = TITLE_COMBINED_URL.format(imdb_id=movie_id)
-        _get_document(url)
+        for url_template in TITLE_URLS:
+            url = url_template.format(imdb_id=movie_id)
+            _get_document(url)
 
 
 ########################################
@@ -813,7 +816,29 @@ def test_movie_keywords_should_be_a_list_of_keywords(imdb, movies):
         assert keyword in data['keywords']
 
 
-def test_keywords_none_should_be_excluded(imdb, movies):
+def test_movie_keywords_none_should_be_excluded(imdb, movies):
     url = TITLE_KEYWORDS_URL.format(imdb_id=movies['ates_parcasi'])
     data = scrape(url, imdb, MOVIE_KEYWORDS, content_format='html')
     assert 'keywords' not in data
+
+
+########################################
+# movie plot page tests
+########################################
+
+
+MOVIE_PLOT_SUMMARY = 'movie_plot_summary'
+
+
+def test_movie_plot_summaries_should_be_a_list_of_texts(imdb, movies):
+    url = TITLE_PLOT_SUMMARY_URL.format(imdb_id=movies['matrix'])
+    data = scrape(url, imdb, MOVIE_PLOT_SUMMARY, content_format='html')
+    summaries = data['plot_summaries']
+    assert summaries[0]['summary'].startswith('Thomas A. Anderson is a man ')
+    assert summaries[0]['author'] == 'redcommander27'
+
+
+def test_movie_plot_summaries_none_should_be_excluded(imdb, movies):
+    url = TITLE_PLOT_SUMMARY_URL.format(imdb_id=movies['ates_parcasi'])
+    data = scrape(url, imdb, MOVIE_PLOT_SUMMARY, content_format='html')
+    assert 'plot_summaries' not in data

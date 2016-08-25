@@ -437,6 +437,38 @@
       }
     ]
   },
+  "movie_plot_summary": {
+    "pre": [
+      {
+        "op": "root",
+        "path": ".//div[@id='main']"
+      }
+    ],
+    "items": [
+      {
+        "key": "plot_summaries",
+        "value": {
+          "foreach": ".//ul[@class='zebraList']/li",
+          "items": [
+            {
+              "key": "summary",
+              "value": {
+                "path": ".//p[@class='plotSummary']//text()",
+                "reducer": "clean"
+              }
+            },
+            {
+              "key": "author",
+              "value": {
+                "path": ".//span/em/a/text()",
+                "reducer": "first"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
   "movie_keywords": {
     "pre": [
       {
