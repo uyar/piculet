@@ -20,13 +20,26 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.4'
     ],
     keywords='xml html xpath scrape',
     py_modules=['piculet'],
     install_requires=[],
-    tests_require=['pytest', 'pytest-cov', 'flake8'],
+    extras_require={
+        'dev': [
+            'flake8',
+            'mypy-lang'
+        ],
+        'doc': [
+            'sphinx'
+        ],
+        'test': [
+            'pytest',
+            'pytest-cov'
+        ],
+    },
     entry_points="""
         [console_scripts]
         piculet=piculet:main
