@@ -75,6 +75,7 @@ def retrieve(url, charset=None, fallback_charset='utf-8'):
     If no character set is given, this will try to figure it out
     from the corresponding ``meta`` tags.
 
+    :signature: (str, Optional[str], Optional[str]) -> str
     :param url: Address of web page to retrieve.
     :param charset: Character set of the page.
     :param fallback_charset: Character set to use if it can't be figured out.
@@ -217,6 +218,7 @@ class _HTMLNormalizer(HTMLParser):
 def html_to_xhtml(document, omit_tags=(), omit_attrs=()):
     """Clean HTML and convert to XHTML.
 
+    :signature: (str, Optional[Iterable[str]], Optional[Iterable[str]]) -> str
     :param document: HTML document to clean and convert.
     :param omit_tags: Tags to exclude from the output.
     :param omit_attrs: Attributes to exclude from the output.
@@ -246,6 +248,7 @@ else:
         This function is mainly needed to compensate for the lack of ``text()``
         and ``@attr`` axis queries in ElementTree XPath support.
 
+        :signature: (xml.etree.ElementTree.Element, str) -> Union[List[str], List[xml.etree.ElementTree.Element]]
         :param element: Element to apply the expression to.
         :param path: XPath expression to apply.
         :return: Elements or strings resulting from the query.
@@ -290,6 +293,7 @@ def woodpecker(path, reducer):
     the query has to end with ``text()`` or ``@attr``. The list will then be
     passed to the reducer function to generate a single string as the result.
 
+    :signature: (str, str) -> Callable[[xml.etree.ElementTree.Element], Optional[str]]
     :param path: XPath query to select the values.
     :param reducer: Name of reducer function.
     :return: A callable that can apply this path and reducer to an element.
@@ -326,6 +330,7 @@ def extract(document, items, pre=()):
     If given, it will use the ``pre`` parameter to carry out preprocessing
     operations on the tree before starting data extraction.
 
+    :signature: (Union[str, xml.etree.ElementTree.Element], Iterable[Mapping[str, Any]], Optional[Iterable[Mapping[str, Any]]]) -> Mapping[str, Any]
     :param document: Document to extract the data from.
     :param items: Rules that specify how to extract the data items.
     :param pre: Preprocessing operations on the document tree.
@@ -460,6 +465,7 @@ def _get_document(url):
 def scrape(url, spec, scraper, content_format='xml'):
     """Extract data from a document according to a specification.
 
+    :signature: (str, Mapping[str, Any], str, Optional[str]) -> Mapping[str, Any]
     :param url: Address of document to scrape.
     :param spec: Data extraction specification.
     :param scraper: Scraper name in the spec for the selected document type.
