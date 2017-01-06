@@ -248,7 +248,10 @@ else:
         This function is mainly needed to compensate for the lack of ``text()``
         and ``@attr`` axis queries in ElementTree XPath support.
 
-        :signature: (xml.etree.ElementTree.Element, str) -> Union[List[str], List[xml.etree.ElementTree.Element]]
+        :signature: (
+                xml.etree.ElementTree.Element,
+                str
+            ) -> Union[List[str], List[xml.etree.ElementTree.Element]]
         :param element: Element to apply the expression to.
         :param path: XPath expression to apply.
         :return: Elements or strings resulting from the query.
@@ -293,7 +296,10 @@ def woodpecker(path, reducer):
     the query has to end with ``text()`` or ``@attr``. The list will then be
     passed to the reducer function to generate a single string as the result.
 
-    :signature: (str, str) -> Callable[[xml.etree.ElementTree.Element], Optional[str]]
+    :signature: (
+            str,
+            str
+        ) -> Callable[[xml.etree.ElementTree.Element], Optional[str]]
     :param path: XPath query to select the values.
     :param reducer: Name of reducer function.
     :return: A callable that can apply this path and reducer to an element.
@@ -330,7 +336,11 @@ def extract(document, items, pre=()):
     If given, it will use the ``pre`` parameter to carry out preprocessing
     operations on the tree before starting data extraction.
 
-    :signature: (Union[str, xml.etree.ElementTree.Element], Iterable[Mapping[str, Any]], Optional[Iterable[Mapping[str, Any]]]) -> Mapping[str, Any]
+    :signature: (
+            Union[str, xml.etree.ElementTree.Element],
+            Iterable[Mapping[str, Any]],
+            Optional[Iterable[Mapping[str, Any]]]
+        ) -> Mapping[str, Any]
     :param document: Document to extract the data from.
     :param items: Rules that specify how to extract the data items.
     :param pre: Preprocessing operations on the document tree.
@@ -465,7 +475,12 @@ def _get_document(url):
 def scrape(url, spec, scraper, content_format='xml'):
     """Extract data from a document according to a specification.
 
-    :signature: (str, Mapping[str, Any], str, Optional[str]) -> Mapping[str, Any]
+    :signature: (
+            str,
+            Mapping[str, Any],
+            str,
+            Optional[str]
+        ) -> Mapping[str, Any]
     :param url: Address of document to scrape.
     :param spec: Data extraction specification.
     :param scraper: Scraper name in the spec for the selected document type.
