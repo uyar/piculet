@@ -248,7 +248,8 @@ else:
         This function is mainly needed to compensate for the lack of ``text()``
         and ``@attr`` axis queries in ElementTree XPath support.
 
-        :signature: (
+        :signature:
+            (
                 xml.etree.ElementTree.Element,
                 str
             ) -> Union[List[str], List[xml.etree.ElementTree.Element]]
@@ -296,7 +297,8 @@ def woodpecker(path, reducer):
     the query has to end with ``text()`` or ``@attr``. The list will then be
     passed to the reducer function to generate a single string as the result.
 
-    :signature: (
+    :signature:
+        (
             str,
             str
         ) -> Callable[[xml.etree.ElementTree.Element], Optional[str]]
@@ -336,7 +338,8 @@ def extract(document, items, pre=()):
     If given, it will use the ``pre`` parameter to carry out preprocessing
     operations on the tree before starting data extraction.
 
-    :signature: (
+    :signature:
+        (
             Union[str, xml.etree.ElementTree.Element],
             Iterable[Mapping[str, Any]],
             Optional[Iterable[Mapping[str, Any]]]
@@ -475,7 +478,8 @@ def _get_document(url):
 def scrape(url, spec, scraper, content_format='xml'):
     """Extract data from a document according to a specification.
 
-    :signature: (
+    :signature:
+        (
             str,
             Mapping[str, Any],
             str,
