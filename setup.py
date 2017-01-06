@@ -33,7 +33,8 @@ setup(
             'mypy-lang'
         ],
         'doc': [
-            'sphinx'
+            'sphinx',
+            'sphinx_rtd_theme'
         ],
         'test': [
             'pytest',
