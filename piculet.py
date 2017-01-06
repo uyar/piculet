@@ -45,16 +45,6 @@ import sys
 _logger = logging.getLogger(__name__)
 
 
-try:
-    from lxml.etree.ElementTree import fromstring as build_tree
-    _USE_LXML = True
-    _logger.debug('using lxml')
-except ImportError:
-    from xml.etree.ElementTree import fromstring as build_tree
-    _USE_LXML = False
-    _logger.debug('lxml not found, falling back to elementtree')
-
-
 ###########################################################
 # WEB OPERATIONS
 ###########################################################
@@ -237,46 +227,54 @@ def html_to_xhtml(document, omit_tags=(), omit_attrs=()):
 ###########################################################
 
 
-if _USE_LXML:
-    # xpath = ElementTree._Element.xpath
-    def xpath(element, path):
-        return element.xpath(path)
-else:
-    def xpath(element, path):
-        """Apply an XPath expression to an element.
+def xpath_etree(element, path):
+    """Apply an XPath expression to an element.
 
-        This function is mainly needed to compensate for the lack of ``text()``
-        and ``@attr`` axis queries in ElementTree XPath support.
+    This function is mainly needed to compensate for the lack of ``text()``
+    and ``@attr`` axis queries in ElementTree XPath support.
 
-        :signature:
-            (
-                xml.etree.ElementTree.Element,
-                str
-            ) -> Union[List[str], List[xml.etree.ElementTree.Element]]
-        :param element: Element to apply the expression to.
-        :param path: XPath expression to apply.
-        :return: Elements or strings resulting from the query.
-        """
-        if path.endswith('//text()'):
-            _logger.debug('handling descendant text path [%s]', path)
-            return [t for e in element.findall(path[:-8])
-                    for t in e.itertext() if t]
+    :signature:
+        (
+            xml.etree.ElementTree.Element,
+            str
+        ) -> Union[List[str], List[xml.etree.ElementTree.Element]]
+    :param element: Element to apply the expression to.
+    :param path: XPath expression to apply.
+    :return: Elements or strings resulting from the query.
+    """
+    if path.endswith('//text()'):
+        _logger.debug('handling descendant text path [%s]', path)
+        return [t for e in element.findall(path[:-8])
+                for t in e.itertext() if t]
 
-        if path.endswith('/text()'):
-            _logger.debug('handling child text path [%s]', path)
-            return [t for e in element.findall(path[:-7])
-                    for t in ([e.text] + [c.tail if c.tail else '' for c in e])
-                    if t]
+    if path.endswith('/text()'):
+        _logger.debug('handling child text path [%s]', path)
+        return [t for e in element.findall(path[:-7])
+                for t in ([e.text] + [c.tail if c.tail else '' for c in e])
+                if t]
 
-        *epath, last_step = path.split('/')
-        if last_step.startswith('@'):
-            _logger.debug('handling attribute path [%s]', path)
-            result = [e.attrib.get(last_step[1:])
-                      for e in element.findall('/'.join(epath))]
-            return [r for r in result if r is not None]
+    *epath, last_step = path.split('/')
+    if last_step.startswith('@'):
+        _logger.debug('handling attribute path [%s]', path)
+        result = [e.attrib.get(last_step[1:])
+                  for e in element.findall('/'.join(epath))]
+        return [r for r in result if r is not None]
 
-        _logger.debug('handling element producing path [%s]', path)
-        return element.findall(path)
+    _logger.debug('handling element producing path [%s]', path)
+    return element.findall(path)
+
+
+try:
+    from lxml.etree import ElementTree
+    from lxml.etree.ElementTree import fromstring as build_tree
+    xpath = ElementTree._Element.xpath
+    _USE_LXML = True
+    _logger.debug('using lxml')
+except ImportError:
+    from xml.etree.ElementTree import fromstring as build_tree
+    xpath = xpath_etree
+    _USE_LXML = False
+    _logger.debug('lxml not found, falling back to elementtree')
 
 
 _REDUCERS = {
@@ -371,8 +369,7 @@ def extract(document, items, pre=()):
 
     def parent_getter():
         if _USE_LXML:
-            # return ElementTree._Element.getparent
-            return lambda e: e.getparent
+            return ElementTree._Element.getparent
         else:
             # ElementTree doesn't support parent queries, so build a map for it
             # TODO: this re-traverses tree on subrules
