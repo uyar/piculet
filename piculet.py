@@ -65,7 +65,7 @@ def retrieve(url, charset=None, fallback_charset='utf-8'):
     If no character set is given, this will try to figure it out
     from the corresponding ``meta`` tags.
 
-    :signature: (str, Optional[str], Optional[str]) -> str
+    :sig: (str, Optional[str], Optional[str]) -> str
     :param url: Address of web page to retrieve.
     :param charset: Character set of the page.
     :param fallback_charset: Character set to use if it can't be figured out.
@@ -208,7 +208,7 @@ class _HTMLNormalizer(HTMLParser):
 def html_to_xhtml(document, omit_tags=(), omit_attrs=()):
     """Clean HTML and convert to XHTML.
 
-    :signature: (str, Optional[Iterable[str]], Optional[Iterable[str]]) -> str
+    :sig: (str, Optional[Iterable[str]], Optional[Iterable[str]]) -> str
     :param document: HTML document to clean and convert.
     :param omit_tags: Tags to exclude from the output.
     :param omit_attrs: Attributes to exclude from the output.
@@ -233,7 +233,7 @@ def xpath_etree(element, path):
     This function is mainly needed to compensate for the lack of ``text()``
     and ``@attr`` axis queries in ElementTree XPath support.
 
-    :signature:
+    :sig:
         (
             xml.etree.ElementTree.Element,
             str
@@ -295,7 +295,7 @@ def woodpecker(path, reducer):
     the query has to end with ``text()`` or ``@attr``. The list will then be
     passed to the reducer function to generate a single string as the result.
 
-    :signature:
+    :sig:
         (
             str,
             str
@@ -336,7 +336,7 @@ def extract(document, items, pre=()):
     If given, it will use the ``pre`` parameter to carry out preprocessing
     operations on the tree before starting data extraction.
 
-    :signature:
+    :sig:
         (
             Union[str, xml.etree.ElementTree.Element],
             Iterable[Mapping[str, Any]],
@@ -475,7 +475,7 @@ def _get_document(url):
 def scrape(url, spec, scraper, content_format='xml'):
     """Extract data from a document according to a specification.
 
-    :signature:
+    :sig:
         (
             str,
             Mapping[str, Any],
