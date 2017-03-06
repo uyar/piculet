@@ -20,8 +20,6 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.4'
     ],
     keywords='xml html xpath scrape',
@@ -30,7 +28,7 @@ setup(
     extras_require={
         'dev': [
             'flake8',
-            'mypy-lang'
+            'mypy'
         ],
         'doc': [
             'sphinx',
