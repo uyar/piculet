@@ -7,15 +7,15 @@ import xml.etree.ElementTree
 
 def retrieve(
         url: str,
-        charset: Optional[str] = None,
-        fallback_charset: Optional[str] = 'utf-8'
+        charset: Optional[str] = ...,
+        fallback_charset: Optional[str] = ...
 ) -> str: ...
 
 
 def html_to_xhtml(
         document: str,
-        omit_tags: Optional[Iterable[str]] = (),
-        omit_attrs: Optional[Iterable[str]] = ()
+        omit_tags: Optional[Iterable[str]] = ...,
+        omit_attrs: Optional[Iterable[str]] = ...
 ) -> str: ...
 
 
@@ -34,7 +34,7 @@ def woodpecker(
 def extract(
         document: Union[str, xml.etree.ElementTree.Element],
         items: Iterable[Mapping[str, Any]],
-        pre: Optional[Iterable[Mapping[str, Any]]] = ()
+        pre: Optional[Iterable[Mapping[str, Any]]] = ...
 ) -> Mapping[str, Any]: ...
 
 
@@ -42,5 +42,5 @@ def scrape(
         url: str,
         spec: Mapping[str, Any],
         scraper: str,
-        content_format: Optional[str] = 'xml'
+        content_format: Optional[str] = ...
 ) -> Mapping[str, Any]: ...
