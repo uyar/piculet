@@ -10,8 +10,8 @@ from piculet import retrieve, html_to_xhtml
 
 
 @fixture(scope='module')
-def web_server(request):
-    """Address of local web server for serving test files."""
+def base_url(request):
+    """Base URL of local web server for serving test files."""
     port = 2016
 
     command = ['python3', '-m', 'http.server', str(port), '--bind', '127.0.0.1']
@@ -22,89 +22,89 @@ def web_server(request):
         process.kill()
 
     request.addfinalizer(finalize)
-    return 'http://127.0.0.1:{}/files'.format(port)
+    return 'http://127.0.0.1:%(port)s/files' % {'port': port}
 
 
-def test_retrieve_url_not_found_should_raise_http_error(web_server):
-    url = '{}/utf-8_charset_utf-9.html'.format(web_server)
+def test_retrieve_url_not_found_should_raise_http_error(base_url):
+    url = base_url + '/utf-8_charset_utf-9.html'
     with raises(HTTPError):
         retrieve(url)
 
 
-def test_retrieve_meta_charset_correct_should_succeed(web_server):
-    url = '{}/utf-8_charset_utf-8.html'.format(web_server)
+def test_retrieve_meta_charset_correct_should_succeed(base_url):
+    url = base_url + '/utf-8_charset_utf-8.html'
     content = retrieve(url)
     assert 'ğışĞİŞ' in content
 
 
-def test_retrieve_meta_content_type_correct_should_succeed(web_server):
-    url = '{}/utf-8_content-type_utf-8.html'.format(web_server)
+def test_retrieve_meta_content_type_correct_should_succeed(base_url):
+    url = base_url + '/utf-8_content-type_utf-8.html'
     content = retrieve(url)
     assert 'ğışĞİŞ' in content
 
 
-def test_retrieve_meta_charset_incorrect_should_fail(web_server):
-    url = '{}/utf-8_charset_iso8859-9.html'.format(web_server)
+def test_retrieve_meta_charset_incorrect_should_fail(base_url):
+    url = base_url + '/utf-8_charset_iso8859-9.html'
     content = retrieve(url)
     assert 'ğışĞİŞ' not in content
 
 
-def test_retrieve_meta_content_type_incorrect_should_fail(web_server):
-    url = '{}/utf-8_content-type_iso8859-9.html'.format(web_server)
+def test_retrieve_meta_content_type_incorrect_should_fail(base_url):
+    url = base_url + '/utf-8_content-type_iso8859-9.html'
     content = retrieve(url)
     assert 'ğışĞİŞ' not in content
 
 
-def test_retrieve_meta_charset_incompatible_should_raise_unicode_error(web_server):
-    url = '{}/iso8859-9_charset_utf-8.html'.format(web_server)
+def test_retrieve_meta_charset_incompatible_should_raise_unicode_error(base_url):
+    url = base_url + '/iso8859-9_charset_utf-8.html'
     with raises(UnicodeDecodeError):
         retrieve(url)
 
 
-def test_retrieve_meta_content_type_incompatible_should_raise_unicode_error(web_server):
-    url = '{}/iso8859-9_content-type_utf-8.html'.format(web_server)
+def test_retrieve_meta_content_type_incompatible_should_raise_unicode_error(base_url):
+    url = base_url + '/iso8859-9_content-type_utf-8.html'
     with raises(UnicodeDecodeError):
         retrieve(url)
 
 
-def test_retrieve_requested_charset_correct_should_succeed(web_server):
-    url = '{}/utf-8_charset_iso8859-9.html'.format(web_server)
+def test_retrieve_requested_charset_correct_should_succeed(base_url):
+    url = base_url + '/utf-8_charset_iso8859-9.html'
     content = retrieve(url, charset='utf-8')
     assert 'ğışĞİŞ' in content
 
 
-def test_retrieve_requested_charset_incorrect_should_fail(web_server):
-    url = '{}/utf-8_charset_utf-8.html'.format(web_server)
+def test_retrieve_requested_charset_incorrect_should_fail(base_url):
+    url = base_url + '/utf-8_charset_utf-8.html'
     content = retrieve(url, charset='iso8859-9')
     assert 'ğışĞİŞ' not in content
 
 
-def test_retrieve_requested_charset_incompatible_should_raise_unicode_error(web_server):
-    url = '{}/iso8859-9_charset_iso8859-9.html'.format(web_server)
+def test_retrieve_requested_charset_incompatible_should_raise_unicode_error(base_url):
+    url = base_url + '/iso8859-9_charset_iso8859-9.html'
     with raises(UnicodeDecodeError):
         retrieve(url, charset='utf-8')
 
 
-def test_retrieve_fallback_default_correct_should_succeed(web_server):
-    url = '{}/utf-8_charset_none.html'.format(web_server)
+def test_retrieve_fallback_default_correct_should_succeed(base_url):
+    url = base_url + '/utf-8_charset_none.html'
     content = retrieve(url)
     assert 'ğışĞİŞ' in content
 
 
-def test_retrieve_fallback_correct_should_succeed(web_server):
-    url = '{}/iso8859-9_charset_none.html'.format(web_server)
+def test_retrieve_fallback_correct_should_succeed(base_url):
+    url = base_url + '/iso8859-9_charset_none.html'
     content = retrieve(url, fallback_charset='iso8859-9')
     assert 'ğışĞİŞ' in content
 
 
-def test_retrieve_fallback_incorrect_should_fail(web_server):
-    url = '{}/iso8859-9_charset_none.html'.format(web_server)
+def test_retrieve_fallback_incorrect_should_fail(base_url):
+    url = base_url + '/iso8859-9_charset_none.html'
     content = retrieve(url, fallback_charset='iso8859-1')
     assert 'ğışĞİŞ' not in content
 
 
-def test_retrieve_fallback_incompatible_should_raise_unicode_error(web_server):
-    url = '{}/iso8859-9_charset_none.html'.format(web_server)
+def test_retrieve_fallback_incompatible_should_raise_unicode_error(base_url):
+    url = base_url + '/iso8859-9_charset_none.html'
     with raises(UnicodeDecodeError):
         retrieve(url, fallback_charset='utf-8')
 
