@@ -511,7 +511,7 @@ def scrape(url, spec, scraper, content_format='xml'):
 ###########################################################
 
 
-def _get_parser():
+def _get_parser(prog):
     """Get a parser for command line arguments."""
 
     def h2x(arguments):
@@ -557,10 +557,15 @@ def _get_parser():
     return parser
 
 
-def main():
-    """Entry point of the command line utility."""
-    parser = _get_parser()
-    arguments = parser.parse_args()
+def main(argv=None):
+    """Entry point of the command line utility.
+
+    :sig: (Optional[List[str]]) -> None
+    :param argv: Command line arguments.
+    """
+    argv = argv if argv is not None else sys.argv
+    parser = _get_parser(prog=argv[0])
+    arguments = parser.parse_args(argv[1:])
 
     # set debug mode
     if arguments.debug:
