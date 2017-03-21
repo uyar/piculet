@@ -15,7 +15,7 @@ setup(
     url='https://bitbucket.org/uyar/piculet',
     author='H. Turgut Uyar',
     author_email='uyar@tekir.org',
-    license='GPL',
+    license='LGPL',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

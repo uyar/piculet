@@ -37,13 +37,11 @@ test-all:
 	tox
 
 coverage:
-	py.test --cov=piculet tests
+	py.test --cov-report term-missing --cov=piculet tests
 
 docs:
-	# sphinx-apidoc --no-toc -o docs/modules/ piculet
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
-	# open docs/_build/html/index.html
 
 release: clean
 	python setup.py sdist upload
