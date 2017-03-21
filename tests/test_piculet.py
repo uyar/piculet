@@ -137,12 +137,12 @@ def get_test_page():
 
 @mark.skip
 def test_scrape_uncached_should_retrieve_from_web(dummy_spec):
-    cache_dir = os.environ['WOODY_WEB_CACHE']   # backup cache dir
-    del os.environ['WOODY_WEB_CACHE']
+    cache_dir = os.environ['PICULET_WEB_CACHE']   # backup cache dir
+    del os.environ['PICULET_WEB_CACHE']
     start = time.time()
     scrape(TEST_SITE, dummy_spec, 's1')
     end = time.time()                           # restore cache dir
-    os.environ['WOODY_WEB_CACHE'] = cache_dir
+    os.environ['PICULET_WEB_CACHE'] = cache_dir
     assert end - start > 1
 
 
