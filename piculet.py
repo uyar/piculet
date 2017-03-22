@@ -574,7 +574,11 @@ def main(argv=None):
         _logger.debug('running in debug mode')
 
     # run the handler for the selected command
-    arguments.func(arguments)
+    try:
+        arguments.func(arguments)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
