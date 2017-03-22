@@ -1,4 +1,5 @@
 from pytest import fixture, mark, raises
+import pytest
 
 import os
 import time
@@ -125,7 +126,7 @@ def cache_test_page():
     _get_document(TEST_URL)
 
 
-@mark.skip
+@mark.skipif(not pytest.config.getvalue('--cov'), reason='makes URL retrieval')
 def test_scrape_uncached_should_retrieve_from_web():
     cache_dir = os.environ['PICULET_WEB_CACHE']  # backup cache dir
     del os.environ['PICULET_WEB_CACHE']
