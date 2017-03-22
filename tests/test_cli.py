@@ -12,6 +12,7 @@ import piculet
 
 infile = os.path.join(os.path.dirname(__file__), 'files', 'utf-8_charset_utf-8.html')
 wikipedia_spec = os.path.join(os.path.dirname(__file__), '..', 'examples', 'wikipedia.json')
+wikipedia_bowie = 'https://en.wikipedia.org/wiki/David_Bowie'
 
 
 def test_help_should_print_usage_and_exit(capsys):
@@ -92,6 +93,21 @@ def test_scrape_no_spec_should_print_usage_and_exit(capsys):
     assert 'following arguments are required: -s' in err
 
 
+def test_scrape_missing_spec_file_should_fail_and_exit(capsys):
+    with raises(SystemExit):
+        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', '', '-r', ''])
+    out, err = capsys.readouterr()
+    assert 'No such file or directory: ' in err
+
+
+def test_scrape_unknown_scraper_should_fail_and_exit(capsys):
+    with raises(SystemExit):
+        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
+                           '-r', 'foo'])
+    out, err = capsys.readouterr()
+    assert 'Rules not found: ' in err
+
+
 def test_scrape_no_rules_should_print_usage_and_exit(capsys):
     with raises(SystemExit):
         piculet.main(argv=['piculet', 'scrape', '', '-s', ''])
@@ -102,8 +118,8 @@ def test_scrape_no_rules_should_print_usage_and_exit(capsys):
 
 @mark.skipif(not test_config.getvalue('--cov'), reason='makes URL retrieval')
 def test_scrape_should_be_accessible(capsys):
-    piculet.main(argv=['piculet', 'scrape', 'https://en.wikipedia.org/wiki/David_Bowie',
-                       '-s', wikipedia_spec, '-r', 'person', '--html'])
+    piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
+                       '-r', 'person', '--html'])
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data['name'] == 'David Bowie'

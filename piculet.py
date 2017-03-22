@@ -490,7 +490,7 @@ def scrape(url, spec, scraper, content_format='xml'):
     """
     matched_scraper = spec.get(scraper)
     if matched_scraper is None:
-        raise ValueError('Scraper with given id not found: %s'.format(scraper))
+        raise ValueError('Rules not found: {}'.format(scraper))
     _logger.debug('using scraper [%s]', scraper)
 
     _logger.debug('scraping url [%s]', url)
