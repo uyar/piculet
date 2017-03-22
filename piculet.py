@@ -155,12 +155,12 @@ class _HTMLNormalizer(HTMLParser):
                                           e, r, attr_value, tag)
                             attr_value = attr_value.replace(e, r)
                 attribs.append((attr_name, attr_value))
-            line = '<{tag}{attrs}{slash}>'.format(
-                tag=tag,
-                attrs=''.join([' {name}="{value}"'.format(name=n, value=v)
-                               for n, v in attribs]),
-                slash=' /' if tag in self.SELF_CLOSING_TAGS else ''
-            )
+            line = '<%(tag)s%(attrs)s%(slash)s>' % {
+                'tag': tag,
+                'attrs': ''.join([' %(name)s="%(value)s"' % {'name': name, 'value': value}
+                                  for name, value in attribs]),
+                'slash': ' /' if tag in self.SELF_CLOSING_TAGS else ''
+            }
             print(line, end='')
             if tag not in self.SELF_CLOSING_TAGS:
                 self._open_tags.append(tag)
@@ -175,7 +175,7 @@ class _HTMLNormalizer(HTMLParser):
                     self.handle_endtag('li')
                 if tag == last:
                     # expected end tag
-                    print('</{t}>'.format(t=tag), end='')
+                    print('</%(tag)s>' % {'tag': tag}, end='')
                     self._open_tags.pop()
                 elif tag not in self._open_tags:
                     _logger.debug('end tag [%s] without start tag', tag)
@@ -183,8 +183,8 @@ class _HTMLNormalizer(HTMLParser):
                 elif tag == self._open_tags[-2]:
                     _logger.debug('unexpected end tag [%s] instead of [%s], closing both',
                                   tag, last)
-                    print('</{t}>'.format(t=last), end='')
-                    print('</{t}>'.format(t=tag), end='')
+                    print('</%(tag)s>' % {'tag': last}, end='')
+                    print('</%(tag)s>' % {'tag': tag}, end='')
                     self._open_tags.pop()
                     self._open_tags.pop()
         elif (tag in self.omit_tags) and (tag == self._open_omitted_tags[-1]):
@@ -202,7 +202,7 @@ class _HTMLNormalizer(HTMLParser):
         super().feed(data)
         # close all remaining open tags
         # for tag in reversed(self._open_tags):
-        #     print('</{t}>'.format(t=tag), end='')
+        #     print('</%(tag)s>' % {'tag': tag}, end='')
 
 
 def html_to_xhtml(document, omit_tags=(), omit_attrs=()):
@@ -386,8 +386,7 @@ def extract(document, items, pre=()):
             _logger.debug('selecting new root using [%s]', path)
             elements = xpath(root, path)
             if len(elements) > 1:
-                raise ValueError('Root expression must not select'
-                                 ' multiple elements: {}.'.format(path))
+                raise ValueError('Root expression must not select multiple elements: ' + path)
             if len(elements) == 0:
                 _logger.debug('no matches for new root, no data to extract')
                 return {}
@@ -490,7 +489,7 @@ def scrape(url, spec, scraper, content_format='xml'):
     """
     matched_scraper = spec.get(scraper)
     if matched_scraper is None:
-        raise ValueError('Rules not found: {}'.format(scraper))
+        raise ValueError('Rules not found: ' + scraper)
     _logger.debug('using scraper [%s]', scraper)
 
     _logger.debug('scraping url [%s]', url)
