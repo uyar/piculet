@@ -1,18 +1,11 @@
-from pytest import fixture, raises
+from pytest import raises
 from unittest.mock import patch
 
 from io import StringIO
 
-import logging
 import os
 
 import piculet
-
-
-@fixture(scope='module', autouse=True)
-def logging_no_exceptions():
-    """Fixture for preventing logging exceptions."""
-    logging.raiseExceptions = False
 
 
 infile = os.path.join(os.path.dirname(__file__), 'files', 'utf-8_charset_utf-8.html')
