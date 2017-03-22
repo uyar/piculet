@@ -31,7 +31,7 @@ lint:
 	flake8 piculet.py tests
 
 test:
-	py.test
+	py.test -m "not download"
 
 test-all:
 	tox

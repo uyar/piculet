@@ -1,5 +1,4 @@
 from pytest import fixture, mark, raises
-from pytest import config as test_config
 
 import os
 import time
@@ -115,23 +114,22 @@ def test_extract_no_rules_should_return_empty_result():
 ########################################
 
 
-TEST_URL = 'http://en.wikipedia.org'
-
-dummy_spec = {"s1": {"items": []}}
+test_url = 'http://en.wikipedia.org'
+test_spec = {"s1": {"items": []}}
 
 
 @fixture(scope='module', autouse=True)
 def cache_test_page():
     """Store the test page in the cache."""
-    _get_document(TEST_URL)
+    _get_document(test_url)
 
 
-@mark.skipif(not test_config.getvalue('--cov'), reason='makes URL retrieval')
+@mark.download
 def test_scrape_uncached_should_retrieve_from_web():
     cache_dir = os.environ['PICULET_WEB_CACHE']  # backup cache dir
     del os.environ['PICULET_WEB_CACHE']
     start = time.time()
-    scrape(TEST_URL, dummy_spec, 's1')
+    scrape(test_url, test_spec, 's1')
     end = time.time()
     os.environ['PICULET_WEB_CACHE'] = cache_dir  # restore cache dir
     assert end - start > 1
@@ -139,11 +137,11 @@ def test_scrape_uncached_should_retrieve_from_web():
 
 def test_scrape_cached_should_read_from_disk():
     start = time.time()
-    scrape(TEST_URL, dummy_spec, 's1')
+    scrape(test_url, test_spec, 's1')
     end = time.time()
     assert end - start < 1
 
 
 def test_scrape_missing_scrapers_should_raise_error():
     with raises(ValueError):
-        scrape(TEST_URL, dummy_spec, 's0')
+        scrape(test_url, test_spec, 's0')
