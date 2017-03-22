@@ -1,10 +1,18 @@
-from pytest import raises
+from pytest import fixture, raises
 from unittest.mock import patch
 
-import io
+from io import StringIO
+
+import logging
 import os
 
 import piculet
+
+
+@fixture(scope='module', autouse=True)
+def logging_no_exceptions():
+    """Fixture for preventing logging exceptions."""
+    logging.raiseExceptions = False
 
 
 def test_no_arguments_should_print_usage_and_exit(capsys):
@@ -65,7 +73,7 @@ def test_h2x_should_use_stdin_when_dash_input(capsys):
     infile = os.path.join(os.path.dirname(__file__), 'files', 'utf-8_charset_utf-8.html')
     with open(infile) as f:
         content = f.read()
-    with patch('sys.stdin', io.StringIO(content)):
+    with patch('sys.stdin', StringIO(content)):
         piculet.main(argv=['piculet', 'h2x', '-'])
     out, err = capsys.readouterr()
     assert out == content
