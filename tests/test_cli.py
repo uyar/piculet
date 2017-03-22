@@ -1,7 +1,6 @@
 from pytest import mark, raises
+from pytest import config as test_config
 from unittest.mock import patch
-
-import pytest
 
 from io import StringIO
 
@@ -101,7 +100,7 @@ def test_scrape_no_rules_should_print_usage_and_exit(capsys):
     assert 'following arguments are required: -r' in err
 
 
-@mark.skipif(not pytest.config.getvalue('--cov'), reason='makes URL retrieval')
+@mark.skipif(not test_config.getvalue('--cov'), reason='makes URL retrieval')
 def test_scrape_should_be_accessible(capsys):
     piculet.main(argv=['piculet', 'scrape', 'https://en.wikipedia.org/wiki/David_Bowie',
                        '-s', wikipedia_spec, '-r', 'person', '--html'])
