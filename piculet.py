@@ -539,6 +539,7 @@ def _get_parser(prog):
                         help='enable debug messages')
 
     commands = parser.add_subparsers(metavar='command', dest='command')
+    commands.required = True
 
     subparser = commands.add_parser('h2x', help='convert HTML to XHTML')
     subparser.set_defaults(func=h2x)
@@ -573,11 +574,7 @@ def main(argv=None):
         _logger.debug('running in debug mode')
 
     # run the handler for the selected command
-    try:
-        arguments.func(arguments)
-    except AttributeError:
-        parser.print_usage()
-        sys.exit(1)
+    arguments.func(arguments)
 
 
 if __name__ == '__main__':
