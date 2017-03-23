@@ -257,9 +257,9 @@ def xpath_etree(element, path):
 
 
 try:
-    from lxml.etree import ElementTree
-    from lxml.etree.ElementTree import fromstring as build_tree
-    xpath = ElementTree._Element.xpath
+    from lxml import etree
+    from lxml.etree import fromstring as build_tree
+    xpath = etree._Element.xpath
     _USE_LXML = True
     _logger.debug('using lxml')
 except ImportError:
@@ -354,7 +354,7 @@ def extract(root, items, pre=()):
 
     def parent_getter():
         if _USE_LXML:
-            return ElementTree._Element.getparent
+            return etree._Element.getparent
         else:
             # ElementTree doesn't support parent queries, so build a map for it
             # TODO: this re-traverses tree on subrules
