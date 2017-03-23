@@ -3,7 +3,7 @@ from pytest import fixture, mark, raises
 import os
 import time
 
-from piculet import build_tree, extract, get_document, scrape, woodpecker, xpath
+from piculet import ElementTree, extract, get_document, scrape, woodpecker, xpath
 
 
 ########################################
@@ -12,7 +12,7 @@ from piculet import build_tree, extract, get_document, scrape, woodpecker, xpath
 
 
 generic_content = '<d><t1>foo</t1><t1 a="v"><t2>bar</t2></t1></d>'
-generic_root = build_tree(generic_content)
+generic_root = ElementTree.fromstring(generic_content)
 
 
 def test_xpath_non_text_queries_should_return_nodes():
@@ -41,7 +41,7 @@ def test_xpath_attr_queries_should_return_strings():
 
 
 people_content = '<p><p1><n>John Smith</n><a>42</a></p1><p2><n>Jane Doe</n></p2></p>'
-people_root = build_tree(people_content)
+people_root = ElementTree.fromstring(people_content)
 
 
 def test_peck_reducer_first_should_return_first_element():

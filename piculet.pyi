@@ -3,8 +3,7 @@
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
 from html.parser import HTMLParser
-
-import xml.etree.ElementTree
+from xml.etree import ElementTree
 
 
 def decode_html(
@@ -22,17 +21,17 @@ def html_to_xhtml(
 ) -> str: ...
 
 def xpath_etree(
-        element: xml.etree.ElementTree.Element,
+        element: ElementTree.Element,
         path: str
-) -> Union[List[str], List[xml.etree.ElementTree.Element]]: ...
+) -> Union[List[str], List[ElementTree.Element]]: ...
 
 def woodpecker(
         path: str,
         reducer: str
-) -> Callable[[xml.etree.ElementTree.Element], Optional[str]]: ...
+) -> Callable[[ElementTree.Element], Optional[str]]: ...
 
 def extract(
-        root: xml.etree.ElementTree.Element,
+        root: ElementTree.Element,
         items: Iterable[Mapping[str, Any]],
         pre: Optional[Iterable[Mapping[str, Any]]] = ...
 ) -> Mapping[str, Any]: ...

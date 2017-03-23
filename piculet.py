@@ -218,6 +218,15 @@ def html_to_xhtml(document, omit_tags=(), omit_attrs=()):
 # DATA EXTRACTION OPERATIONS
 ###########################################################
 
+try:
+    from lxml import etree as ElementTree
+    _USE_LXML = True
+    _logger.debug('using lxml')
+except ImportError:
+    from xml.etree import ElementTree
+    _USE_LXML = False
+    _logger.debug('lxml not found, falling back to elementtree')
+
 
 def xpath_etree(element, path):
     """Apply an XPath expression to an element.
@@ -225,11 +234,7 @@ def xpath_etree(element, path):
     This function is mainly needed to compensate for the lack of ``text()``
     and ``@attr`` axis queries in ElementTree XPath support.
 
-    :sig:
-        (
-            xml.etree.ElementTree.Element,
-            str
-        ) -> Union[List[str], List[xml.etree.ElementTree.Element]]
+    :sig: (ElementTree.Element, str) -> Union[List[str], List[ElementTree.Element]]
     :param element: Element to apply the expression to.
     :param path: XPath expression to apply.
     :return: Elements or strings resulting from the query.
@@ -256,17 +261,7 @@ def xpath_etree(element, path):
     return element.findall(path)
 
 
-try:
-    from lxml import etree
-    from lxml.etree import fromstring as build_tree
-    xpath = etree._Element.xpath
-    _USE_LXML = True
-    _logger.debug('using lxml')
-except ImportError:
-    from xml.etree.ElementTree import fromstring as build_tree
-    xpath = xpath_etree
-    _USE_LXML = False
-    _logger.debug('lxml not found, falling back to elementtree')
+xpath = ElementTree._Element.xpath if _USE_LXML else xpath_etree
 
 
 _REDUCERS = {
@@ -287,7 +282,7 @@ def woodpecker(path, reducer):
     the query has to end with ``text()`` or ``@attr``. The list will then be
     passed to the reducer function to generate a single string as the result.
 
-    :sig: (str, str) -> Callable[[xml.etree.ElementTree.Element], Optional[str]]
+    :sig: (str, str) -> Callable[[ElementTree.Element], Optional[str]]
     :param path: XPath query to select the values.
     :param reducer: Name of reducer function.
     :return: A callable that can apply this path and reducer to an element.
@@ -325,7 +320,7 @@ def extract(root, items, pre=()):
 
     :sig:
         (
-            xml.etree.ElementTree.Element,
+            ElementTree.Element,
             Iterable[Mapping[str, Any]],
             Optional[Iterable[Mapping[str, Any]]]
         ) -> Mapping[str, Any]
@@ -354,7 +349,7 @@ def extract(root, items, pre=()):
 
     def parent_getter():
         if _USE_LXML:
-            return etree._Element.getparent
+            return ElementTree._Element.getparent
         else:
             # ElementTree doesn't support parent queries, so build a map for it
             # TODO: this re-traverses tree on subrules
@@ -476,7 +471,7 @@ def scrape(url, rules, content_format='xml'):
         document = html_to_xhtml(document)
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
 
-    root = build_tree(document)
+    root = ElementTree.fromstring(document)
     data = extract(root, rules['items'], pre=rules.get('pre', ()))
     return data
 
