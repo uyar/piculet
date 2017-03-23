@@ -4,7 +4,7 @@ import json
 import os
 import re
 
-from piculet import _get_document, scrape
+from piculet import get_document, scrape
 
 
 BASE_URL = 'http://akas.imdb.com'
@@ -52,7 +52,7 @@ def cache_imdb_pages():
     for movie in MOVIES:
         for url_template in TITLE_URLS:
             url = get_url(url_template, movie)
-            _get_document(url)
+            get_document(url)
 
 
 specfile = os.path.join(os.path.dirname(__file__), '..', 'examples', 'imdb.json')

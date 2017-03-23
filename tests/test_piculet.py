@@ -3,7 +3,7 @@ from pytest import fixture, mark, raises
 import os
 import time
 
-from piculet import _get_document, build_tree, extract, scrape, woodpecker, xpath
+from piculet import build_tree, extract, get_document, scrape, woodpecker, xpath
 
 
 ########################################
@@ -121,7 +121,7 @@ test_spec = {"s1": {"items": []}}
 @fixture(scope='module', autouse=True)
 def cache_test_page():
     """Store the test page in the cache."""
-    _get_document(test_url)
+    get_document(test_url)
 
 
 @mark.download

@@ -5,7 +5,7 @@ import os
 from piculet import decode_html, html_to_xhtml
 
 
-def get_document(filename):
+def read_document(filename):
     path = os.path.join(os.path.dirname(__file__), 'files', filename)
     with open(path, 'rb') as f:
         content = f.read()
@@ -13,70 +13,70 @@ def get_document(filename):
 
 
 def test_decode_content_meta_charset_correct_should_succeed():
-    content = get_document('utf-8_charset_utf-8.html')
+    content = read_document('utf-8_charset_utf-8.html')
     assert 'ğışĞİŞ' in decode_html(content)
 
 
 def test_decode_content_meta_content_type_correct_should_succeed():
-    content = get_document('utf-8_content-type_utf-8.html')
+    content = read_document('utf-8_content-type_utf-8.html')
     assert 'ğışĞİŞ' in decode_html(content)
 
 
 def test_decode_content_meta_charset_incorrect_should_fail():
-    content = get_document('utf-8_charset_iso8859-9.html')
+    content = read_document('utf-8_charset_iso8859-9.html')
     assert 'ğışĞİŞ' not in decode_html(content)
 
 
 def test_decode_content_meta_content_type_incorrect_should_fail():
-    content = get_document('utf-8_content-type_iso8859-9.html')
+    content = read_document('utf-8_content-type_iso8859-9.html')
     assert 'ğışĞİŞ' not in decode_html(content)
 
 
 def test_decode_content_meta_charset_incompatible_should_raise_unicode_error():
-    content = get_document('iso8859-9_charset_utf-8.html')
+    content = read_document('iso8859-9_charset_utf-8.html')
     with raises(UnicodeDecodeError):
         decode_html(content)
 
 
 def test_decode_content_meta_content_type_incompatible_should_raise_unicode_error():
-    content = get_document('iso8859-9_content-type_utf-8.html')
+    content = read_document('iso8859-9_content-type_utf-8.html')
     with raises(UnicodeDecodeError):
         decode_html(content)
 
 
 def test_decode_content_requested_charset_correct_should_succeed():
-    content = get_document('utf-8_charset_iso8859-9.html')
+    content = read_document('utf-8_charset_iso8859-9.html')
     assert 'ğışĞİŞ' in decode_html(content, charset='utf-8')
 
 
 def test_decode_content_requested_charset_incorrect_should_fail():
-    content = get_document('utf-8_charset_utf-8.html')
+    content = read_document('utf-8_charset_utf-8.html')
     assert 'ğışĞİŞ' not in decode_html(content, charset='iso8859-9')
 
 
 def test_decode_content_requested_charset_incompatible_should_raise_unicode_error():
-    content = get_document('iso8859-9_charset_iso8859-9.html')
+    content = read_document('iso8859-9_charset_iso8859-9.html')
     with raises(UnicodeDecodeError):
         decode_html(content, charset='utf-8')
 
 
 def test_decode_content_fallback_default_correct_should_succeed():
-    content = get_document('utf-8_charset_none.html')
+    content = read_document('utf-8_charset_none.html')
     assert 'ğışĞİŞ' in decode_html(content)
 
 
 def test_decode_content_fallback_correct_should_succeed():
-    content = get_document('iso8859-9_charset_none.html')
+    content = read_document('iso8859-9_charset_none.html')
     assert 'ğışĞİŞ' in decode_html(content, fallback_charset='iso8859-9')
 
 
 def test_decode_content_fallback_incorrect_should_fail():
-    content = get_document('iso8859-9_charset_none.html')
+    content = read_document('iso8859-9_charset_none.html')
     assert 'ğışĞİŞ' not in decode_html(content, fallback_charset='iso8859-1')
 
 
 def test_decode_content_fallback_incompatible_should_raise_unicode_error():
-    content = get_document('iso8859-9_charset_none.html')
+    content = read_document('iso8859-9_charset_none.html')
     with raises(UnicodeDecodeError):
         decode_html(content, fallback_charset='utf-8')
 

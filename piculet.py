@@ -425,7 +425,7 @@ def extract(root, items, pre=()):
     return data
 
 
-def _get_document(url):
+def get_document(url):
     """Get the document with the given URL.
 
     This function will check whether the requested document has already been
@@ -474,7 +474,7 @@ def scrape(url, spec, scraper, content_format='xml'):
     _logger.debug('using scraper [%s]', scraper)
 
     _logger.debug('scraping url [%s]', url)
-    document = _get_document(url)
+    document = get_document(url)
 
     if content_format == 'html':
         _logger.debug('converting html document to xml')
