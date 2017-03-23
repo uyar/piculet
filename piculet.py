@@ -459,21 +459,15 @@ def get_document(url):
     return decode_html(content)
 
 
-def scrape(url, spec, scraper, content_format='xml'):
-    """Extract data from a document according to a specification.
+def scrape(url, rules, content_format='xml'):
+    """Extract data from a document according to given rules.
 
-    :sig: (str, Mapping[str, Any], str, Optional[str]) -> Mapping[str, Any]
+    :sig: (str, Mapping[str, Any], Optional[str]) -> Mapping[str, Any]
     :param url: Address of document to scrape.
-    :param spec: Data extraction specification.
-    :param scraper: Scraper name in the spec for the selected document type.
+    :param rules: Rules to use for scraping.
     :param content_format: Format of the content, XML or HTML.
     :return: Extracted data.
     """
-    matched_scraper = spec.get(scraper)
-    if matched_scraper is None:
-        raise ValueError('Rules not found: ' + scraper)
-    _logger.debug('using scraper [%s]', scraper)
-
     _logger.debug('scraping url [%s]', url)
     document = get_document(url)
 
@@ -483,8 +477,7 @@ def scrape(url, spec, scraper, content_format='xml'):
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
 
     root = build_tree(document)
-    data = extract(root, matched_scraper['items'],
-                   pre=matched_scraper.get('pre', ()))
+    data = extract(root, rules['items'], pre=rules.get('pre', ()))
     return data
 
 
@@ -509,14 +502,19 @@ def _get_parser(prog):
         print(html_to_xhtml(content), end='')
 
     def scrape_doc(arguments):
-        with open(arguments.spec[0]) as f:
+        with open(arguments.spec) as f:
             spec = json.loads(f.read())
+
+        rules = spec.get(arguments.rules)
+        if rules is None:
+            raise ValueError('Rules not found: ' + arguments.rules)
+        _logger.debug('using rules [%s]', arguments.rules)
+
         content_format = 'html' if arguments.html else 'xml'
-        data = scrape(arguments.url, spec, arguments.rules[0],
-                      content_format=content_format)
+        data = scrape(arguments.url, rules, content_format=content_format)
         print(json.dumps(data, indent=2, sort_keys=True))
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(prog=prog)
     parser.add_argument('--debug', action='store_true',
                         help='enable debug messages')
 
@@ -530,9 +528,9 @@ def _get_parser(prog):
     subparser = commands.add_parser('scrape', help='scrape a document')
     subparser.set_defaults(func=scrape_doc)
     subparser.add_argument('url', help='URL to scrape')
-    subparser.add_argument('-s', nargs=1, dest='spec', required=True,
+    subparser.add_argument('-s', '--spec', required=True,
                            help='spec file')
-    subparser.add_argument('-r', nargs=1, dest='rules', required=True,
+    subparser.add_argument('-r', '--rules', required=True,
                            help='selected rule set in spec')
     subparser.add_argument('--html', action='store_true',
                            help='document content is html')

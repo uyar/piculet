@@ -41,8 +41,7 @@ def get_document(url: str) -> str: ...
 
 def scrape(
         url: str,
-        spec: Mapping[str, Any],
-        scraper: str,
+        rules: Mapping[str, Any],
         content_format: Optional[str] = ...
 ) -> Mapping[str, Any]: ...
 
