@@ -7,8 +7,8 @@ from html.parser import HTMLParser
 import xml.etree.ElementTree
 
 
-def retrieve(
-        url: str,
+def decode_html(
+        content: bytes,
         charset: Optional[str] = ...,
         fallback_charset: Optional[str] = ...
 ) -> str: ...

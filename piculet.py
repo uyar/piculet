@@ -33,7 +33,7 @@ from functools import partial
 from hashlib import md5
 from html.parser import HTMLParser
 from io import StringIO
-from urllib.request import build_opener, Request
+from urllib.request import urlopen
 
 import json
 import logging
@@ -59,25 +59,18 @@ _CHARSET_TAGS = {
 }
 
 
-def retrieve(url, charset=None, fallback_charset='utf-8'):
-    """Get the contents of a web page.
+def decode_html(content, charset=None, fallback_charset='utf-8'):
+    """Decode an HTML document according to a character set.
 
     If no character set is given, this will try to figure it out
     from the corresponding ``meta`` tags.
 
-    :sig: (str, Optional[str], Optional[str]) -> str
-    :param url: Address of web page to retrieve.
+    :sig: (bytes, Optional[str], Optional[str]) -> str
+    :param content: Content of HTML document to decode.
     :param charset: Character set of the page.
     :param fallback_charset: Character set to use if it can't be figured out.
-    :return: Content of web page.
+    :return: Decoded content of the document.
     """
-    _logger.debug('retrieving page [%s]', url)
-    opener = build_opener()
-    request = Request(url)
-    with opener.open(request) as response:
-        content = response.read()
-    _logger.debug('read %s bytes', len(content))
-
     if charset is None:
         for key, tag in _CHARSET_TAGS.items():
             start = content.find(tag)
@@ -90,7 +83,6 @@ def retrieve(url, charset=None, fallback_charset='utf-8'):
         else:
             _logger.debug('charset not found, using fallback')
             charset = fallback_charset
-
     _logger.debug('decoding for charset [%s]', charset)
     return content.decode(charset)
 
@@ -450,25 +442,27 @@ def _get_document(url):
     :param url: URL to get the document from.
     :return: Content of the retrieved document.
     """
+    _logger.debug('getting page [%s]', url)
     cache_dir = os.environ.get('PICULET_WEB_CACHE')
     if cache_dir is None:
-        _logger.debug('no caching, retrieving document')
-        content = retrieve(url)
+        _logger.debug('cache disabled, downloading page')
+        content = urlopen(url).read()
     else:
         _logger.debug('using cache dir [%s]', cache_dir)
         os.makedirs(cache_dir, exist_ok=True)
         key = md5(url.encode('utf-8')).hexdigest()
         cache_file = os.path.join(cache_dir, key)
         if not os.path.exists(cache_file):
-            _logger.debug('document not in cache, retrieving and storing')
-            content = retrieve(url)
-            with open(cache_file, 'w') as f:
+            _logger.debug('page not in cache, downloading and storing')
+            content = urlopen(url).read()
+            with open(cache_file, 'wb') as f:
                 f.write(content)
         else:
-            _logger.debug('using document found in cache')
-            with open(cache_file) as f:
+            _logger.debug('using page found in cache')
+            with open(cache_file, 'rb') as f:
                 content = f.read()
-    return content
+    _logger.debug('read %s bytes', len(content))
+    return decode_html(content)
 
 
 def scrape(url, spec, scraper, content_format='xml'):
