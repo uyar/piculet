@@ -287,11 +287,7 @@ def woodpecker(path, reducer):
     the query has to end with ``text()`` or ``@attr``. The list will then be
     passed to the reducer function to generate a single string as the result.
 
-    :sig:
-        (
-            str,
-            str
-        ) -> Callable[[xml.etree.ElementTree.Element], Optional[str]]
+    :sig: (str, str) -> Callable[[xml.etree.ElementTree.Element], Optional[str]]
     :param path: XPath query to select the values.
     :param reducer: Name of reducer function.
     :return: A callable that can apply this path and reducer to an element.
@@ -320,27 +316,24 @@ def woodpecker(path, reducer):
     return apply
 
 
-def extract(document, items, pre=()):
-    """Extract data from an XML document.
+def extract(root, items, pre=()):
+    """Extract data from an XML tree.
 
-    This will convert the document into an XML tree -if it's not already
-    converted- and extract the data items according to the supplied rules.
+    This will convert extract the data items according to the supplied rules.
     If given, it will use the ``pre`` parameter to carry out preprocessing
     operations on the tree before starting data extraction.
 
     :sig:
         (
-            Union[str, xml.etree.ElementTree.Element],
+            xml.etree.ElementTree.Element,
             Iterable[Mapping[str, Any]],
             Optional[Iterable[Mapping[str, Any]]]
         ) -> Mapping[str, Any]
-    :param document: Document to extract the data from.
+    :param root: Root of the XML tree to extract the data from.
     :param items: Rules that specify how to extract the data items.
     :param pre: Preprocessing operations on the document tree.
     :return: Extracted data.
     """
-
-    root = build_tree(document) if isinstance(document, str) else document
 
     def gen(val):
         """Value generator function.
@@ -468,13 +461,7 @@ def _get_document(url):
 def scrape(url, spec, scraper, content_format='xml'):
     """Extract data from a document according to a specification.
 
-    :sig:
-        (
-            str,
-            Mapping[str, Any],
-            str,
-            Optional[str]
-        ) -> Mapping[str, Any]
+    :sig: (str, Mapping[str, Any], str, Optional[str]) -> Mapping[str, Any]
     :param url: Address of document to scrape.
     :param spec: Data extraction specification.
     :param scraper: Scraper name in the spec for the selected document type.
@@ -494,7 +481,8 @@ def scrape(url, spec, scraper, content_format='xml'):
         document = html_to_xhtml(document)
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
 
-    data = extract(document, matched_scraper['items'],
+    root = build_tree(document)
+    data = extract(root, matched_scraper['items'],
                    pre=matched_scraper.get('pre', ()))
     return data
 
