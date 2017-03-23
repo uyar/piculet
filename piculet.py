@@ -432,6 +432,7 @@ def get_document(url):
     retrieved and return the cached content if possible. Note that
     cached documents are assumed to be up-to-date.
 
+    :sig: (str) -> str
     :param url: URL to get the document from.
     :return: Content of the retrieved document.
     """
