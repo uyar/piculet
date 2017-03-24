@@ -58,7 +58,7 @@ def test_peck_reducer_join_should_return_joined_text():
 
 def test_peck_unknown_reducer_should_raise_error():
     with raises(ValueError):
-        woodpecker(path='./p1//text()', reducer='merge')
+        _ = woodpecker(path='./p1//text()', reducer='merge')
 
 
 def test_peck_non_matching_path_should_return_none():
@@ -101,7 +101,7 @@ def test_extract_missing_data_should_be_excluded():
 
 def test_extract_subroot_should_select_one_element():
     with raises(ValueError):
-        extract(people_root, items=[], pre=[{'op': 'root', 'path': './/n'}])
+        _ = extract(people_root, items=[], pre=[{'op': 'root', 'path': './/n'}])
 
 
 def test_extract_no_rules_should_return_empty_result():
@@ -121,7 +121,7 @@ test_spec = {"items": []}
 @fixture(scope='module', autouse=True)
 def cache_test_page():
     """Store the test page in the cache."""
-    get_document(test_url)
+    _ = get_document(test_url)
 
 
 @mark.download
@@ -129,7 +129,7 @@ def test_scrape_uncached_should_retrieve_from_web():
     cache_dir = os.environ['PICULET_WEB_CACHE']  # backup cache dir
     del os.environ['PICULET_WEB_CACHE']
     start = time.time()
-    scrape(test_url, test_spec)
+    _ = scrape(test_url, test_spec)
     end = time.time()
     os.environ['PICULET_WEB_CACHE'] = cache_dir  # restore cache dir
     assert end - start > 1
@@ -137,6 +137,6 @@ def test_scrape_uncached_should_retrieve_from_web():
 
 def test_scrape_cached_should_read_from_disk():
     start = time.time()
-    scrape(test_url, test_spec)
+    _ = scrape(test_url, test_spec)
     end = time.time()
     assert end - start < 1

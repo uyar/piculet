@@ -52,7 +52,7 @@ def cache_imdb_pages():
     for movie in MOVIES:
         for url_template in TITLE_URLS:
             url = get_url(url_template, movie)
-            get_document(url)
+            _ = get_document(url)
 
 
 specfile = os.path.join(os.path.dirname(__file__), '..', 'examples', 'imdb.json')
@@ -574,6 +574,7 @@ def test_movie_combined_aka_should_be_br_separated_titles():
         '"Манос: Руки судьбы" - Soviet Union (Russian title):BR:' \
         ' "Manos - As Mãos do Destino" - Brazil (imdb display title):BR:' \
         ' "Manos: ruke sudbine" - Serbia (imdb display title):BR:'
+
 
 def test_movie_combined_aka_none_should_be_excluded():
     url = get_url(TITLE_COMBINED_URL, 'ates_parcasi')
