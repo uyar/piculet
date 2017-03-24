@@ -254,7 +254,7 @@ def test_movie_combined_episode_next_link_last_episode_should_have_none():
 def test_movie_combined_rating_should_be_a_decimal_number_over_10():
     page = get_page(TITLE_COMBINED_URL, 'matrix')
     data = scrape(page, imdb[MOVIE_COMBINED], content_format='html')
-    assert re.match(r'^[1-9]\.\d\/10$', data['rating'])
+    assert re.match(r'^[1-9]\.\d/10$', data['rating'])
 
 
 def test_movie_combined_rating_none_should_be_excluded():
