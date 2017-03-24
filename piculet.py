@@ -28,7 +28,7 @@ http://piculet.readthedocs.io/.
 
 from argparse import ArgumentParser
 from collections import deque
-from contextlib import redirect_stdout
+from contextlib import contextmanager
 from functools import partial
 from hashlib import md5
 from html.parser import HTMLParser
@@ -43,6 +43,18 @@ import sys
 
 
 _logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def redirect_stdout(new_target):
+    # Taken from J.F. Sebastian's stackoverflow post on:
+    # https://stackoverflow.com/questions/4675728/redirect-stdout-to-a-file-in-python
+    # PY34: from contextlib import redirect_stdout
+    old_target, sys.stdout = sys.stdout, new_target
+    try:
+        yield new_target
+    finally:
+        sys.stdout = old_target
 
 
 ###########################################################
@@ -112,8 +124,8 @@ class _HTMLNormalizer(HTMLParser):
     """Additional entity references to replace in attributes."""
 
     def __init__(self, omit_tags=(), omit_attrs=()):
-        # let the HTML parser convert entity refs to unicode chars
-        super().__init__(convert_charrefs=True)
+        HTMLParser.__init__(self, convert_charrefs=True)
+        # PY34: super().__init__(convert_charrefs=True)
 
         self.omit_tags = set(omit_tags)
         self.omit_attrs = set(omit_attrs)
@@ -191,7 +203,8 @@ class _HTMLNormalizer(HTMLParser):
             print(data, end='')
 
     def feed(self, data):
-        super().feed(data)
+        HTMLParser.feed(self, data)
+        # PY3: super().feed(data)
         # close all remaining open tags
         # for tag in reversed(self._open_tags):
         #     print('</%(tag)s>' % {'tag': tag}, end='')
@@ -260,7 +273,9 @@ def xpath_etree(element, path):
                 for t in ([e.text] + [c.tail if c.tail else '' for c in e])
                 if t]
 
-    *epath, last_step = path.split('/')
+    path_tokens = path.split('/')
+    epath, last_step = path_tokens[:-1], path_tokens[-1]
+    # PY3: *epath, last_step = path.split()
     if last_step.startswith('@'):
         _logger.debug('handling attribute path [%s]', path)
         result = [e.attrib.get(last_step[1:])
@@ -447,7 +462,10 @@ def get_document(url):
         content = urlopen(url).read()
     else:
         _logger.debug('using cache dir [%s]', cache_dir)
-        os.makedirs(cache_dir, exist_ok=True)
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
+        # PY3: os.makedirs(cache_dir, exist_ok=True)
+
         key = md5(url.encode('utf-8')).hexdigest()
         cache_file = os.path.join(cache_dir, key)
         if not os.path.exists(cache_file):
