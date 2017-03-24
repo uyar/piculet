@@ -1,7 +1,4 @@
-from pytest import fixture, mark, raises
-
-import os
-import time
+from pytest import raises
 
 from piculet import build_tree, extract, get_document, scrape, woodpecker, xpath
 
@@ -107,36 +104,3 @@ def test_extract_subroot_should_select_one_element():
 def test_extract_no_rules_should_return_empty_result():
     data = extract(people_root, items=[])
     assert data == {}
-
-
-########################################
-# scrape tests
-########################################
-
-
-test_url = 'http://en.wikipedia.org'
-test_spec = {"items": []}
-
-
-@fixture(scope='module', autouse=True)
-def cache_test_page():
-    """Store the test page in the cache."""
-    _ = get_document(test_url)
-
-
-@mark.download
-def test_scrape_uncached_should_retrieve_from_web():
-    cache_dir = os.environ['PICULET_WEB_CACHE']  # backup cache dir
-    del os.environ['PICULET_WEB_CACHE']
-    start = time.time()
-    _ = scrape(get_document(test_url), test_spec)
-    end = time.time()
-    os.environ['PICULET_WEB_CACHE'] = cache_dir  # restore cache dir
-    assert end - start > 1
-
-
-def test_scrape_cached_should_read_from_disk():
-    start = time.time()
-    _ = scrape(get_document(test_url), test_spec)
-    end = time.time()
-    assert end - start < 1

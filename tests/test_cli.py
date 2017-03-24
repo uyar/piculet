@@ -1,10 +1,12 @@
-from pytest import mark, raises
+from pytest import fixture, mark, raises
 from unittest.mock import patch
 
 from io import StringIO
 
+import hashlib
 import json
 import os
+import time
 
 import piculet
 
@@ -12,6 +14,13 @@ import piculet
 infile = os.path.join(os.path.dirname(__file__), 'files', 'utf-8_charset_utf-8.html')
 wikipedia_spec = os.path.join(os.path.dirname(__file__), '..', 'examples', 'wikipedia.json')
 wikipedia_bowie = 'https://en.wikipedia.org/wiki/David_Bowie'
+wikipedia_bowie_hash = hashlib.md5(wikipedia_bowie.encode('utf-8')).hexdigest()
+
+
+@fixture(scope='module', autouse=True)
+def cache_test_page():
+    """Store the test page in the cache."""
+    _ = piculet.get_document(wikipedia_bowie)
 
 
 def test_help_should_print_usage_and_exit(capsys):
@@ -116,10 +125,41 @@ def test_scrape_unknown_rules_should_print_error_message_and_exit(capsys):
     assert 'Rules not found: ' in err
 
 
-@mark.download
-def test_scrape_should_retrieve_given_url(capsys):
+def test_scrape_should_scrape_given_url(capsys):
     piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
                        '-r', 'person', '--html'])
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data['name'] == 'David Bowie'
+
+
+def test_scrape_cached_should_read_from_disk():
+    start = time.time()
+    piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
+                       '-r', 'person', '--html'])
+    end = time.time()
+    assert end - start < 1
+
+
+@mark.download
+def test_scrape_cache_disabled_should_retrieve_from_web():
+    cache_dir = os.environ['PICULET_WEB_CACHE']  # backup cache dir
+    del os.environ['PICULET_WEB_CACHE']
+    start = time.time()
+    piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
+                       '-r', 'person', '--html'])
+    end = time.time()
+    os.environ['PICULET_WEB_CACHE'] = cache_dir  # restore cache dir
+    assert end - start > 1
+
+
+@mark.download
+def test_scrape_uncached_should_retrieve_from_web():
+    cache_file = os.path.join(os.path.dirname(__file__), '.cache', wikipedia_bowie_hash)
+    os.unlink(cache_file)
+    start = time.time()
+    piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
+                       '-r', 'person', '--html'])
+    end = time.time()
+    assert end - start > 1
+    assert os.path.exists(cache_file)
