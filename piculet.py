@@ -99,11 +99,12 @@ def decode_html(content, charset=None, fallback_charset='utf-8'):
     return content.decode(charset)
 
 
-class _HTMLNormalizer(HTMLParser):
+class HTMLNormalizer(HTMLParser):
     """HTML cleaner and XHTML converter.
 
     DOCTYPE declarations and comments are removed.
 
+    :sig: (Set[str], Set[str]) -> None
     :param omit_tags: Tags to remove, along with all their content.
     :param omit_attrs: Attributes to remove.
     """
@@ -127,8 +128,8 @@ class _HTMLNormalizer(HTMLParser):
         HTMLParser.__init__(self, convert_charrefs=True)
         # PY34: super().__init__(convert_charrefs=True)
 
-        self.omit_tags = set(omit_tags)
-        self.omit_attrs = set(omit_attrs)
+        self.omit_tags = set(omit_tags)    # sig: Set[str]
+        self.omit_attrs = set(omit_attrs)  # sig: Set[str]
 
         # stacks used during normalization
         self._open_tags = deque()
@@ -221,7 +222,7 @@ def html_to_xhtml(document, omit_tags=(), omit_attrs=()):
     """
     _logger.debug('cleaning html and converting to xhtml')
     out = StringIO()
-    normalizer = _HTMLNormalizer(omit_tags=omit_tags, omit_attrs=omit_attrs)
+    normalizer = HTMLNormalizer(omit_tags=omit_tags, omit_attrs=omit_attrs)
     with redirect_stdout(out):
         normalizer.feed(document)
     return out.getvalue()
