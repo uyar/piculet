@@ -346,7 +346,7 @@ def extract(root, items, pre=()):
         It takes a value generator description and returns a callable that
         takes an XML element and returns a value.
         """
-        assert isinstance(val, str) or ('path' in val) or ('items' in val), 'Unknown value generator'
+        assert isinstance(val, str) or ('path' in val) or ('items' in val)
         if isinstance(val, str):
             # constant function
             return lambda _: val
