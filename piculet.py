@@ -228,6 +228,16 @@ except ImportError:
     _logger.debug('lxml not found, falling back to elementtree')
 
 
+def build_tree(document):
+    """Build a tree from an XML document.
+
+    :sig: (str) -> ElementTree.Element
+    :param document: XML document to build the tree from.
+    :return: Root node of the XML tree.
+    """
+    return ElementTree.fromstring(document)
+
+
 def xpath_etree(element, path):
     """Apply an XPath expression to an element.
 
@@ -471,7 +481,7 @@ def scrape(url, rules, content_format='xml'):
         document = html_to_xhtml(document)
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
 
-    root = ElementTree.fromstring(document)
+    root = build_tree(document)
     data = extract(root, rules['items'], pre=rules.get('pre', ()))
     return data
 
