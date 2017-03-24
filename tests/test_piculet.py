@@ -129,7 +129,7 @@ def test_scrape_uncached_should_retrieve_from_web():
     cache_dir = os.environ['PICULET_WEB_CACHE']  # backup cache dir
     del os.environ['PICULET_WEB_CACHE']
     start = time.time()
-    _ = scrape(test_url, test_spec)
+    _ = scrape(get_document(test_url), test_spec)
     end = time.time()
     os.environ['PICULET_WEB_CACHE'] = cache_dir  # restore cache dir
     assert end - start > 1
@@ -137,6 +137,6 @@ def test_scrape_uncached_should_retrieve_from_web():
 
 def test_scrape_cached_should_read_from_disk():
     start = time.time()
-    _ = scrape(test_url, test_spec)
+    _ = scrape(get_document(test_url), test_spec)
     end = time.time()
     assert end - start < 1

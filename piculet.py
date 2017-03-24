@@ -464,23 +464,19 @@ def get_document(url):
     return decode_html(content)
 
 
-def scrape(url, rules, content_format='xml'):
+def scrape(document, rules, content_format='xml'):
     """Extract data from a document according to given rules.
 
     :sig: (str, Mapping[str, Any], Optional[str]) -> Mapping[str, Any]
-    :param url: Address of document to scrape.
+    :param document: Document to scrape.
     :param rules: Rules to use for scraping.
     :param content_format: Format of the content, XML or HTML.
     :return: Extracted data.
     """
-    _logger.debug('scraping url [%s]', url)
-    document = get_document(url)
-
     if content_format == 'html':
         _logger.debug('converting html document to xml')
         document = html_to_xhtml(document)
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
-
     root = build_tree(document)
     data = extract(root, rules['items'], pre=rules.get('pre', ()))
     return data
@@ -515,8 +511,10 @@ def _get_parser(prog):
             raise ValueError('Rules not found: ' + arguments.rules)
         _logger.debug('using rules [%s]', arguments.rules)
 
+        _logger.debug('scraping url [%s]', arguments.url)
+        document = get_document(arguments.url)
         content_format = 'html' if arguments.html else 'xml'
-        data = scrape(arguments.url, rules, content_format=content_format)
+        data = scrape(document, rules, content_format=content_format)
         print(json.dumps(data, indent=2, sort_keys=True))
 
     parser = ArgumentParser(prog=prog)
