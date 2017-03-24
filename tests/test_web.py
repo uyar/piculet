@@ -1,4 +1,4 @@
-from pytest import  raises
+from pytest import raises
 
 import os
 

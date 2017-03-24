@@ -1,12 +1,12 @@
 from pytest import fixture, mark, raises
 from unittest.mock import patch
 
+from hashlib import md5
 from io import StringIO
+from time import time
 
-import hashlib
 import json
 import os
-import time
 
 import piculet
 
@@ -14,7 +14,7 @@ import piculet
 infile = os.path.join(os.path.dirname(__file__), 'files', 'utf-8_charset_utf-8.html')
 wikipedia_spec = os.path.join(os.path.dirname(__file__), '..', 'examples', 'wikipedia.json')
 wikipedia_bowie = 'https://en.wikipedia.org/wiki/David_Bowie'
-wikipedia_bowie_hash = hashlib.md5(wikipedia_bowie.encode('utf-8')).hexdigest()
+wikipedia_bowie_hash = md5(wikipedia_bowie.encode('utf-8')).hexdigest()
 
 
 @fixture(scope='module', autouse=True)
@@ -134,10 +134,10 @@ def test_scrape_should_scrape_given_url(capsys):
 
 
 def test_scrape_cached_should_read_from_disk():
-    start = time.time()
+    start = time()
     piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
                        '-r', 'person', '--html'])
-    end = time.time()
+    end = time()
     assert end - start < 1
 
 
@@ -145,10 +145,10 @@ def test_scrape_cached_should_read_from_disk():
 def test_scrape_cache_disabled_should_retrieve_from_web():
     cache_dir = os.environ['PICULET_WEB_CACHE']  # backup cache dir
     del os.environ['PICULET_WEB_CACHE']
-    start = time.time()
+    start = time()
     piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
                        '-r', 'person', '--html'])
-    end = time.time()
+    end = time()
     os.environ['PICULET_WEB_CACHE'] = cache_dir  # restore cache dir
     assert end - start > 1
 
@@ -157,9 +157,9 @@ def test_scrape_cache_disabled_should_retrieve_from_web():
 def test_scrape_uncached_should_retrieve_from_web():
     cache_file = os.path.join(os.path.dirname(__file__), '.cache', wikipedia_bowie_hash)
     os.unlink(cache_file)
-    start = time.time()
+    start = time()
     piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
                        '-r', 'person', '--html'])
-    end = time.time()
+    end = time()
     assert end - start > 1
     assert os.path.exists(cache_file)

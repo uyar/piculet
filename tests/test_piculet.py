@@ -1,6 +1,6 @@
 from pytest import raises
 
-from piculet import build_tree, extract, get_document, scrape, woodpecker, xpath
+from piculet import build_tree, extract, woodpecker, xpath
 
 
 ########################################
