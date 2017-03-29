@@ -13,18 +13,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 """
-Piculet is a package for extracting data from XML documents using XPath
-queries. It can also scrape web pages by first converting the HTML source
-into XHTML. Piculet consists of this single source file with no dependencies
-other than the standard library, which makes it very easy to integrate
-into applications.
+Piculet is a package for extracting data from XML documents using XPath queries.
+It can also scrape web pages by first converting the HTML source into XHTML.
+Piculet consists of this single source file with no dependencies other than
+the standard library, which makes it very easy to integrate into applications.
 
-For more details, please refer to the documentation:
-http://piculet.readthedocs.io/.
+For more details, please refer to the documentation: http://piculet.readthedocs.io/
 """
-
 
 from argparse import ArgumentParser
 from collections import deque
@@ -477,35 +473,57 @@ def scrape(document, rules, content_format='xml'):
 ###########################################################
 
 
+def h2x(source):
+    """Convert an HTML file into XHTML and print.
+
+    :sig: (str) -> None
+    :param source: Path of HTML file to convert.
+    """
+    _logger.debug('converting html to xhtml')
+    if source == '-':
+        _logger.debug('reading from stdin')
+        content = sys.stdin.read()
+    else:
+        path = os.path.abspath(source)
+        _logger.debug('reading from file [%s]', path)
+        with open(path, 'rb') as f:
+            content = decode_html(f.read())
+    print(html_to_xhtml(content), end='')
+
+
+def scrape_url(url, spec, ruleset, content_format='xml'):
+    """Scrape data from a URL and print.
+
+    :sig: (str, str, str, Optional[str]) -> None
+    :param url: URL of document to scrape.
+    :param spec: Path of spec file.
+    :param ruleset: Selected rules from the spec.
+    :param content_format: Whether the content is XML or HTML.
+    """
+    with open(spec) as f:
+        scraper = json.loads(f.read())
+
+    rules = scraper.get(ruleset)
+    if rules is None:
+        raise ValueError('Rules not found: ' + ruleset)
+    _logger.debug('using rules [%s]', ruleset)
+
+    _logger.debug('scraping url [%s]', url)
+    document = get_document(url)
+    data = scrape(document, rules, content_format=content_format)
+    print(json.dumps(data, indent=2, sort_keys=True))
+
+
 def _get_parser(prog):
     """Get a parser for command line arguments."""
 
-    def h2x(arguments):
-        _logger.debug('converting html to xhtml')
-        if arguments.file == '-':
-            _logger.debug('reading from stdin')
-            content = sys.stdin.read()
-        else:
-            filename = os.path.abspath(arguments.file)
-            _logger.debug('reading from file [%s]', filename)
-            with open(filename) as f:
-                content = f.read()
-        print(html_to_xhtml(content), end='')
+    def _h2x(arguments):
+        h2x(arguments.file)
 
-    def scrape_doc(arguments):
-        with open(arguments.spec) as f:
-            spec = json.loads(f.read())
-
-        rules = spec.get(arguments.rules)
-        if rules is None:
-            raise ValueError('Rules not found: ' + arguments.rules)
-        _logger.debug('using rules [%s]', arguments.rules)
-
-        _logger.debug('scraping url [%s]', arguments.url)
-        document = get_document(arguments.url)
+    def _scrape(arguments):
         content_format = 'html' if arguments.html else 'xml'
-        data = scrape(document, rules, content_format=content_format)
-        print(json.dumps(data, indent=2, sort_keys=True))
+        scrape_url(arguments.url, arguments.spec, arguments.rules,
+                   content_format=content_format)
 
     parser = ArgumentParser(prog=prog)
     parser.add_argument('--debug', action='store_true',
@@ -515,11 +533,11 @@ def _get_parser(prog):
     commands.required = True
 
     subparser = commands.add_parser('h2x', help='convert HTML to XHTML')
-    subparser.set_defaults(func=h2x)
+    subparser.set_defaults(func=_h2x)
     subparser.add_argument('file', help='file to convert')
 
     subparser = commands.add_parser('scrape', help='scrape a document')
-    subparser.set_defaults(func=scrape_doc)
+    subparser.set_defaults(func=_scrape)
     subparser.add_argument('url', help='URL to scrape')
     subparser.add_argument('-s', '--spec', required=True,
                            help='spec file')
