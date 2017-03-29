@@ -51,7 +51,7 @@ def cache_imdb_pages():
     """Store all needed pages from the IMDb in the cache."""
     for movie in MOVIES:
         for url_template in TITLE_URLS:
-            _ = get_page(url_template, movie)
+            get_page(url_template, movie)
 
 
 specfile = os.path.join(os.path.dirname(__file__), '..', 'examples', 'imdb.json')

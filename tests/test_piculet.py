@@ -55,7 +55,7 @@ def test_peck_reducer_join_should_return_joined_text():
 
 def test_peck_unknown_reducer_should_raise_error():
     with raises(ValueError):
-        _ = woodpecker(path='./p1//text()', reducer='merge')
+        woodpecker(path='./p1//text()', reducer='merge')
 
 
 def test_peck_non_matching_path_should_return_none():
@@ -98,7 +98,7 @@ def test_extract_missing_data_should_be_excluded():
 
 def test_extract_subroot_should_select_one_element():
     with raises(ValueError):
-        _ = extract(people_root, items=[], pre=[{'op': 'root', 'path': './/n'}])
+        extract(people_root, items=[], pre=[{'op': 'root', 'path': './/n'}])
 
 
 def test_extract_no_rules_should_return_empty_result():

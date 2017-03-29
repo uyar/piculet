@@ -20,7 +20,7 @@ wikipedia_bowie_hash = md5(wikipedia_bowie.encode('utf-8')).hexdigest()
 @fixture(scope='module', autouse=True)
 def cache_test_page():
     """Store the test page in the cache."""
-    _ = piculet.get_document(wikipedia_bowie)
+    piculet.get_document(wikipedia_bowie)
 
 
 def test_help_should_print_usage_and_exit(capsys):

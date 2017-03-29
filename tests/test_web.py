@@ -35,13 +35,13 @@ def test_decode_content_meta_content_type_incorrect_should_fail():
 def test_decode_content_meta_charset_incompatible_should_raise_unicode_error():
     content = read_document('iso8859-9_charset_utf-8.html')
     with raises(UnicodeDecodeError):
-        _ = decode_html(content)
+        decode_html(content)
 
 
 def test_decode_content_meta_content_type_incompatible_should_raise_unicode_error():
     content = read_document('iso8859-9_content-type_utf-8.html')
     with raises(UnicodeDecodeError):
-        _ = decode_html(content)
+        decode_html(content)
 
 
 def test_decode_content_requested_charset_correct_should_succeed():
@@ -57,7 +57,7 @@ def test_decode_content_requested_charset_incorrect_should_fail():
 def test_decode_content_requested_charset_incompatible_should_raise_unicode_error():
     content = read_document('iso8859-9_charset_iso8859-9.html')
     with raises(UnicodeDecodeError):
-        _ = decode_html(content, charset='utf-8')
+        decode_html(content, charset='utf-8')
 
 
 def test_decode_content_fallback_default_correct_should_succeed():
@@ -78,7 +78,7 @@ def test_decode_content_fallback_incorrect_should_fail():
 def test_decode_content_fallback_incompatible_should_raise_unicode_error():
     content = read_document('iso8859-9_charset_none.html')
     with raises(UnicodeDecodeError):
-        _ = decode_html(content, fallback_charset='utf-8')
+        decode_html(content, fallback_charset='utf-8')
 
 
 def test_html_to_xhtml_well_formed_xml_should_succeed():
