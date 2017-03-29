@@ -28,7 +28,7 @@ http://piculet.readthedocs.io/.
 
 from argparse import ArgumentParser
 from collections import deque
-from contextlib import contextmanager
+from contextlib import redirect_stdout
 from functools import partial
 from hashlib import md5
 from html.parser import HTMLParser
@@ -43,18 +43,6 @@ import sys
 
 
 _logger = logging.getLogger(__name__)
-
-
-@contextmanager
-def redirect_stdout(new_target):
-    # Taken from J.F. Sebastian's stackoverflow post on:
-    # https://stackoverflow.com/questions/4675728/redirect-stdout-to-a-file-in-python
-    # PY34: from contextlib import redirect_stdout
-    old_target, sys.stdout = sys.stdout, new_target
-    try:
-        yield new_target
-    finally:
-        sys.stdout = old_target
 
 
 ###########################################################
