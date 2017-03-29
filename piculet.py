@@ -31,6 +31,7 @@ from collections import deque
 from contextlib import redirect_stdout
 from functools import partial
 from hashlib import md5
+from html import escape as html_escape
 from html.parser import HTMLParser
 from io import StringIO
 from urllib.request import urlopen
@@ -100,18 +101,6 @@ class HTMLNormalizer(HTMLParser):
     SELF_CLOSING_TAGS = {'br', 'hr', 'img', 'input', 'link', 'meta'}
     """Tags to handle as self-closing."""
 
-    ENTITY_REFS = (
-        ('&', '&amp;'),
-        ('<', '&lt;'),
-        ('>', '&gt;')
-    )
-    """Entity references to replace."""
-
-    ATTR_ENTITY_REFS = (
-        ('"', '&quot;'),
-    )
-    """Additional entity references to replace in attributes."""
-
     def __init__(self, omit_tags=(), omit_attrs=()):
         HTMLParser.__init__(self, convert_charrefs=True)
         # PY34: super().__init__(convert_charrefs=True)
@@ -141,17 +130,14 @@ class HTMLNormalizer(HTMLParser):
                     _logger.debug('no value for [%s] attribute of [%s] tag, adding empty value',
                                   attr_name, tag)
                     attr_value = ''
-                else:
-                    for e, r in (self.ENTITY_REFS + self.ATTR_ENTITY_REFS):
-                        if e in attr_value:
-                            _logger.debug('replacing [%s] with [%s] in [%s] value of [%s] tag',
-                                          e, r, attr_value, tag)
-                            attr_value = attr_value.replace(e, r)
                 attribs.append((attr_name, attr_value))
+            attrs = ['%(name)s="%(value)s"' % {
+                'name': name,
+                'value': html_escape(value, quote=True)
+            } for name, value in attribs]
             line = '<%(tag)s%(attrs)s%(slash)s>' % {
                 'tag': tag,
-                'attrs': ''.join([' %(name)s="%(value)s"' % {'name': name, 'value': value}
-                                  for name, value in attribs]),
+                'attrs': (' ' + ' '.join(attrs)) if len(attrs) > 0 else '',
                 'slash': ' /' if tag in self.SELF_CLOSING_TAGS else ''
             }
             print(line, end='')
@@ -187,9 +173,7 @@ class HTMLNormalizer(HTMLParser):
     def handle_data(self, data):
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
-            for e, r in self.ENTITY_REFS:
-                data = data.replace(e, r)
-            print(data, end='')
+            print(html_escape(data), end='')
 
     def feed(self, data):
         HTMLParser.feed(self, data)
