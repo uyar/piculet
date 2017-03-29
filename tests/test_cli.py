@@ -84,16 +84,16 @@ def test_h2x_no_input_should_print_usage_and_exit(capsys):
 
 
 def test_h2x_should_read_given_file(capsys):
-    with open(infile) as f:
-        content = f.read()
+    with open(infile, 'rb') as f:
+        content = piculet.decode_html(f.read())
     piculet.main(argv=['piculet', 'h2x', infile])
     out, err = capsys.readouterr()
     assert out == content
 
 
 def test_h2x_should_read_stdin_when_input_is_dash(capsys):
-    with open(infile) as f:
-        content = f.read()
+    with open(infile, 'rb') as f:
+        content = piculet.decode_html(f.read())
     with patch('sys.stdin', StringIO(content)):
         piculet.main(argv=['piculet', 'h2x', '-'])
     out, err = capsys.readouterr()
