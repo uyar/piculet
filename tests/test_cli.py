@@ -159,28 +159,32 @@ def test_scrape_cached_should_read_from_disk(capsys, disable_internet):
 
 @mark.download
 def test_scrape_cache_disabled_should_retrieve_from_web(capsys):
-    assert os.path.exists(wikipedia_bowie_cache)
-    os.rename(wikipedia_bowie_cache, wikipedia_bowie_cache + '.BACKUP')
     cache_dir = os.environ['PICULET_WEB_CACHE']  # backup cache dir
     del os.environ['PICULET_WEB_CACHE']
-    piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
-                       '-r', 'person', '--html'])
-    os.environ['PICULET_WEB_CACHE'] = cache_dir  # restore cache dir
-    assert not os.path.exists(wikipedia_bowie_cache)
-    os.rename(wikipedia_bowie_cache + '.BACKUP', wikipedia_bowie_cache)
-    out, err = capsys.readouterr()
-    data = json.loads(out)
-    assert data['name'] == 'David Bowie'
+    assert os.path.exists(wikipedia_bowie_cache)
+    os.rename(wikipedia_bowie_cache, wikipedia_bowie_cache + '.BACKUP')
+    try:
+        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
+                           '-r', 'person', '--html'])
+        assert not os.path.exists(wikipedia_bowie_cache)
+        out, err = capsys.readouterr()
+        data = json.loads(out)
+        assert data['name'] == 'David Bowie'
+    finally:
+        os.rename(wikipedia_bowie_cache + '.BACKUP', wikipedia_bowie_cache)
+        os.environ['PICULET_WEB_CACHE'] = cache_dir  # restore cache dir
 
 
 @mark.download
 def test_scrape_uncached_should_retrieve_from_web(capsys):
     assert os.path.exists(wikipedia_bowie_cache)
     os.rename(wikipedia_bowie_cache, wikipedia_bowie_cache + '.BACKUP')
-    piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
-                       '-r', 'person', '--html'])
-    assert os.path.exists(wikipedia_bowie_cache)
-    os.rename(wikipedia_bowie_cache + '.BACKUP', wikipedia_bowie_cache)
-    out, err = capsys.readouterr()
-    data = json.loads(out)
-    assert data['name'] == 'David Bowie'
+    try:
+        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
+                           '-r', 'person', '--html'])
+        assert os.path.exists(wikipedia_bowie_cache)
+        out, err = capsys.readouterr()
+        data = json.loads(out)
+        assert data['name'] == 'David Bowie'
+    finally:
+        os.rename(wikipedia_bowie_cache + '.BACKUP', wikipedia_bowie_cache)
