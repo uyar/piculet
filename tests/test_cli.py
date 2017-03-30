@@ -1,4 +1,4 @@
-from pytest import fixture, mark, raises
+from pytest import mark, raises
 from unittest.mock import patch
 
 from hashlib import md5
@@ -6,36 +6,21 @@ from io import StringIO
 
 import json
 import os
-import socket
 
 import piculet
 
 
 base_dir = os.path.dirname(__file__)
+
 infile = os.path.join(base_dir, 'files', 'utf-8_charset_utf-8.html')
+
 wikipedia_spec = os.path.join(base_dir, '..', 'examples', 'wikipedia.json')
 wikipedia_bowie = 'https://en.wikipedia.org/wiki/David_Bowie'
 wikipedia_bowie_hash = md5(wikipedia_bowie.encode('utf-8')).hexdigest()
 wikipedia_bowie_cache = os.path.join(base_dir, '.cache', wikipedia_bowie_hash)
 
-
-# Store the test page in the cache.
+# Retrieve the test page and store in cache.
 piculet.get_document(wikipedia_bowie)
-
-
-@fixture(scope='function')
-def disable_internet(request):
-    """Disable Internet access."""
-
-    def guard(*args, **kwargs):
-        raise RuntimeError('Internet access disabled')
-
-    def finalize():
-        socket.socket = old_socket
-
-    old_socket = socket.socket
-    socket.socket = guard
-    request.addfinalizer(finalize)
 
 
 def test_help_should_print_usage_and_exit(capsys):
