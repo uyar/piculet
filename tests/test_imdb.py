@@ -1,5 +1,3 @@
-from pytest import fixture
-
 import json
 import os
 import re
@@ -46,7 +44,7 @@ def get_page(template, movie):
     return get_document(template % {'imdb_id': MOVIES[movie]})
 
 
-# Store all needed pages from the IMDb in the cache.
+# Retrieve all needed pages from the IMDb and store in cache.
 for movie in MOVIES:
     for url_template in TITLE_URLS:
         get_page(url_template, movie)
