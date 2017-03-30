@@ -19,8 +19,14 @@ wikipedia_bowie_hash = md5(wikipedia_bowie.encode('utf-8')).hexdigest()
 wikipedia_bowie_cache = os.path.join(base_dir, '.cache', wikipedia_bowie_hash)
 
 
-@fixture
+# Store the test page in the cache.
+piculet.get_document(wikipedia_bowie)
+
+
+@fixture(scope='function')
 def disable_internet(request):
+    """Disable Internet access."""
+
     def guard(*args, **kwargs):
         raise RuntimeError('Internet access disabled')
 
@@ -30,12 +36,6 @@ def disable_internet(request):
     old_socket = socket.socket
     socket.socket = guard
     request.addfinalizer(finalize)
-
-
-@fixture(scope='module', autouse=True)
-def cache_test_page():
-    """Store the test page in the cache."""
-    piculet.get_document(wikipedia_bowie)
 
 
 def test_help_should_print_usage_and_exit(capsys):
