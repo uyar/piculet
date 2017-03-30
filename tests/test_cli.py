@@ -19,8 +19,10 @@ wikipedia_bowie = 'https://en.wikipedia.org/wiki/David_Bowie'
 wikipedia_bowie_hash = md5(wikipedia_bowie.encode('utf-8')).hexdigest()
 wikipedia_bowie_cache = os.path.join(base_dir, '.cache', wikipedia_bowie_hash)
 
-# Retrieve the test page and store in cache.
-piculet.get_document(wikipedia_bowie)
+
+def cache_test_page():
+    """Retrieve the test page and store in cache."""
+    piculet.get_document(wikipedia_bowie)
 
 
 def test_help_should_print_usage_and_exit(capsys):
@@ -133,7 +135,7 @@ def test_scrape_should_scrape_given_url(capsys):
     assert data['name'] == 'David Bowie'
 
 
-def test_scrape_cached_should_read_from_disk(capsys, disable_internet):
+def test_scrape_cached_should_read_from_disk(capsys):
     assert os.path.exists(wikipedia_bowie_cache)
     piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
                        '-r', 'person', '--html'])
@@ -143,7 +145,7 @@ def test_scrape_cached_should_read_from_disk(capsys, disable_internet):
 
 
 @mark.download
-def test_scrape_cache_disabled_should_retrieve_from_web(capsys):
+def test_scrape_cache_disabled_should_retrieve_from_web(capsys, enable_internet):
     cache_dir = os.environ['PICULET_WEB_CACHE']  # backup cache dir
     del os.environ['PICULET_WEB_CACHE']
     assert os.path.exists(wikipedia_bowie_cache)
@@ -161,7 +163,7 @@ def test_scrape_cache_disabled_should_retrieve_from_web(capsys):
 
 
 @mark.download
-def test_scrape_uncached_should_retrieve_from_web(capsys):
+def test_scrape_uncached_should_retrieve_from_web(capsys, enable_internet):
     assert os.path.exists(wikipedia_bowie_cache)
     os.rename(wikipedia_bowie_cache, wikipedia_bowie_cache + '.BACKUP')
     try:

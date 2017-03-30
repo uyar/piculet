@@ -44,10 +44,11 @@ def get_page(template, movie):
     return get_document(template % {'imdb_id': MOVIES[movie]})
 
 
-# Retrieve all needed pages from the IMDb and store in cache.
-for movie in MOVIES:
-    for url_template in TITLE_URLS:
-        get_page(url_template, movie)
+def cache_imdb_pages():
+    """Retrieve all needed pages from the IMDb and store in cache."""
+    for movie in MOVIES:
+        for url_template in TITLE_URLS:
+            get_page(url_template, movie)
 
 
 specfile = os.path.join(os.path.dirname(__file__), '..', 'examples', 'imdb.json')
