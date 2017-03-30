@@ -424,10 +424,7 @@ def get_document(url):
         content = urlopen(url).read()
     else:
         _logger.debug('using cache dir [%s]', cache_dir)
-        if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir)
-        # PY3: os.makedirs(cache_dir, exist_ok=True)
-
+        os.makedirs(cache_dir, exist_ok=True)
         key = md5(url.encode('utf-8')).hexdigest()
         cache_file = os.path.join(cache_dir, key)
         if not os.path.exists(cache_file):
