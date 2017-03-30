@@ -98,8 +98,7 @@ class HTMLNormalizer(HTMLParser):
     """Tags to handle as self-closing."""
 
     def __init__(self, omit_tags=(), omit_attrs=()):
-        HTMLParser.__init__(self, convert_charrefs=True)
-        # PY34: super().__init__(convert_charrefs=True)
+        super().__init__(convert_charrefs=True)
 
         self.omit_tags = set(omit_tags)    # sig: Set[str]
         self.omit_attrs = set(omit_attrs)  # sig: Set[str]
@@ -171,9 +170,8 @@ class HTMLNormalizer(HTMLParser):
             # stack empty -> not in omit mode
             print(html_escape(data), end='')
 
-    def feed(self, data):
-        HTMLParser.feed(self, data)
-        # PY3: super().feed(data)
+    # def feed(self, data):
+        # super().feed(data)
         # close all remaining open tags
         # for tag in reversed(self._open_tags):
         #     print('</%(tag)s>' % {'tag': tag}, end='')
@@ -233,22 +231,17 @@ def xpath_etree(element, path):
     """
     if path.endswith('//text()'):
         _logger.debug('handling descendant text path [%s]', path)
-        return [t for e in element.findall(path[:-8])
-                for t in e.itertext() if t]
+        return [t for e in element.findall(path[:-8]) for t in e.itertext() if t]
 
     if path.endswith('/text()'):
         _logger.debug('handling child text path [%s]', path)
         return [t for e in element.findall(path[:-7])
-                for t in ([e.text] + [c.tail if c.tail else '' for c in e])
-                if t]
+                for t in ([e.text] + [c.tail if c.tail else '' for c in e]) if t]
 
-    path_tokens = path.split('/')
-    epath, last_step = path_tokens[:-1], path_tokens[-1]
-    # PY3: *epath, last_step = path.split()
+    *epath, last_step = path.split('/')
     if last_step.startswith('@'):
         _logger.debug('handling attribute path [%s]', path)
-        result = [e.attrib.get(last_step[1:])
-                  for e in element.findall('/'.join(epath))]
+        result = [e.attrib.get(last_step[1:]) for e in element.findall('/'.join(epath))]
         return [r for r in result if r is not None]
 
     _logger.debug('handling element producing path [%s]', path)
