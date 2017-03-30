@@ -253,8 +253,7 @@ _REDUCERS = {
     'first': lambda xs: xs[0],
     'join': lambda xs: ''.join(xs),
     'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs)).strip(),
-    'normalize': lambda xs: re.sub('[^a-z0-9_]', '',
-                                   ''.join(xs).lower().replace(' ', '_'))
+    'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
 }
 """Pre-defined reducers."""
 
@@ -321,16 +320,18 @@ def extract(root, items, pre=()):
         It takes a value generator description and returns a callable that
         takes an XML element and returns a value.
         """
-        assert isinstance(val, str) or ('path' in val) or ('items' in val)
         if isinstance(val, str):
             # constant function
             return lambda _: val
         if 'path' in val:
             # xpath and reducer
+            if 'reducer' not in val:
+                raise ValueError('Path extractor must have reducer: ' + val['path'])
             return woodpecker(val['path'], val['reducer'])
         if 'items' in val:
             # recursive function for applying subrules
             return partial(extract, items=val['items'], pre=val.get('pre', ()))
+        raise ValueError('Unknown value generator: ' + str(val))
 
     def parent_getter():
         if _USE_LXML:
@@ -346,7 +347,6 @@ def extract(root, items, pre=()):
     # do the preprocessing operations
     for step in pre:
         op = step['op']
-        assert op in ['root', 'remove', 'set_attr', 'set_text']
         if op == 'root':
             path = step['path']
             _logger.debug('selecting new root using [%s]', path)
@@ -381,6 +381,8 @@ def extract(root, items, pre=()):
                 text_value = text_gen(element)
                 _logger.debug('setting text to [%s] on [%s] element', text_value, element.tag)
                 element.text = text_value
+        else:
+            raise ValueError('Unknow preprocessing operation: ' + op)
 
     # actual extraction part
     data = {}

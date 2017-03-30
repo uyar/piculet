@@ -69,13 +69,67 @@ def test_peck_non_matching_path_should_return_none():
 ########################################
 
 
-def test_extract_no_subroot_should_return_all():
+def test_extract_no_rules_should_return_empty_result():
+    data = extract(people_root, items=[])
+    assert data == {}
+
+
+def test_extract_unknown_value_generator_should_raise_error():
+    rules = [{'key': 'name', 'value': {'foo': './p2/n/text()'}}]
+    with raises(ValueError):
+        extract(people_root, rules)
+
+
+def test_extract_path_value_generator_with_missing_reducer_should_raise_error():
+    rules = [{'key': 'name', 'value': {'path': './p2/n/text()'}}]
+    with raises(ValueError):
+        extract(people_root, rules)
+
+
+def test_extract_first_reducer_should_return_first_selected():
+    rules = [{'key': 'name', 'value': {'path': './p2/n/text()', 'reducer': 'first'}}]
+    data = extract(people_root, rules)
+    assert data == {'name': 'Jane Doe'}
+
+
+def test_extract_join_reducer_should_join_selected():
+    rules = [{'key': 'all', 'value': {'path': './p1//text()', 'reducer': 'join'}}]
+    data = extract(people_root, rules)
+    assert data == {'all': 'John Smith42'}
+
+
+def test_extract_multiple_rules_should_generate_multiple_items():
     rules = [
         {'key': 'name', 'value': {'path': './p2/n/text()', 'reducer': 'first'}},
         {'key': 'age', 'value': {'path': './p1/a/text()', 'reducer': 'first'}}
     ]
     data = extract(people_root, rules)
     assert data == {'name': 'Jane Doe', 'age': '42'}
+
+
+def test_extract_items_with_no_data_should_be_excluded():
+    rules = [
+        {'key': 'name', 'value': {'path': './/n/text()', 'reducer': 'first'}},
+        {'key': 'age', 'value': {'path': './/a/text()', 'reducer': 'first'}}
+    ]
+    data = extract(people_root, rules, pre=[{'op': 'root', 'path': './p2'}])
+    assert data == {'name': 'Jane Doe'}
+
+
+def test_extract_unknown_preprocessing_operation_should_raise_error():
+    with raises(ValueError):
+        extract(people_root, items=[], pre=[{'op': 'foo'}])
+
+
+def test_extract_subroot_multiple_should_raise_error():
+    with raises(ValueError):
+        extract(people_root, items=[], pre=[{'op': 'root', 'path': './/n'}])
+
+
+def test_extract_subroot_none_should_return_empty_result():
+    rules = [{'key': 'name', 'value': {'path': './p2/n/text()', 'reducer': 'first'}}]
+    data = extract(people_root, rules, pre=[{'op': 'root', 'path': './/foo'}])
+    assert data == {}
 
 
 def test_extract_subroot_should_exclude_unselected_parts():
@@ -85,22 +139,3 @@ def test_extract_subroot_should_exclude_unselected_parts():
     ]
     data = extract(people_root, rules, pre=[{'op': 'root', 'path': './p1'}])
     assert data == {'name': 'John Smith', 'age': '42'}
-
-
-def test_extract_missing_data_should_be_excluded():
-    rules = [
-        {'key': 'name', 'value': {'path': './/n/text()', 'reducer': 'first'}},
-        {'key': 'age', 'value': {'path': './/a/text()', 'reducer': 'first'}}
-    ]
-    data = extract(people_root, rules, pre=[{'op': 'root', 'path': './p2'}])
-    assert data == {'name': 'Jane Doe'}
-
-
-def test_extract_subroot_should_select_one_element():
-    with raises(ValueError):
-        extract(people_root, items=[], pre=[{'op': 'root', 'path': './/n'}])
-
-
-def test_extract_no_rules_should_return_empty_result():
-    data = extract(people_root, items=[])
-    assert data == {}
