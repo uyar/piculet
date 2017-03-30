@@ -49,10 +49,8 @@ _logger = logging.getLogger(__name__)
 
 # TODO: this is too fragile
 _CHARSET_TAGS = {
-    'meta charset':
-        b'<meta charset="',
-    'meta http-equiv':
-        b'<meta http-equiv="content-type" content="text/html; charset='
+    'meta charset': b'<meta charset="',
+    'meta http-equiv': b'<meta http-equiv="content-type" content="text/html; charset='
 }
 
 
@@ -277,7 +275,7 @@ def woodpecker(path, reducer):
     try:
         reduce = _REDUCERS[reducer]
     except KeyError:
-        raise ValueError('Unknown reducer [%s]', reducer)
+        raise ValueError('Unknown reducer: ' + reducer)
 
     def apply(element):
         """Extract a value from an element.
