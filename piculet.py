@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+#
 # Copyright (C) 2014-2017 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -22,21 +24,49 @@ the standard library, which makes it very easy to integrate into applications.
 For more details, please refer to the documentation: http://piculet.readthedocs.io/
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 from argparse import ArgumentParser
 from collections import deque
-from contextlib import redirect_stdout
 from functools import partial
 from hashlib import md5
-from html import escape as html_escape
-from html.parser import HTMLParser
 from io import StringIO
-from urllib.request import urlopen
 
 import json
 import logging
 import os
 import re
 import sys
+
+
+PY3 = sys.version_info >= (3, 0)
+PY34 = sys.version_info >= (3, 4)
+
+
+if not PY3:
+    from cgi import escape as html_escape
+    from HTMLParser import HTMLParser
+    from urllib2 import urlopen
+else:
+    from html import escape as html_escape
+    from html.parser import HTMLParser
+    from urllib.request import urlopen
+
+
+if not PY34:
+    from contextlib import contextmanager
+
+    @contextmanager
+    def redirect_stdout(new_target):
+        # Taken from J.F. Sebastian's stackoverflow post on:
+        # https://stackoverflow.com/questions/4675728/redirect-stdout-to-a-file-in-python
+        old_target, sys.stdout = sys.stdout, new_target
+        try:
+            yield new_target
+        finally:
+            sys.stdout = old_target
+else:
+    from contextlib import redirect_stdout
 
 
 _logger = logging.getLogger(__name__)
@@ -96,7 +126,12 @@ class HTMLNormalizer(HTMLParser):
     """Tags to handle as self-closing."""
 
     def __init__(self, omit_tags=(), omit_attrs=()):
-        super().__init__(convert_charrefs=True)
+        if PY34:
+            super().__init__(convert_charrefs=True)
+        elif PY3:
+            super().__init__()
+        else:
+            HTMLParser.__init__(self)
 
         self.omit_tags = set(omit_tags)    # sig: Set[str]
         self.omit_attrs = set(omit_attrs)  # sig: Set[str]
@@ -236,7 +271,9 @@ def xpath_etree(element, path):
         return [t for e in element.findall(path[:-7])
                 for t in ([e.text] + [c.tail if c.tail else '' for c in e]) if t]
 
-    *epath, last_step = path.split('/')
+    path_tokens = path.split('/')
+    epath, last_step = path_tokens[:-1], path_tokens[-1]
+    # PY3: *epath, last_step = path.split('/')
     if last_step.startswith('@'):
         _logger.debug('handling attribute path [%s]', path)
         result = [e.attrib.get(last_step[1:]) for e in element.findall('/'.join(epath))]
@@ -320,7 +357,7 @@ def extract(root, items, pre=()):
         It takes a value generator description and returns a callable that
         takes an XML element and returns a value.
         """
-        if isinstance(val, str):
+        if isinstance(val, str if PY3 else unicode):
             # constant function
             return lambda _: val
         if 'path' in val:
@@ -424,7 +461,11 @@ def get_document(url):
         content = urlopen(url).read()
     else:
         _logger.debug('using cache dir [%s]', cache_dir)
-        os.makedirs(cache_dir, exist_ok=True)
+        if PY3:
+            os.makedirs(cache_dir, exist_ok=True)
+        else:
+            if not os.path.exists(cache_dir):
+                os.makedirs(cache_dir)
         key = md5(url.encode('utf-8')).hexdigest()
         cache_file = os.path.join(cache_dir, key)
         if not os.path.exists(cache_file):
@@ -557,6 +598,8 @@ def main(argv=None):
     # run the handler for the selected command
     try:
         arguments.func(arguments)
+    except UnicodeError:
+        raise
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(1)

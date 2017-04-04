@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 from pytest import mark, raises
-from unittest.mock import patch
 
 from hashlib import md5
 from io import StringIO
@@ -8,6 +11,11 @@ import json
 import os
 
 import piculet
+
+if not piculet.PY3:
+    from mock import patch
+else:
+    from unittest.mock import patch
 
 
 base_dir = os.path.dirname(__file__)
