@@ -197,3 +197,15 @@ def test_html_to_xhtml_quotes_should_be_replaced_in_attribute_values():
     content = '''<html><p id="&#x22;"></p></html>'''
     normalized = html_to_xhtml(content)
     assert normalized == '''<html><p id="&quot;"></p></html>'''
+
+
+def test_html_to_xhtml_unicode_data_should_be_preserved():
+    content = '''<html><p>ğış</p></html>'''
+    normalized = html_to_xhtml(content)
+    assert normalized == '''<html><p>ğış</p></html>'''
+
+
+def test_html_to_xhtml_unicode_attribute_value_should_be_preserved():
+    content = '''<html><p foo="ğış"></p></html>'''
+    normalized = html_to_xhtml(content)
+    assert normalized == '''<html><p foo="ğış"></p></html>'''

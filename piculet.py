@@ -30,7 +30,6 @@ from argparse import ArgumentParser
 from collections import deque
 from functools import partial
 from hashlib import md5
-from io import StringIO
 
 import json
 import logging
@@ -46,10 +45,12 @@ PY34 = sys.version_info >= (3, 4)
 if not PY3:
     from cgi import escape as html_escape
     from HTMLParser import HTMLParser
+    from StringIO import StringIO
     from urllib2 import urlopen
 else:
     from html import escape as html_escape
     from html.parser import HTMLParser
+    from io import StringIO
     from urllib.request import urlopen
 
 
@@ -203,6 +204,15 @@ class HTMLNormalizer(HTMLParser):
             # stack empty -> not in omit mode
             print(html_escape(data), end='')
 
+    def handle_entityref(self, name):
+        # XXX: doesn't get called if convert_charrefs=True
+        ref = self.unescape('&' + name + ';')
+        print('&#%d;' % ord(ref))
+
+    def handle_charref(self, name):
+        # XXX: doesn't get called if convert_charrefs=True
+        print('&#' + name + ';', end='')
+
     # def feed(self, data):
         # super().feed(data)
         # close all remaining open tags
@@ -248,7 +258,7 @@ def build_tree(document):
     :param document: XML document to build the tree from.
     :return: Root node of the XML tree.
     """
-    return ElementTree.fromstring(document)
+    return ElementTree.fromstring(document if PY3 else document.encode('utf-8'))
 
 
 def xpath_etree(element, path):
@@ -289,7 +299,7 @@ xpath = ElementTree._Element.xpath if _USE_LXML else xpath_etree
 _REDUCERS = {
     'first': lambda xs: xs[0],
     'join': lambda xs: ''.join(xs),
-    'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs)).strip(),
+    'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
     'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
 }
 """Pre-defined reducers."""
