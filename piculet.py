@@ -441,15 +441,16 @@ def extract(root, items, pre=()):
             key = key_gen(subroot)
             value_gen = gen(item['value'])
             foreach_value = item['value'].get('foreach')
+            transform = item['value'].get('transform')
             if foreach_value is None:
                 value = value_gen(subroot)
                 if value:   # None from pecker, or {} from extract
                     # XXX: consider '', 0, and other non-truthy values
-                    data[key] = value
+                    data[key] = value if transform is None else transform(value)
             else:
                 values = [value_gen(r) for r in xpath(subroot, foreach_value)]
                 if values:
-                    data[key] = values
+                    data[key] = values if transform is None else [transform(v) for v in values]
     return data
 
 
