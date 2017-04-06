@@ -3,6 +3,12 @@
 History
 =======
 
+1.0a3 (unreleased)
+------------------
+
+* Added optional value transformations.
+
+
 1.0a2 (2017-04-04)
 ------------------
 
