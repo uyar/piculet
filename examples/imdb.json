@@ -464,12 +464,6 @@
     ]
   },
   "movie_plot_summary": {
-    "pre": [
-      {
-        "op": "root",
-        "path": ".//div[@id='main']"
-      }
-    ],
     "items": [
       {
         "key": "plot_summaries",
@@ -496,12 +490,6 @@
     ]
   },
   "movie_keywords": {
-    "pre": [
-      {
-        "op": "root",
-        "path": ".//div[@id='keywords_content']"
-      }
-    ],
     "items": [
       {
         "key": "keywords",
