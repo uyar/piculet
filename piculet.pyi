@@ -37,7 +37,8 @@ def xpath_etree(
 
 def woodpecker(
         path: str,
-        reducer: str
+        reducer: Optional[str] = ...,
+        reduce: Optional[Callable[[List[str]], str]] = ...
 ) -> Callable[[ElementTree.Element], Optional[str]]: ...
 
 def extract(

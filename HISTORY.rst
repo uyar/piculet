@@ -7,6 +7,7 @@ History
 ------------------
 
 * Added optional value transformations.
+* Added support for custom reducer callables.
 
 
 1.0a2 (2017-04-04)

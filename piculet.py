@@ -30,6 +30,7 @@ from argparse import ArgumentParser
 from collections import deque
 from functools import partial
 from hashlib import md5
+from operator import itemgetter
 
 import json
 import logging
@@ -40,6 +41,10 @@ import sys
 
 PY3 = sys.version_info >= (3, 0)
 PY34 = sys.version_info >= (3, 4)
+
+
+if not PY3:
+    str, bytes = unicode, str
 
 
 if not PY3:
@@ -296,16 +301,30 @@ def xpath_etree(element, path):
 xpath = ElementTree._Element.xpath if _USE_LXML else xpath_etree
 
 
+reduce_first = itemgetter(0)
+
+
+reduce_join = partial(str.join, '')
+
+
+def reduce_clean(xs):
+    return re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip()
+
+
+def reduce_normalize(xs):
+    return re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
+
+
 _REDUCERS = {
-    'first': lambda xs: xs[0],
-    'join': lambda xs: ''.join(xs),
-    'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
-    'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
+    'first': reduce_first,
+    'join': reduce_join,
+    'clean': reduce_clean,
+    'normalize': reduce_normalize
 }
 """Pre-defined reducers."""
 
 
-def woodpecker(path, reducer):
+def woodpecker(path, reducer=None, reduce=None):
     """A value extractor that combines an XPath query with a reducing function.
 
     This function returns a callable that takes an XML element as parameter and
@@ -313,15 +332,24 @@ def woodpecker(path, reducer):
     the query has to end with ``text()`` or ``@attr``. The list will then be
     passed to the reducer function to generate a single string as the result.
 
-    :sig: (str, str) -> Callable[[ElementTree.Element], Optional[str]]
+    :sig:
+        (
+            str,
+            Optional[str],
+            Optional[Callable[[List[str]], str]]
+        ) -> Callable[[ElementTree.Element], Optional[str]]
     :param path: XPath query to select the values.
     :param reducer: Name of reducer function.
+    :param reduce: Function to reduce the selected elements to a single value.
     :return: A callable that can apply this path and reducer to an element.
     """
-    try:
-        reduce = _REDUCERS[reducer]
-    except KeyError:
-        raise ValueError('Unknown reducer: ' + reducer)
+    if reduce is None:
+        if reducer is None:
+            raise ValueError('A reducer function must be specified')
+        try:
+            reduce = _REDUCERS[reducer]
+        except KeyError:
+            raise ValueError('Unknown reducer: ' + reducer)
 
     def apply(element):
         """Extract a value from an element.
@@ -367,14 +395,14 @@ def extract(root, items, pre=()):
         It takes a value generator description and returns a callable that
         takes an XML element and returns a value.
         """
-        if isinstance(val, str if PY3 else unicode):
+        if isinstance(val, str):
             # constant function
             return lambda _: val
         if 'path' in val:
             # xpath and reducer
-            if 'reducer' not in val:
+            if ('reducer' not in val) and ('reduce' not in val):
                 raise ValueError('Path extractor must have reducer: ' + val['path'])
-            return woodpecker(val['path'], val['reducer'])
+            return woodpecker(val['path'], val.get('reducer'), val.get('reduce'))
         if 'items' in val:
             # recursive function for applying subrules
             return partial(extract, items=val['items'], pre=val.get('pre', ()))
