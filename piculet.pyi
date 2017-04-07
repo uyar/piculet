@@ -6,6 +6,8 @@ from html.parser import HTMLParser
 from xml.etree import ElementTree
 
 
+class SimpleNamespace: ...
+
 def decode_html(
         content: bytes,
         charset: Optional[str] = ...,

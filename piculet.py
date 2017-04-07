@@ -38,6 +38,7 @@ import sys
 
 
 PY3 = sys.version_info >= (3, 0)
+PY33 = sys.version_info >= (3, 3)
 PY34 = sys.version_info >= (3, 4)
 
 
@@ -55,6 +56,22 @@ else:
     from html.parser import HTMLParser
     from io import StringIO
     from urllib.request import urlopen
+
+
+if not PY33:
+    class SimpleNamespace:
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
+
+        def __repr__(self):
+            keys = sorted(self.__dict__)
+            items = ("{}={!r}".format(k, self.__dict__[k]) for k in keys)
+            return "{}({})".format(type(self).__name__, ", ".join(items))
+
+        def __eq__(self, other):
+            return self.__dict__ == other.__dict__
+else:
+    from types import SimpleNamespace
 
 
 if not PY34:
@@ -299,26 +316,12 @@ def xpath_etree(element, path):
 xpath = ElementTree._Element.xpath if _USE_LXML else xpath_etree
 
 
-reduce_first = itemgetter(0)
-
-
-reduce_join = partial(str.join, '')
-
-
-def reduce_clean(xs):
-    return re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip()
-
-
-def reduce_normalize(xs):
-    return re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
-
-
-_REDUCERS = {
-    'first': reduce_first,
-    'join': reduce_join,
-    'clean': reduce_clean,
-    'normalize': reduce_normalize
-}
+reducers = SimpleNamespace(
+    first=itemgetter(0),
+    join=partial(str.join, ''),
+    clean=lambda xs: re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
+    normalize=lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
+)
 """Pre-defined reducers."""
 
 
@@ -345,8 +348,8 @@ def woodpecker(path, reducer=None, reduce=None):
         if reducer is None:
             raise ValueError('A reducer function must be specified')
         try:
-            reduce = _REDUCERS[reducer]
-        except KeyError:
+            reduce = getattr(reducers, reducer)
+        except AttributeError:
             raise ValueError('Unknown reducer: ' + reducer)
 
     def apply(element):
