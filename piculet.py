@@ -467,7 +467,12 @@ def extract(root, items, pre=()):
         foreach_key = item.get('foreach')
         subroots = [root] if foreach_key is None else xpath(root, foreach_key)
         for subroot in subroots:
-            key = key_gen(subroot)
+            raw_key = key_gen(subroot)
+            try:
+                key_transform = item['key'].get('transform')
+            except AttributeError:
+                key_transform = None
+            key = raw_key if key_transform is None else key_transform(raw_key)
             value_gen = gen(item['value'])
             foreach_value = item['value'].get('foreach')
             transform = item['value'].get('transform')
