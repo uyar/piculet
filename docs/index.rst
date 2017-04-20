@@ -8,7 +8,6 @@ Contents
    :maxdepth: 2
 
    extract
-   cli
    api
    authors
    history
