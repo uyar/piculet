@@ -95,7 +95,7 @@ def test_h2x_should_read_stdin_when_input_is_dash(capsys):
 
 def test_scrape_no_url_should_print_usage_and_exit(capsys):
     with raises(SystemExit):
-        piculet.main(argv=['piculet', 'scrape', '-s', wikipedia_spec, '-r', 'person'])
+        piculet.main(argv=['piculet', 'scrape', '-s', wikipedia_spec])
     out, err = capsys.readouterr()
     assert err.startswith('usage: ')
     # assert 'following arguments are required: url' in err
@@ -103,7 +103,7 @@ def test_scrape_no_url_should_print_usage_and_exit(capsys):
 
 def test_scrape_no_spec_should_print_usage_and_exit(capsys):
     with raises(SystemExit):
-        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-r', 'person'])
+        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie])
     out, err = capsys.readouterr()
     assert err.startswith('usage: ')
     # assert 'following arguments are required: -s' in err
@@ -111,31 +111,13 @@ def test_scrape_no_spec_should_print_usage_and_exit(capsys):
 
 def test_scrape_missing_spec_file_should_fail_and_exit(capsys):
     with raises(SystemExit):
-        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', 'foo.json',
-                           '-r', 'person'])
+        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', 'foo.json'])
     out, err = capsys.readouterr()
     assert 'No such file or directory: ' in err
 
 
-def test_scrape_no_rules_should_print_usage_and_exit(capsys):
-    with raises(SystemExit):
-        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec])
-    out, err = capsys.readouterr()
-    assert err.startswith('usage: ')
-    # assert 'following arguments are required: -r' in err
-
-
-def test_scrape_unknown_rules_should_print_error_message_and_exit(capsys):
-    with raises(SystemExit):
-        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
-                           '-r', 'foo'])
-    out, err = capsys.readouterr()
-    assert 'Rules not found: ' in err
-
-
 def test_scrape_should_scrape_given_url(capsys):
-    piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
-                       '-r', 'person', '--html'])
+    piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec, '--html'])
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data['name'] == 'David Bowie'
@@ -143,8 +125,7 @@ def test_scrape_should_scrape_given_url(capsys):
 
 def test_scrape_cached_should_read_from_disk(capsys):
     assert os.path.exists(wikipedia_bowie_cache)
-    piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
-                       '-r', 'person', '--html'])
+    piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec, '--html'])
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data['name'] == 'David Bowie'
@@ -157,8 +138,7 @@ def test_scrape_cache_disabled_should_retrieve_from_web(capsys, enable_internet)
     assert os.path.exists(wikipedia_bowie_cache)
     os.rename(wikipedia_bowie_cache, wikipedia_bowie_cache + '.BACKUP')
     try:
-        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
-                           '-r', 'person', '--html'])
+        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec, '--html'])
         assert not os.path.exists(wikipedia_bowie_cache)
         out, err = capsys.readouterr()
         data = json.loads(out)
@@ -173,8 +153,7 @@ def test_scrape_uncached_should_retrieve_from_web(capsys, enable_internet):
     assert os.path.exists(wikipedia_bowie_cache)
     os.rename(wikipedia_bowie_cache, wikipedia_bowie_cache + '.BACKUP')
     try:
-        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec,
-                           '-r', 'person', '--html'])
+        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec, '--html'])
         assert os.path.exists(wikipedia_bowie_cache)
         out, err = capsys.readouterr()
         data = json.loads(out)

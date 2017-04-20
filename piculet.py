@@ -567,22 +567,16 @@ def h2x(source):
     print(html_to_xhtml(content), end='')
 
 
-def scrape_url(url, spec, ruleset, content_format='xml'):
+def scrape_url(url, spec, content_format='xml'):
     """Scrape data from a URL and print.
 
-    :sig: (str, str, str, Optional[str]) -> None
+    :sig: (str, str, Optional[str]) -> None
     :param url: URL of document to scrape.
     :param spec: Path of spec file.
-    :param ruleset: Selected rules from the spec.
     :param content_format: Whether the content is XML or HTML.
     """
     with open(spec) as f:
-        scraper = json.loads(f.read())
-
-    rules = scraper.get(ruleset)
-    if rules is None:
-        raise ValueError('Rules not found: ' + ruleset)
-    _logger.debug('using rules [%s]', ruleset)
+        rules = json.loads(f.read())
 
     _logger.debug('scraping url [%s]', url)
     document = get_document(url)
@@ -598,12 +592,10 @@ def _get_parser(prog):
 
     def _scrape(arguments):
         content_format = 'html' if arguments.html else 'xml'
-        scrape_url(arguments.url, arguments.spec, arguments.rules,
-                   content_format=content_format)
+        scrape_url(arguments.url, arguments.spec, content_format=content_format)
 
     parser = ArgumentParser(prog=prog)
-    parser.add_argument('--debug', action='store_true',
-                        help='enable debug messages')
+    parser.add_argument('--debug', action='store_true', help='enable debug messages')
 
     commands = parser.add_subparsers(metavar='command', dest='command')
     commands.required = True
@@ -615,12 +607,8 @@ def _get_parser(prog):
     subparser = commands.add_parser('scrape', help='scrape a document')
     subparser.set_defaults(func=_scrape)
     subparser.add_argument('url', help='URL to scrape')
-    subparser.add_argument('-s', '--spec', required=True,
-                           help='spec file')
-    subparser.add_argument('-r', '--rules', required=True,
-                           help='selected rule set in spec')
-    subparser.add_argument('--html', action='store_true',
-                           help='document content is html')
+    subparser.add_argument('-s', '--spec', required=True, help='spec file')
+    subparser.add_argument('--html', action='store_true', help='document content is html')
 
     return parser
 
