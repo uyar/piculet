@@ -48,14 +48,3 @@ Installing Piculet through pip will create a script named ``piculet`` which can
 also be used to invoke the command-line interface::
 
    $ piculet scrape "https://en.wikipedia.org/wiki/John_Lennon" -s wikipedia.json -r person --html
-
-For a more complicated example, get the `imdb.json`_ specification and
-run the following command to get details about the movie `The Shining`_::
-
-   $ piculet scrape "http://akas.imdb.com/title/tt0081505/combined" -s imdb.json -r movie_combined --html
-
-.. _wikipedia.json: https://bitbucket.org/uyar/piculet/src/tip/examples/wikipedia.json
-.. _David Bowie: https://en.wikipedia.org/wiki/David_Bowie
-
-.. _imdb.json: https://bitbucket.org/uyar/piculet/src/tip/examples/imdb.json
-.. _The Shining: http://akas.imdb.com/title/tt0081505/combined
