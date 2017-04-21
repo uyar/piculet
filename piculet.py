@@ -147,12 +147,12 @@ class HTMLNormalizer(HTMLParser):
     """Tags to handle as self-closing."""
 
     def __init__(self, omit_tags=(), omit_attrs=()):
-        if PY34:
-            super().__init__(convert_charrefs=True)
-        elif PY3:
+        if not PY3:
+            HTMLParser.__init__(self)
+        elif not PY34:
             super().__init__()
         else:
-            HTMLParser.__init__(self)
+            super().__init__(convert_charrefs=True)
 
         self.omit_tags = set(omit_tags)    # sig: Set[str]
         self.omit_attrs = set(omit_attrs)  # sig: Set[str]
