@@ -325,7 +325,7 @@ reducers = SimpleNamespace(
 """Pre-defined reducers."""
 
 
-def woodpecker(path, reducer=None, reduce=None):
+def woodpecker(path, reduce=None, reducer=None):
     """A value extractor that combines an XPath query with a reducing function.
 
     This function returns a callable that takes an XML element as parameter and
@@ -336,12 +336,12 @@ def woodpecker(path, reducer=None, reduce=None):
     :sig:
         (
             str,
-            Optional[str],
-            Optional[Callable[[List[str]], str]]
+            Optional[Callable[[List[str]], str]],
+            Optional[str]
         ) -> Callable[[ElementTree.Element], Optional[str]]
     :param path: XPath query to select the values.
-    :param reducer: Name of reducer function.
     :param reduce: Function to reduce the selected elements to a single value.
+    :param reducer: Name of reducer function.
     :return: A callable that can apply this path and reducer to an element.
     """
     if reduce is None:
@@ -401,9 +401,10 @@ def extract(root, items, pre=()):
             return lambda _: val
         if 'path' in val:
             # xpath and reducer
-            if ('reducer' not in val) and ('reduce' not in val):
+            if ('reduce' not in val) and ('reducer' not in val):
                 raise ValueError('Path extractor must have reducer: ' + val['path'])
-            return woodpecker(val['path'], val.get('reducer'), val.get('reduce'))
+            return woodpecker(val['path'], reduce=val.get('reduce'),
+                              reducer=val.get('reducer'))
         if 'items' in val:
             # recursive function for applying subrules
             return partial(extract, items=val['items'], pre=val.get('pre', ()))
