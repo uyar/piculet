@@ -29,6 +29,7 @@ from collections import deque
 from functools import partial
 from hashlib import md5
 from operator import itemgetter
+from pkgutil import find_loader
 
 import json
 import logging
@@ -254,13 +255,12 @@ def html_to_xhtml(document, omit_tags=(), omit_attrs=()):
 # DATA EXTRACTION OPERATIONS
 ###########################################################
 
-try:
+_USE_LXML = find_loader('lxml') is not None
+if _USE_LXML:
     from lxml import etree as ElementTree
-    _USE_LXML = True
     _logger.debug('using lxml')
-except ImportError:
+else:
     from xml.etree import ElementTree
-    _USE_LXML = False
     _logger.debug('lxml not found, falling back to elementtree')
 
 
