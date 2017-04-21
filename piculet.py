@@ -255,6 +255,7 @@ def html_to_xhtml(document, omit_tags=(), omit_attrs=()):
 # DATA EXTRACTION OPERATIONS
 ###########################################################
 
+
 _USE_LXML = find_loader('lxml') is not None
 if _USE_LXML:
     from lxml import etree as ElementTree
@@ -571,7 +572,6 @@ def scrape_url(url, spec, content_format='xml'):
     """
     with open(spec) as f:
         rules = json.loads(f.read())
-
     _logger.debug('scraping url [%s]', url)
     document = get_document(url)
     data = scrape(document, rules, content_format=content_format)
@@ -600,9 +600,9 @@ def _get_parser(prog):
 
     subparser = commands.add_parser('scrape', help='scrape a document')
     subparser.set_defaults(func=_scrape)
-    subparser.add_argument('url', help='URL to scrape')
+    subparser.add_argument('url', help='URL of document to scrape')
     subparser.add_argument('-s', '--spec', required=True, help='spec file')
-    subparser.add_argument('--html', action='store_true', help='document content is html')
+    subparser.add_argument('--html', action='store_true', help='document is in HTML format')
 
     return parser
 
