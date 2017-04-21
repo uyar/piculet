@@ -501,11 +501,11 @@ def get_document(url):
         content = urlopen(url).read()
     else:
         _logger.debug('using cache dir [%s]', cache_dir)
-        if PY3:
-            os.makedirs(cache_dir, exist_ok=True)
-        else:
+        if not PY3:
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir)
+        else:
+            os.makedirs(cache_dir, exist_ok=True)
         key = md5(url.encode('utf-8')).hexdigest()
         cache_file = os.path.join(cache_dir, key)
         if not os.path.exists(cache_file):
@@ -625,8 +625,6 @@ def main(argv=None):
     # run the handler for the selected command
     try:
         arguments.func(arguments)
-    except UnicodeError:
-        raise
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(1)
