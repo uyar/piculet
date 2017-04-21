@@ -325,7 +325,11 @@ def woodpecker(path, reduce=None, reducer=None):
     This function returns a callable that takes an XML element as parameter and
     applies the XPath query to that element to get a list of strings; therefore
     the query has to end with ``text()`` or ``@attr``. The list will then be
-    passed to the reducer function to generate a single string as the result.
+    passed to the reducing function to generate a single string as the result.
+    
+    Either the ``reduce`` parameter must be supplied as a callable, or the ``reducer``
+    must be supplied as the name of a pre-defined reducer functions. If both are supplied,
+    the ``reduce`` parameter will be used.
 
     :sig:
         (
@@ -335,12 +339,12 @@ def woodpecker(path, reduce=None, reducer=None):
         ) -> Callable[[ElementTree.Element], Optional[str]]
     :param path: XPath query to select the values.
     :param reduce: Function to reduce the selected elements to a single value.
-    :param reducer: Name of reducer function.
+    :param reducer: Name of pre-defined reducer function.
     :return: A callable that can apply this path and reducer to an element.
     """
     if reduce is None:
         if reducer is None:
-            raise ValueError('A reducer function must be specified')
+            raise ValueError('A reducing function must be specified')
         try:
             reduce = getattr(reducers, reducer)
         except AttributeError:
