@@ -63,11 +63,6 @@ if not PY33:
         def __init__(self, **kwargs):
             self.__dict__.update(kwargs)
 
-        def __repr__(self):
-            keys = sorted(self.__dict__)
-            items = ("{}={!r}".format(k, self.__dict__[k]) for k in keys)
-            return "{}({})".format(type(self).__name__, ", ".join(items))
-
         def __eq__(self, other):
             return self.__dict__ == other.__dict__
 else:
@@ -78,14 +73,12 @@ if not PY34:
     from contextlib import contextmanager
 
     @contextmanager
-    def redirect_stdout(new_target):
-        # Taken from J.F. Sebastian's stackoverflow post on:
-        # https://stackoverflow.com/questions/4675728/redirect-stdout-to-a-file-in-python
-        old_target, sys.stdout = sys.stdout, new_target
+    def redirect_stdout(new_stdout):
+        old_stdout, sys.stdout = sys.stdout, new_stdout
         try:
-            yield new_target
+            yield new_stdout
         finally:
-            sys.stdout = old_target
+            sys.stdout = old_stdout
 else:
     from contextlib import redirect_stdout
 
