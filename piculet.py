@@ -307,7 +307,7 @@ def xpath_etree(element, path):
     return element.findall(path)
 
 
-xpath = ElementTree._Element.xpath if _USE_LXML else xpath_etree
+xpath = xpath_etree if not _USE_LXML else ElementTree._Element.xpath
 
 
 reducers = SimpleNamespace(
@@ -404,16 +404,10 @@ def extract(root, items, pre=()):
             return partial(extract, items=val['items'], pre=val.get('pre', ()))
         raise ValueError('Unknown value generator: ' + str(val))
 
-    def parent_getter():
-        if _USE_LXML:
-            return ElementTree._Element.getparent
-        else:
-            # ElementTree doesn't support parent queries, so build a map for it
-            # TODO: this re-traverses tree on subrules
-            parents = {e: p for p in root.iter() for e in p}
-            return parents.get
-
-    get_parent = parent_getter()
+    # ElementTree doesn't support parent queries, so build a map for it
+    # TODO: this re-traverses tree on subrules
+    get_parent = {e: p for p in root.iter() for e in p}.get if not _USE_LXML else \
+        ElementTree._Element.getparent
 
     # do the preprocessing operations
     for step in pre:
