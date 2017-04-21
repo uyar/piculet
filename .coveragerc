@@ -5,3 +5,5 @@ exclude_lines =
     if not PY33:
     if not PY34:
     if _USE_LXML:
+    def handle_entityref
+    def handle_charref
