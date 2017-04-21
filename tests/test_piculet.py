@@ -81,25 +81,36 @@ people_content = '<p><p1><n>John Smith</n><a>42</a></p1><p2><n>Jane Doe</n></p2>
 people_root = build_tree(people_content)
 
 
-def test_peck_reducer_first_should_return_first_element():
-    pecker = woodpecker(path='./p1/n/text()', reducer='first')
+def test_peck_no_reducer_should_raise_error():
+    with raises(ValueError):
+        woodpecker(path='.//n/text()')
+
+
+def test_peck_unknown_predefined_reducer_should_raise_error():
+    with raises(ValueError):
+        woodpecker(path='.//n/text()', reducer='merge')
+
+
+def test_peck_known_predefined_reducer_should_be_ok():
+    pecker = woodpecker(path='.//n/text()', reducer='first')
     data = pecker(people_root)
     assert data == 'John Smith'
 
 
-def test_peck_reducer_join_should_return_joined_text():
-    pecker = woodpecker(path='./p1//text()', reducer='join')
+def test_peck_callable_reducer_should_be_ok():
+    pecker = woodpecker(path='.//n/text()', reduce=lambda xs: xs[1])
     data = pecker(people_root)
-    assert data == 'John Smith42'
+    assert data == 'Jane Doe'
 
 
-def test_peck_unknown_reducer_should_raise_error():
-    with raises(ValueError):
-        woodpecker(path='./p1//text()', reducer='merge')
+def test_peck_callable_reducer_should_take_precedence():
+    pecker = woodpecker(path='.//n/text()', reducer='first', reduce=lambda xs: xs[1])
+    data = pecker(people_root)
+    assert data == 'Jane Doe'
 
 
 def test_peck_non_matching_path_should_return_none():
-    pecker = woodpecker(path='./p3/a/text()', reducer='first')
+    pecker = woodpecker(path='.//foo/text()', reducer='first')
     data = pecker(people_root)
     assert data is None
 
