@@ -16,7 +16,8 @@ You can install the latest version from PyPI::
 
 .. note::
 
-   If you want to try the development version, you can install it from
+   If you want to use the development version, which could have more features
+   but also be less stable, you can install it from
    the `Bitbucket repository`_::
 
       pip install hg+https://bitbucket.org/uyar/piculet
@@ -58,8 +59,8 @@ This should give you the following output::
      ]
    }
 
-In the same command, change the name part of the URL to ``Muhammad_Ali`` and
-you will get similar data for `Muhammad Ali`_. Note that since Wikipedia pages
+In the same command, change the name part of the URL to ``Merlene_Ottey`` and
+you will get similar data for `Merlene Ottey`_. Note that since Wikipedia pages
 are not well structured, the amount of data you get with this specification
 file will vary.
 
@@ -73,7 +74,7 @@ and therefore can be used as part of a pipe:
 .. _Bitbucket repository: https://bitbucket.org/uyar/piculet
 .. _wikipedia.json: https://bitbucket.org/uyar/piculet/src/tip/examples/wikipedia.json
 .. _David Bowie: https://en.wikipedia.org/wiki/David_Bowie
-.. _Muhammad Ali: https://en.wikipedia.org/wiki/Muhammad_Ali
+.. _Merlene Ottey: https://en.wikipedia.org/wiki/Merlene_Ottey
 
 .. [#rules]
 
