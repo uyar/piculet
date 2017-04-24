@@ -92,6 +92,12 @@ def test_peck_unknown_predefined_reducer_should_raise_error():
 
 
 def test_peck_known_predefined_reducer_should_be_ok():
+    pecker = woodpecker(path='.//n/text()', reduce=reducers.first)
+    data = pecker(people_root)
+    assert data == 'John Smith'
+
+
+def test_peck_known_predefined_reducer_by_name_should_be_ok():
     pecker = woodpecker(path='.//n/text()', reducer='first')
     data = pecker(people_root)
     assert data == 'John Smith'

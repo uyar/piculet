@@ -148,8 +148,8 @@ class HTMLNormalizer(HTMLParser):
         else:
             super().__init__(convert_charrefs=True)
 
-        self.omit_tags = set(omit_tags)    # sig: Set[str]
-        self.omit_attrs = set(omit_attrs)  # sig: Set[str]
+        self.omit_tags = set(omit_tags)     # sig: Set[str]
+        self.omit_attrs = set(omit_attrs)   # sig: Set[str]
 
         # stacks used during normalization
         self._open_tags = deque()
@@ -326,7 +326,7 @@ def woodpecker(path, reduce=None, reducer=None):
     applies the XPath query to that element to get a list of strings; therefore
     the query has to end with ``text()`` or ``@attr``. The list will then be
     passed to the reducing function to generate a single string as the result.
-    
+
     Either the ``reduce`` parameter must be supplied as a callable, or the ``reducer``
     must be supplied as the name of a pre-defined reducer functions. If both are supplied,
     the ``reduce`` parameter will be used.
@@ -466,14 +466,15 @@ def extract(root, items, pre=()):
             except AttributeError:
                 key_transform = None
             key = raw_key if key_transform is None else key_transform(raw_key)
+
             value_gen = gen(item['value'])
             foreach_value = item['value'].get('foreach')
             transform = item['value'].get('transform')
             if foreach_value is None:
-                value = value_gen(subroot)
-                if value:   # None from pecker, or {} from extract
+                raw_value = value_gen(subroot)
+                if raw_value:   # None from pecker, or {} from extract
                     # XXX: consider '', 0, and other non-truthy values
-                    data[key] = value if transform is None else transform(value)
+                    data[key] = raw_value if transform is None else transform(raw_value)
             else:
                 values = [value_gen(r) for r in xpath(subroot, foreach_value)]
                 if values:
