@@ -281,6 +281,62 @@ def test_extract_subitems_should_be_transformable():
                              'Shelley Duvall as Wendy Torrance']}
 
 
+def test_extract_generated_key_path_with_missing_reducer_should_raise_error():
+    items = [
+        {
+            "foreach": ".//div[@class='info']",
+            "key": {"path": "./h3/text()"},
+            "value": {"path": "./div//text()",
+                      "reduce": reducers.first}
+        }
+    ]
+    with raises(ValueError):
+        extract(shining, items)
+
+
+def test_extract_generated_key_path_and_reducer_should_be_ok():
+    items = [
+        {
+            "foreach": ".//div[@class='info']",
+            "key": {"path": "./h3/text()",
+                    "reduce": reducers.first},
+            "value": {"path": "./div//text()",
+                      "reduce": reducers.first}
+        }
+    ]
+    data = extract(shining, items)
+    assert data == {'Language:': 'English', 'Runtime:': '144 minutes'}
+
+
+def test_extract_generated_key_normalize_reducer_should_be_ok():
+    items = [
+        {
+            "foreach": ".//div[@class='info']",
+            "key": {"path": "./h3/text()",
+                    "reduce": reducers.normalize},
+            "value": {"path": "./div//text()",
+                      "reduce": reducers.first}
+        }
+    ]
+    data = extract(shining, items)
+    assert data == {'language': 'English', 'runtime': '144 minutes'}
+
+
+def test_extract_generated_key_should_be_transformable():
+    items = [
+        {
+            "foreach": ".//div[@class='info']",
+            "key": {"path": "./h3/text()",
+                    "reduce": reducers.normalize,
+                    "transform": lambda x: x.upper()},
+            "value": {"path": "./div//text()",
+                      "reduce": reducers.first}
+        }
+    ]
+    data = extract(shining, items)
+    assert data == {'LANGUAGE': 'English', 'RUNTIME': '144 minutes'}
+
+
 def test_extract_unknown_preprocessing_operation_should_raise_error():
     with raises(ValueError):
         extract(people_root, items=[], pre=[{'op': 'foo'}])
