@@ -166,17 +166,45 @@ be written as:
 This might be useful if you would like to keep the rule specification
 in an external file, such as a ``.json`` file.
 
+If both a "reduce" and a "reducer" key are given, the "reduce" callable
+will be used and the "reducer" key will be ignored.
+
 As explained above, if a path query doesn't match any element, the item
 gets automatically excluded. That means, Piculet doesn't try to apply
 the reducing function on the result of the path query if it's an empty list.
 Therefore, reducing functions can safely assume that the path result is
 a non-empty list.
 
-To create a list of values, a ``foreach`` key can be given to the value
-specifier. This is a path expression to select elements from the tree.
-The ``path`` and ``reducer`` will be applied as before to each selected
-element and the obtained values will be the members of the result list.
-[#subroots]_ For example, to get the genres of the movie, we can write:
+Transforming
+------------
+
+After the reduction operation, you can also apply a transformation
+to the resulting string. A transformation function must take a string
+as parameter and can return any value of any type. For example,
+to get the year of the movie as an integer:
+
+>>> items = [
+...     {
+...         "key": "year",
+...         "value": {
+...             "path": ".//span[@class='year']/text()",
+...             "reduce": reducers.first,
+...             "transform": int
+...         }
+...     }
+... ]
+>>> extract(root, items)
+{'year': 1980}
+
+Multi-valued Items
+------------------
+
+Data with multiple values can be created by using a ``foreach`` key
+in the value specifier. This is a path expression to select elements
+from the tree. [#multivalued]_ The path and reducing function will be applied
+as before to each selected element and the obtained values will be the members
+of the resulting list. For example, to get the genres of the movie,
+we can write:
 
 >>> items = [
 ...     {
@@ -184,12 +212,45 @@ element and the obtained values will be the members of the result list.
 ...         "value": {
 ...             "foreach": ".//ul[@class='genres']/li",
 ...             "path": "./text()",
-...             "reducer": "first"
+...             "reduce": reducers.first
 ...         }
 ...     }
 ... ]
 >>> extract(document, items)
 {'genres': ['Horror', 'Drama']}
+
+If the ``foreach`` key doesn't match any element the item will be excluded
+from the result:
+
+>>> items = [
+...     {
+...         "key": "foos",
+...         "value": {
+...             "foreach": ".//ul[@class='foos']/li",
+...             "path": "./text()",
+...             "reduce": reducers.first
+...         }
+...     }
+... ]
+>>> extract(document, items)
+{}
+
+If a transformation is specified, it will be applied to every element
+in the list:
+
+>>> items = [
+...     {
+...         "key": "genres",
+...         "value": {
+...             "foreach": ".//ul[@class='genres']/li",
+...             "path": "./text()",
+...             "reduce": reducers.first,
+...             "transform": lambda x: x.lower()
+...         }
+...     }
+... ]
+>>> extract(document, items)
+{'genres': ['horror', 'drama']}
 
 Subrules
 --------
@@ -321,7 +382,7 @@ that there is only one element that matches the ``foreach`` path of the key.
 
       lambda xs: ''.join(xs)
 
-.. [#subroots]
+.. [#multivalued]
 
-   This means that the ``foreach`` query has to select elements, therefore
-   **not** end in ``text()`` or ``@attr``.
+   This implies that the ``foreach`` query should **not** end in ``text()``
+   or ``@attr``.
