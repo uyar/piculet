@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from pytest import raises
 
+import os
+
 from piculet import build_tree, extract, reducers, woodpecker, xpath
 
 
@@ -15,22 +17,22 @@ generic_root = build_tree(generic_content)
 
 
 def test_xpath_non_text_queries_should_return_nodes():
-    selected = xpath(generic_root, './/t1')
+    selected = xpath(generic_root, ".//t1")
     assert [s.tag for s in selected] == ['t1', 't1']
 
 
 def test_xpath_child_text_queries_should_return_strings():
-    selected = xpath(generic_root, './/t1/text()')
+    selected = xpath(generic_root, ".//t1/text()")
     assert selected == ['foo']
 
 
 def test_xpath_descendant_text_queries_should_return_strings():
-    selected = xpath(generic_root, './/t1//text()')
+    selected = xpath(generic_root, ".//t1//text()")
     assert selected == ['foo', 'bar']
 
 
 def test_xpath_attr_queries_should_return_strings():
-    selected = xpath(generic_root, './/t1/@a')
+    selected = xpath(generic_root, ".//t1/@a")
     assert selected == ['v']
 
 
@@ -83,40 +85,40 @@ people_root = build_tree(people_content)
 
 def test_peck_no_reducer_should_raise_error():
     with raises(ValueError):
-        woodpecker(path='.//n/text()')
+        woodpecker(path=".//n/text()")
 
 
 def test_peck_unknown_predefined_reducer_should_raise_error():
     with raises(ValueError):
-        woodpecker(path='.//n/text()', reducer='merge')
+        woodpecker(path=".//n/text()", reducer="merge")
 
 
 def test_peck_known_predefined_reducer_should_be_ok():
-    pecker = woodpecker(path='.//n/text()', reduce=reducers.first)
+    pecker = woodpecker(path=".//n/text()", reduce=reducers.first)
     data = pecker(people_root)
     assert data == 'John Smith'
 
 
 def test_peck_known_predefined_reducer_by_name_should_be_ok():
-    pecker = woodpecker(path='.//n/text()', reducer='first')
+    pecker = woodpecker(path=".//n/text()", reducer="first")
     data = pecker(people_root)
     assert data == 'John Smith'
 
 
 def test_peck_callable_reducer_should_be_ok():
-    pecker = woodpecker(path='.//n/text()', reduce=lambda xs: xs[1])
+    pecker = woodpecker(path=".//n/text()", reduce=lambda xs: xs[1])
     data = pecker(people_root)
     assert data == 'Jane Doe'
 
 
 def test_peck_callable_reducer_should_take_precedence():
-    pecker = woodpecker(path='.//n/text()', reducer='first', reduce=lambda xs: xs[1])
+    pecker = woodpecker(path=".//n/text()", reducer="first", reduce=lambda xs: xs[1])
     data = pecker(people_root)
     assert data == 'Jane Doe'
 
 
 def test_peck_non_matching_path_should_return_none():
-    pecker = woodpecker(path='.//foo/text()', reducer='first')
+    pecker = woodpecker(path=".//foo/text()", reducer="first")
     data = pecker(people_root)
     assert data is None
 
@@ -126,51 +128,74 @@ def test_peck_non_matching_path_should_return_none():
 ########################################
 
 
+shining_file = os.path.join(os.path.dirname(__file__), 'shining.html')
+shining = build_tree(open(shining_file).read())
+
+
 def test_extract_no_rules_should_return_empty_result():
-    data = extract(people_root, items=[])
+    data = extract(shining, items=[])
     assert data == {}
 
 
 def test_extract_unknown_value_generator_should_raise_error():
-    rules = [{'key': 'name', 'value': {'foo': './p2/n/text()'}}]
+    items = [{"key": "title", "value": {"foo": ".//title/text()"}}]
     with raises(ValueError):
-        extract(people_root, rules)
+        extract(shining, items)
 
 
 def test_extract_path_value_generator_with_missing_reducer_should_raise_error():
-    rules = [{'key': 'name', 'value': {'path': './p2/n/text()'}}]
+    items = [{"key": "title", "value": {"path": ".//title/text()"}}]
     with raises(ValueError):
-        extract(people_root, rules)
+        extract(shining, items)
 
 
-def test_extract_first_reducer_should_return_first_selected():
-    rules = [{'key': 'name', 'value': {'path': './p2/n/text()', 'reducer': 'first'}}]
-    data = extract(people_root, rules)
-    assert data == {'name': 'Jane Doe'}
+def test_extract_reducer_by_lambda_should_be_ok():
+    items = [{"key": "title", "value": {"path": ".//title/text()", "reduce": lambda xs: xs[0]}}]
+    data = extract(shining, items)
+    assert data == {'title': 'The Shining'}
 
 
-def test_extract_join_reducer_should_join_selected():
-    rules = [{'key': 'all', 'value': {'path': './p1//text()', 'reducer': 'join'}}]
-    data = extract(people_root, rules)
-    assert data == {'all': 'John Smith42'}
+def test_extract_predefined_reducer_should_be_ok():
+    items = [{"key": "title", "value": {"path": ".//title/text()", "reduce": reducers.first}}]
+    data = extract(shining, items)
+    assert data == {'title': 'The Shining'}
+
+
+def test_extract_predefined_reducer_by_name_first_should_be_ok():
+    items = [{"key": "title", "value": {"path": ".//title/text()", "reducer": "first"}}]
+    data = extract(shining, items)
+    assert data == {'title': 'The Shining'}
+
+
+def test_extract_predefined_reducer_by_name_join_should_be_ok():
+    items = [{"key": "full_title", "value": {"path": ".//h1//text()", "reducer": "join"}}]
+    data = extract(shining, items)
+    assert data == {'full_title': 'The Shining (1980)'}
+
+
+def test_extract_predefined_reducer_by_name_clean_should_be_ok():
+    items = [{"key": "review",
+              "value": {"path": ".//div[@class='review']//text()", "reducer": "clean"}}]
+    data = extract(shining, items)
+    assert data == {'review': 'Fantastic movie. Definitely recommended.'}
 
 
 def test_extract_multiple_rules_should_generate_multiple_items():
-    rules = [
-        {'key': 'name', 'value': {'path': './p2/n/text()', 'reducer': 'first'}},
-        {'key': 'age', 'value': {'path': './p1/a/text()', 'reducer': 'first'}}
-    ]
-    data = extract(people_root, rules)
-    assert data == {'name': 'Jane Doe', 'age': '42'}
+    items = [{"key": "title",
+              "value": {"path": ".//title/text()", "reduce": reducers.first}},
+             {"key": "year",
+              "value": {"path": ".//span[@class='year']/text()", "reduce": reducers.first}}]
+    data = extract(shining, items)
+    assert data == {'title': 'The Shining', 'year': '1980'}
 
 
 def test_extract_items_with_no_data_should_be_excluded():
-    rules = [
-        {'key': 'name', 'value': {'path': './/n/text()', 'reducer': 'first'}},
-        {'key': 'age', 'value': {'path': './/a/text()', 'reducer': 'first'}}
-    ]
-    data = extract(people_root, rules, pre=[{'op': 'root', 'path': './p2'}])
-    assert data == {'name': 'Jane Doe'}
+    items = [{"key": "title",
+              "value": {"path": ".//title/text()", "reduce": reducers.first}},
+             {"key": "foo",
+              "value": {"path": ".//foo/text()", "reduce": reducers.first}}]
+    data = extract(shining, items)
+    assert data == {'title': 'The Shining'}
 
 
 def test_extract_unknown_preprocessing_operation_should_raise_error():

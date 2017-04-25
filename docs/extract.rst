@@ -4,7 +4,8 @@ Data Extraction
 ===============
 
 This section explains how to write the rules for extracting data
-out of a document. We'll use the following document in our examples:
+out of a document. We'll scrape the following fictional HTML page for the movie
+"The Shining" in our examples:
 
 .. literalinclude:: ../tests/shining.html
    :language: html
@@ -16,7 +17,7 @@ Assuming this file is saved as :file:`shining.html`, let's get its content:
    >>> document = open('shining.html').read()
 
 Although applications will mostly use the higher-level ``scrape`` function,
-it is the ``extract`` function that handles the data extraction. So we'll
+it's the ``extract`` function that handles the data extraction. So we'll
 start by explaining how that works. First, let's import the functions we will
 use:
 
@@ -42,8 +43,9 @@ into a single string. [#reducing]_
 
    Piculet uses the `ElementTree`_ module for building and querying
    XML trees. Therefore, the XPath queries are limited by
-   `what ElementTree supports`_. However, Piculet will make use of
-   the `lxml`_ package if it is installed and in that case,
+   `what ElementTree supports`_ (plus the ``text()`` and ``@attr``
+   clauses which are added by Piculet). However, Piculet will make use of
+   the `lxml`_ package if it's installed and in that case,
    a `much wider range of XPath constructs`_ can be used.
 
 .. _ElementTree: https://docs.python.org/3/library/xml.etree.elementtree.html
@@ -51,8 +53,8 @@ into a single string. [#reducing]_
 .. _lxml: http://lxml.de/
 .. _much wider range of XPath constructs: http://lxml.de/xpathxslt.html#xpath
 
-For example, to extract the title and year out of the example document, we can
-write the following specification:
+For example, to extract the title and year of the movie from the document,
+we can write the following specification:
 
 >>> items = [
 ...     {
@@ -70,12 +72,34 @@ write the following specification:
 ...         }
 ...     }
 ... ]
->>> extract(document, items)
+>>> extract(root, items)
 {'title': 'The Shining', 'year': '1980'}
 
 For the ``title`` item the ``.//title/text()`` path generates the list
 ``['The Shining']`` and the reducing function ``lambda xs: xs[0]`` selects
 the first element from that list.
+
+If a path doesn't match any element in the tree, the item will be excluded
+from the output and no error will be issued. Note that in the following
+example, the "foo" key doesn't get included:
+
+>>> items = [
+...     {
+...         "key": "title",
+...         "value": {
+...             "path": ".//title/text()",
+...             "reduce": reducers.first
+...          }
+...     },
+...     {
+...         "key": "foo",
+...         "value": {
+...             "path": ".//foo/text()",
+...             "reduce": reducers.first
+...         }
+...     }
+... ]
+{'title': 'The Shining'}
 
 Reducing
 --------
@@ -85,7 +109,8 @@ through the ``reducers`` attribute::
 
 >>> from piculet import reducers
 
-The reducing function that returns the first element of a list can be used as:
+The reducing function that returns the first element of a list
+-as used in the examples above- is one of the predefined reducers:
 
 .. code-block:: python
 
@@ -124,8 +149,28 @@ whitespace and replace multiple whitespace characters with a single space:
 ... ]
 {'review': 'Fantastic movie. Definitely recommended.'}
 
-In this example, the ``join`` reducer would have produced
+In this example, the ``join`` reducer would have produced the value
 ``'\n            Fantastic movie.\n            Definitely recommended.\n        '``
+
+The predefined reducers can also be accessed by name using the "reducer"
+key instead of "reduce" in the specification. So the title rule can also
+be written as:
+
+.. code-block:: python
+
+   {
+       "path": ".//title/text()",
+       "reducer": "first"
+   }
+
+This might be useful if you would like to keep the rule specification
+in an external file, such as a ``.json`` file.
+
+As explained above, if a path query doesn't match any element, the item
+gets automatically excluded. That means, Piculet doesn't try to apply
+the reducing function on the result of the path query if it's an empty list.
+Therefore, reducing functions can safely assume that the path result is
+a non-empty list.
 
 To create a list of values, a ``foreach`` key can be given to the value
 specifier. This is a path expression to select elements from the tree.
