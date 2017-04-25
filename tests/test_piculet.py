@@ -225,6 +225,62 @@ def test_extract_multivalued_item_empty_should_be_excluded():
     assert data == {}
 
 
+def test_extract_subrules_should_generate_submappings():
+    items = [{"key": "director",
+              "value": {
+                  "items": [{"key": "name",
+                             "value": {"path": ".//div[@class='director']//a/text()",
+                                       "reduce": reducers.first}},
+                            {"key": "link",
+                             "value": {"path": ".//div[@class='director']//a/@href",
+                                       "reduce": reducers.first}}]
+              }}]
+    data = extract(shining, items)
+    assert data == {'director': {'link': '/people/1', 'name': 'Stanley Kubrick'}}
+
+
+def test_extract_multivalued_subrules_should_be_allowed():
+    items = [{"key": "cast",
+              "value": {
+                  "foreach": ".//table[@class='cast']/tr",
+                  "items": [
+                      {"key": "name",
+                       "value": {"path": "./td[1]/a/text()",
+                                 "reduce": reducers.first}},
+                      {"key": "link",
+                       "value": {"path": "./td[1]/a/@href",
+                                 "reduce": reducers.first}},
+                      {"key": "character",
+                       "value": {"path": "./td[2]/text()",
+                                 "reduce": reducers.first}}
+                  ]
+              }}]
+    data = extract(shining, items)
+    assert data == {'cast': [
+        {'character': 'Jack Torrance', 'link': '/people/2', 'name': 'Jack Nicholson'},
+        {'character': 'Wendy Torrance', 'link': '/people/3', 'name': 'Shelley Duvall'}
+    ]}
+
+
+def test_extract_subitems_should_be_transformable():
+    items = [{"key": "cast",
+              "value": {
+                  "foreach": ".//table[@class='cast']/tr",
+                  "items": [
+                      {"key": "name",
+                       "value": {"path": "./td[1]/a/text()",
+                                 "reduce": reducers.first}},
+                      {"key": "character",
+                       "value": {"path": "./td[2]/text()",
+                                 "reduce": reducers.first}}
+                  ],
+                  "transform": lambda x: x.get('name') + ' as ' + x.get('character')
+              }}]
+    data = extract(shining, items)
+    assert data == {'cast': ['Jack Nicholson as Jack Torrance',
+                             'Shelley Duvall as Wendy Torrance']}
+
+
 def test_extract_unknown_preprocessing_operation_should_raise_error():
     with raises(ValueError):
         extract(people_root, items=[], pre=[{'op': 'foo'}])
