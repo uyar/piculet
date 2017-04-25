@@ -198,6 +198,33 @@ def test_extract_items_with_no_data_should_be_excluded():
     assert data == {'title': 'The Shining'}
 
 
+def test_extract_transforming_should_be_applied_after_reducing():
+    items = [{"key": "year",
+              "value": {"path": ".//span[@class='year']/text()",
+                        "reduce": reducers.first,
+                        "transform": int}}]
+    data = extract(shining, items)
+    assert data == {'year': 1980}
+
+
+def test_extract_multivalued_item_should_be_list():
+    items = [{"key": "genres",
+              "value": {"foreach": ".//ul[@class='genres']/li",
+                        "path": "./text()",
+                        "reduce": reducers.first}}]
+    data = extract(shining, items)
+    assert data == {'genres': ['Horror', 'Drama']}
+
+
+def test_extract_multivalued_item_empty_should_be_excluded():
+    items = [{"key": "foos",
+              "value": {"foreach": ".//ul[@class='foos']/li",
+                        "path": "./text()",
+                        "reduce": reducers.first}}]
+    data = extract(shining, items)
+    assert data == {}
+
+
 def test_extract_unknown_preprocessing_operation_should_raise_error():
     with raises(ValueError):
         extract(people_root, items=[], pre=[{'op': 'foo'}])
