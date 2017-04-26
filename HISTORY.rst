@@ -3,7 +3,7 @@
 History
 =======
 
-1.0a3 (unreleased)
+1.0b1 (unreleased)
 ------------------
 
 * Added optional value transformations.
