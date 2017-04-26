@@ -128,7 +128,7 @@ def test_peck_non_matching_path_should_return_none():
 ########################################
 
 
-shining_file = os.path.join(os.path.dirname(__file__), 'shining.html')
+shining_file = os.path.join(os.path.dirname(__file__), '..', 'examples', 'shining.html')
 shining = build_tree(open(shining_file).read())
 
 
