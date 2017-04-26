@@ -45,7 +45,7 @@ and run the following command::
 
    piculet scrape -s wikipedia.json --html "https://en.wikipedia.org/wiki/David_Bowie"
 
-This should give you the following output::
+This should print the following output::
 
    {
      "birthplace": "Brixton, London, England",
