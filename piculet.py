@@ -561,18 +561,23 @@ def h2x(source):
     print(html_to_xhtml(content), end='')
 
 
-def scrape_url(url, spec, content_format='xml'):
+def scrape_document(address, spec, content_format='xml'):
     """Scrape data from a URL and print.
 
     :sig: (str, str, Optional[str]) -> None
-    :param url: URL of document to scrape.
+    :param address: File path or URL of document to scrape.
     :param spec: Path of spec file.
     :param content_format: Whether the content is XML or HTML.
     """
     with open(spec) as f:
         rules = json.loads(f.read())
-    _logger.debug('scraping url [%s]', url)
-    document = get_document(url)
+    if address.startswith(('http://', 'https://')):
+        _logger.debug('scraping url [%s]', address)
+        document = get_document(address)
+    else:
+        _logger.debug('scraping file [%s]', address)
+        with open(address, 'rb') as f:
+            document = decode_html(f.read())
     data = scrape(document, rules, content_format=content_format)
     print(json.dumps(data, indent=2, sort_keys=True))
 
@@ -585,7 +590,7 @@ def _get_parser(prog):
 
     def _scrape(arguments):
         content_format = 'html' if arguments.html else 'xml'
-        scrape_url(arguments.url, arguments.spec, content_format=content_format)
+        scrape_document(arguments.document, arguments.spec, content_format=content_format)
 
     parser = ArgumentParser(prog=prog)
     parser.add_argument('--debug', action='store_true', help='enable debug messages')
@@ -599,7 +604,7 @@ def _get_parser(prog):
 
     subparser = commands.add_parser('scrape', help='scrape a document')
     subparser.set_defaults(func=_scrape)
-    subparser.add_argument('url', help='URL of document to scrape')
+    subparser.add_argument('document', help='file path or URL of document to scrape')
     subparser.add_argument('-s', '--spec', required=True, help='spec file')
     subparser.add_argument('--html', action='store_true', help='document is in HTML format')
 

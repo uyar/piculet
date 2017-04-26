@@ -98,7 +98,7 @@ def test_scrape_no_url_should_print_usage_and_exit(capsys):
         piculet.main(argv=['piculet', 'scrape', '-s', wikipedia_spec])
     out, err = capsys.readouterr()
     assert err.startswith('usage: ')
-    assert ('required: url' in err) or ('too few arguments' in err)
+    assert ('required: document' in err) or ('too few arguments' in err)
 
 
 def test_scrape_no_spec_should_print_usage_and_exit(capsys):
@@ -114,6 +114,16 @@ def test_scrape_missing_spec_file_should_fail_and_exit(capsys):
         piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', 'foo.json'])
     out, err = capsys.readouterr()
     assert 'No such file or directory: ' in err
+
+
+def test_scrape_local_should_scrape_given_file(capsys):
+    dirname = os.path.join(os.path.dirname(__file__), '..', 'examples')
+    shining = os.path.join(dirname, 'shining.html')
+    spec = os.path.join(dirname, 'movie.json')
+    piculet.main(argv=['piculet', 'scrape', shining, '-s', spec])
+    out, err = capsys.readouterr()
+    data = json.loads(out)
+    assert data['title'] == 'The Shining'
 
 
 def test_scrape_should_scrape_given_url(capsys):

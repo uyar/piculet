@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+        "key": "title",
+        "value": {
+          "path": ".//title/text()",
+          "reducer": "first"
+        }
+    }
+  ]
+}
