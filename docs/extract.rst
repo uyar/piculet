@@ -477,6 +477,13 @@ calling the :func:`extract <piculet.extract>` function with the rule items:
 ... ]
 >>> extract(root, items)
 
+If the document needs to be converted from HTML to XML, you can use
+the :func:`html_to_xhtml <piculet.html_to_xhtml>` function:
+
+>>> from piculet import html_to_xhtml
+>>> converted = html_to_xhtml(document)
+>>> root = build_tree(converted)
+
 .. [#xhtml]
 
    Note that the example document is well-formed XML.
