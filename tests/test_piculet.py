@@ -133,7 +133,7 @@ shining = build_tree(open(shining_file).read())
 
 
 def test_extract_no_rules_should_return_empty_result():
-    data = extract(shining, items=[])
+    data = extract(shining, [])
     assert data == {}
 
 
@@ -286,7 +286,7 @@ def test_extract_generated_key_path_with_missing_reducer_should_raise_error():
         {
             "foreach": ".//div[@class='info']",
             "key": {"path": "./h3/text()"},
-            "value": {"path": "./div//text()",
+            "value": {"path": "./p/text()",
                       "reduce": reducers.first}
         }
     ]
@@ -300,7 +300,7 @@ def test_extract_generated_key_path_and_reducer_should_be_ok():
             "foreach": ".//div[@class='info']",
             "key": {"path": "./h3/text()",
                     "reduce": reducers.first},
-            "value": {"path": "./div//text()",
+            "value": {"path": "./p/text()",
                       "reduce": reducers.first}
         }
     ]
@@ -314,7 +314,7 @@ def test_extract_generated_key_normalize_reducer_should_be_ok():
             "foreach": ".//div[@class='info']",
             "key": {"path": "./h3/text()",
                     "reduce": reducers.normalize},
-            "value": {"path": "./div//text()",
+            "value": {"path": "./p/text()",
                       "reduce": reducers.first}
         }
     ]
@@ -329,7 +329,7 @@ def test_extract_generated_key_should_be_transformable():
             "key": {"path": "./h3/text()",
                     "reduce": reducers.normalize,
                     "transform": lambda x: x.upper()},
-            "value": {"path": "./div//text()",
+            "value": {"path": "./p/text()",
                       "reduce": reducers.first}
         }
     ]
@@ -337,26 +337,26 @@ def test_extract_generated_key_should_be_transformable():
     assert data == {'LANGUAGE': 'English', 'RUNTIME': '144 minutes'}
 
 
-def test_extract_unknown_preprocessing_operation_should_raise_error():
+def test_extract_preprocess_unknown_operation_should_raise_error():
     with raises(ValueError):
-        extract(people_root, items=[], pre=[{'op': 'foo'}])
+        extract(shining, [], pre=[{'op': 'foo'}])
 
 
-def test_extract_subroot_multiple_should_raise_error():
+def test_extract_preprocess_subroot_multiple_should_raise_error():
     with raises(ValueError):
-        extract(people_root, items=[], pre=[{'op': 'root', 'path': './/n'}])
+        extract(shining, [], pre=[{'op': 'root', 'path': './/div'}])
 
 
-def test_extract_subroot_none_should_return_empty_result():
-    rules = [{'key': 'name', 'value': {'path': './p2/n/text()', 'reducer': 'first'}}]
-    data = extract(people_root, rules, pre=[{'op': 'root', 'path': './/foo'}])
+def test_extract_preprocess_subroot_none_should_return_empty_result():
+    items = [{"key": "title", "value": {"path": ".//title/text()", "reduce": reducers.first}}]
+    data = extract(shining, items, pre=[{'op': 'root', 'path': './/foo'}])
     assert data == {}
 
 
-def test_extract_subroot_should_exclude_unselected_parts():
-    rules = [
+def test_extract_preprocess_subroot_should_exclude_unselected_parts():
+    items = [
         {'key': 'name', 'value': {'path': './/n/text()', 'reducer': 'first'}},
         {'key': 'age', 'value': {'path': './/a/text()', 'reducer': 'first'}}
     ]
-    data = extract(people_root, rules, pre=[{'op': 'root', 'path': './p1'}])
+    data = extract(people_root, items, pre=[{'op': 'root', 'path': './p1'}])
     assert data == {'name': 'John Smith', 'age': '42'}

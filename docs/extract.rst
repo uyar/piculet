@@ -419,7 +419,7 @@ to the selected section element:
 ...                 "reduce": reducers.first
 ...             },
 ...             "value": {
-...                 "path": "./div//text()",
+...                 "path": "./p/text()",
 ...                 "reduce": reducers.first
 ...             }
 ...         }
@@ -441,7 +441,7 @@ non-alphanumeric characters:
 ...                 "reduce": reducers.normalize
 ...             },
 ...             "value": {
-...                 "path": "./div//text()",
+...                 "path": "./p/text()",
 ...                 "reduce": reducers.first
 ...             }
 ...         }
