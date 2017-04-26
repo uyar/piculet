@@ -1,4 +1,4 @@
-Piculet is a package for extracting data from XML documents using XPath
+Piculet is a utility for extracting data from XML documents using XPath
 queries. It can also scrape web pages by first converting the HTML source
 into XHTML. Piculet consists of a `single source file`_ with no dependencies
 other than the standard library, which makes it very easy to integrate
