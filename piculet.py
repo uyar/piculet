@@ -128,7 +128,7 @@ def decode_html(content, charset=None, fallback_charset='utf-8'):
 
 
 class HTMLNormalizer(HTMLParser):
-    """HTML cleaner and XHTML converter.
+    """HTML cleaner and XHTML convertor.
 
     DOCTYPE declarations and comments are removed.
 
@@ -316,7 +316,7 @@ reducers = SimpleNamespace(
     clean=lambda xs: re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
     normalize=lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
 )
-"""Pre-defined reducers."""
+"""Predefined reducers."""
 
 
 def woodpecker(path, reduce=None, reducer=None):
@@ -324,12 +324,12 @@ def woodpecker(path, reduce=None, reducer=None):
 
     This function returns a callable that takes an XML element as parameter and
     applies the XPath query to that element to get a list of strings; therefore
-    the query has to end with ``text()`` or ``@attr``. The list will then be
-    passed to the reducing function to generate a single string as the result.
+    the query has to end with ``text()`` or ``@attr``. The list will then be passed
+    to the reducing function to generate a single string as the result.
 
-    Either the ``reduce`` parameter must be supplied as a callable, or the ``reducer``
-    must be supplied as the name of a pre-defined reducer functions. If both are supplied,
-    the ``reduce`` parameter will be used.
+    Either the ``reduce`` parameter must be supplied as a callable,
+    or the ``reducer`` must be supplied as the name of a predefined reducer function.
+    If both are supplied, the ``reduce`` parameter will be used.
 
     :sig:
         (
@@ -339,7 +339,7 @@ def woodpecker(path, reduce=None, reducer=None):
         ) -> Callable[[ElementTree.Element], Optional[str]]
     :param path: XPath query to select the values.
     :param reduce: Function to reduce the selected elements to a single value.
-    :param reducer: Name of pre-defined reducer function.
+    :param reducer: Name of predefined reducer function.
     :return: A callable that can apply this path and reducer to an element.
     """
     if reduce is None:
@@ -372,7 +372,7 @@ def woodpecker(path, reduce=None, reducer=None):
 def extract(root, items, pre=()):
     """Extract data from an XML tree.
 
-    This will convert extract the data items according to the supplied rules.
+    This will extract the data items according to the supplied rules.
     If given, it will use the ``pre`` parameter to carry out preprocessing
     operations on the tree before starting data extraction.
 
@@ -391,8 +391,8 @@ def extract(root, items, pre=()):
     def gen(val):
         """Value generator function.
 
-        It takes a value generator description and returns a callable that
-        takes an XML element and returns a value.
+        It takes a value generator description and returns a callable
+        that takes an XML element and returns a value.
         """
         if isinstance(val, str):
             # constant function
@@ -485,9 +485,9 @@ def extract(root, items, pre=()):
 def get_document(url):
     """Get the document with the given URL.
 
-    This function will check whether the requested document has already been
-    retrieved and return the cached content if possible. Note that
-    cached documents are assumed to be up-to-date.
+    This function will check whether the requested document has already been retrieved
+    and return the cached content if possible. Note that cached documents are assumed
+    to be up-to-date.
 
     :sig: (str) -> str
     :param url: URL to get the document from.

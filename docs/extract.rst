@@ -4,7 +4,7 @@ Data Extraction
 ===============
 
 This section explains how to write the rules for extracting data
-out of a document. We'll scrape the following fictional HTML page for the movie
+out of a document. We'll scrape the following HTML markup for the movie
 "The Shining" in our examples:
 
 .. literalinclude:: ../tests/shining.html
@@ -17,9 +17,9 @@ Assuming this file is saved as :file:`shining.html`, let's get its content:
    >>> document = open('shining.html').read()
 
 Although applications will mostly use the higher-level ``scrape`` function,
-it's the ``extract`` function that handles the data extraction. So we'll
-start by explaining how that works. First, let's import the functions we will
-use:
+it's the ``extract`` function that handles data extraction. So we'll start
+by explaining how that works. First, let's import the functions
+we're going to use:
 
 >>> from piculet import build_tree, extract
 
@@ -45,7 +45,7 @@ into a single string. [#reducing]_
    XML trees. Therefore, the XPath queries are limited by
    `what ElementTree supports`_ (plus the ``text()`` and ``@attr``
    clauses which are added by Piculet). However, Piculet will make use of
-   the `lxml`_ package if it's installed and in that case,
+   the `lxml`_ package if it's installed, and in that case,
    a `much wider range of XPath constructs`_ can be used.
 
 .. _ElementTree: https://docs.python.org/3/library/xml.etree.elementtree.html
@@ -75,7 +75,7 @@ we can write the following specification:
 >>> extract(root, items)
 {'title': 'The Shining', 'year': '1980'}
 
-For the ``title`` item the ``.//title/text()`` path generates the list
+For the ``title`` item, the ``.//title/text()`` path generates the list
 ``['The Shining']`` and the reducing function ``lambda xs: xs[0]`` selects
 the first element from that list.
 
@@ -88,14 +88,14 @@ example, the "foo" key doesn't get included:
 ...         "key": "title",
 ...         "value": {
 ...             "path": ".//title/text()",
-...             "reduce": reducers.first
+...             "reduce": lambda xs: xs[0]
 ...          }
 ...     },
 ...     {
 ...         "key": "foo",
 ...         "value": {
 ...             "path": ".//foo/text()",
-...             "reduce": reducers.first
+...             "reduce": lambda xs: xs[0]
 ...         }
 ...     }
 ... ]
@@ -120,7 +120,7 @@ The reducing function that returns the first element of a list
    }
 
 Other common predefined reducing operations are joining and cleaning.
-The ``join`` reducer joins all selected strings into one: [#join]_
+The ``join`` reducer joins all selected strings into one:
 
 >>> items = [
 ...     {
@@ -134,9 +134,9 @@ The ``join`` reducer joins all selected strings into one: [#join]_
 >>> extract(document, items)
 {'full_title': 'The Shining (1980)'}
 
-If you want to get rid of the extra whitespace, you can use the ``clean``
-reducer. After joining the strings, this will remove leading and trailing
-whitespace and replace multiple whitespace characters with a single space:
+If you want to get rid of extra whitespace, you can use the ``clean`` reducer.
+After joining the strings, this will remove leading and trailing whitespace
+and replace multiple whitespace with a single space:
 
 >>> items = [
 ...     {
@@ -164,10 +164,9 @@ be written as:
    }
 
 This might be useful if you would like to keep the rule specification
-in an external file, such as a ``.json`` file.
-
-If both a "reduce" and a "reducer" key are given, the "reduce" callable
-will be used and the "reducer" key will be ignored.
+in an external text file, such as a ``.json`` file. If both a "reduce"
+and a "reducer" key are given, the "reduce" callable will be used
+and the "reducer" key will be ignored.
 
 As explained above, if a path query doesn't match any element, the item
 gets automatically excluded. That means, Piculet doesn't try to apply
@@ -411,26 +410,19 @@ non-alphanumeric characters:
 
 You could also give a string instead of a path and reducer for the key.
 In this case, the elements would still be traversed; only the last one would
-set the final value for the item. This could make sense if you are sure
+set the final value for the item. This could be OK if you are sure
 that there is only one element that matches the ``foreach`` path of the key.
 
 .. [#xhtml]
 
-   Note that our example document is well-formed XML.
+   Note that the example document is well-formed XML. If it weren't,
+   this operation would fail.
 
 .. [#reducing]
 
    This means that the query has to end with either ``text()`` or some
    attribute value as in ``@attr``. And the reducing function should be
    implemented so that it takes a list of strings and returns a string.
-
-.. [#join]
-
-   It's equivalent to:
-
-   .. code-block:: python
-
-      lambda xs: ''.join(xs)
 
 .. [#multivalued]
 
