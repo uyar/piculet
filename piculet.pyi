@@ -39,8 +39,8 @@ def xpath_etree(
 
 def woodpecker(
         path: str,
-        reducer: Optional[str] = ...,
-        reduce: Optional[Callable[[List[str]], str]] = ...
+        reduce: Optional[Callable[[List[str]], str]] = ...,
+        reducer: Optional[str] = ...
 ) -> Callable[[ElementTree.Element], Optional[str]]: ...
 
 def extract(
@@ -59,8 +59,8 @@ def scrape(
 
 def h2x(source: str) -> None: ...
 
-def scrape_url(
-        url: str,
+def scrape_document(
+        address: str,
         spec: str,
         content_format: Optional[str] = ...
 ) -> None: ...

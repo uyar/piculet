@@ -31,12 +31,13 @@ to invoke the command-line interface::
    $ piculet -h
    usage: piculet [-h] [--debug] command ...
 
-The ``scrape`` command downloads a document from a URL and extracts data
-out of it as described by a specification file::
+The ``scrape`` command extracts data out of a document as described by
+a specification file::
 
    $ piculet scrape -h
-   usage: piculet scrape [-h] -s SPEC [--html] url
+   usage: piculet scrape [-h] -s SPEC [--html] document
 
+The location of the document can be given as a file path or a URL.
 If the document is in HTML format, the ``--html`` option has to be used.
 The specification file is in JSON format and contains the rules that define
 how to extract the data. For example, to extract some data
