@@ -3,7 +3,7 @@
 History
 =======
 
-1.0b1 (unreleased)
+1.0b1 (2017-04-26)
 ------------------
 
 * Added optional value transformations.
