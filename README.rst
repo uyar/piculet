@@ -6,7 +6,7 @@ into applications.
 
 .. _single source file: https://bitbucket.org/uyar/piculet/src/tip/piculet.py
 
-:PyPi: https://pypi.python.org/pypi/piculet/
+:PyPI: https://pypi.python.org/pypi/piculet/
 :Repository: https://bitbucket.org/uyar/piculet
 :Documentation: https://piculet.readthedocs.io/
 
