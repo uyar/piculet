@@ -38,11 +38,49 @@ a specification file::
    usage: piculet scrape [-h] -s SPEC [--html] document
 
 The location of the document can be given as a file path or a URL.
-If the document is in HTML format, the ``--html`` option has to be used.
 The specification file is in JSON format and contains the rules that define
-how to extract the data. For example, to extract some data
+how to extract the data. For example, say you want to extract some data
+from the file `shining.html`_. An example specification file is given
+in `movie.json`_. Download both these files and run the command::
+
+   piculet scrape -s movie.json shining.html
+
+This should print the following output::
+
+   {
+     "cast": [
+       {
+         "character": "Jack Torrance",
+         "link": "/people/2",
+         "name": "Jack Nicholson"
+       },
+       {
+         "character": "Wendy Torrance",
+         "link": "/people/3",
+         "name": "Shelley Duvall"
+       }
+     ],
+     "director": {
+       "link": "/people/1",
+       "name": "Stanley Kubrick"
+     },
+     "genres": [
+       "Horror",
+       "Drama"
+     ],
+     "language": "English",
+     "review": "Fantastic movie. Definitely recommended.",
+     "runtime": "144 minutes",
+     "title": "The Shining",
+     "year": "1980"
+   }
+
+If the document is in HTML format but it is not well-formed XML,
+the ``--html`` option has to be used. If the document address
+starts with ``http://`` or ``https://``, the given URL is downloaded
+and the rules are applied to the content. For example, to extract some data
 from the Wikipedia page for `David Bowie`_, download the `wikipedia.json`_ file
-and run the following command::
+and run the command::
 
    piculet scrape -s wikipedia.json --html "https://en.wikipedia.org/wiki/David_Bowie"
 
@@ -72,7 +110,8 @@ is given as ``-`` it will read the content from the standard input
 and therefore can be used as part of a pipe:
 ``cat foo.html | piculet h2x -``
 
-.. _Bitbucket repository: https://bitbucket.org/uyar/piculet
+.. _shining.html: https://bitbucket.org/uyar/piculet/src/tip/examples/shining.html
+.. _movie.json: https://bitbucket.org/uyar/piculet/src/tip/examples/movie.json
 .. _wikipedia.json: https://bitbucket.org/uyar/piculet/src/tip/examples/wikipedia.json
 .. _David Bowie: https://en.wikipedia.org/wiki/David_Bowie
 .. _Merlene Ottey: https://en.wikipedia.org/wiki/Merlene_Ottey
