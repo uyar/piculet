@@ -1,5 +1,7 @@
-.. include:: ../README.rst
+Piculet
+=======
 
+.. include:: ../README.rst
 
 Contents
 ========
