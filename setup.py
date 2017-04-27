@@ -21,7 +21,10 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4'
+        'Programming Language :: Python :: 3.4',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: Text Processing :: Markup :: HTML',
+        'Topic :: Text Processing :: Markup :: XML'
     ],
     keywords='xml html xpath scrape',
     py_modules=['piculet'],
