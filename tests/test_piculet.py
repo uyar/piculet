@@ -335,28 +335,3 @@ def test_extract_generated_key_should_be_transformable():
     ]
     data = extract(shining, items)
     assert data == {'LANGUAGE': 'English', 'RUNTIME': '144 minutes'}
-
-
-def test_extract_preprocess_unknown_operation_should_raise_error():
-    with raises(ValueError):
-        extract(shining, [], pre=[{'op': 'foo'}])
-
-
-def test_extract_preprocess_subroot_multiple_should_raise_error():
-    with raises(ValueError):
-        extract(shining, [], pre=[{'op': 'root', 'path': './/div'}])
-
-
-def test_extract_preprocess_subroot_none_should_return_empty_result():
-    items = [{"key": "title", "value": {"path": ".//title/text()", "reduce": reducers.first}}]
-    data = extract(shining, items, pre=[{'op': 'root', 'path': './/foo'}])
-    assert data == {}
-
-
-def test_extract_preprocess_subroot_should_exclude_unselected_parts():
-    items = [
-        {'key': 'name', 'value': {'path': './/n/text()', 'reducer': 'first'}},
-        {'key': 'age', 'value': {'path': './/a/text()', 'reducer': 'first'}}
-    ]
-    data = extract(people_root, items, pre=[{'op': 'root', 'path': './p1'}])
-    assert data == {'name': 'John Smith', 'age': '42'}
