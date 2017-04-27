@@ -7,11 +7,13 @@ import os
 from piculet import build_tree, extract, reducers
 
 
+shining_file = os.path.join(os.path.dirname(__file__), '..', 'examples', 'shining.html')
+shining_content = open(shining_file).read()
+
+
 @fixture
 def shining():
     """Root node of the XML tree for the movie document "The Shining"."""
-    shining_file = os.path.join(os.path.dirname(__file__), '..', 'examples', 'shining.html')
-    shining_content = open(shining_file).read()
     return build_tree(shining_content)
 
 
@@ -20,18 +22,18 @@ def test_preprocess_unknown_operation_should_raise_error(shining):
         extract(shining, [], pre=[{"op": "foo"}])
 
 
-def test_preprocess_subroot_multiple_should_raise_error(shining):
+def test_preprocess_root_multiple_should_raise_error(shining):
     with raises(ValueError):
         extract(shining, [], pre=[{"op": "root", "path": ".//div"}])
 
 
-def test_preprocess_subroot_none_should_return_empty_result(shining):
+def test_preprocess_root_none_should_return_empty_result(shining):
     items = [{"key": "title", "value": {"path": ".//title/text()", "reduce": reducers.first}}]
     data = extract(shining, items, pre=[{"op": "root", "path": ".//foo"}])
     assert data == {}
 
 
-def test_preprocess_subroot_should_exclude_unselected_parts(shining):
+def test_preprocess_root_should_exclude_unselected_parts(shining):
     items = [{"key": "foo", "value": {"path": ".//h3/text()", "reduce": reducers.first}}]
     data = extract(shining, items, pre=[{"op": "root", "path": ".//div[@class='director']"}])
     assert data == {'foo': 'Director:'}
@@ -51,7 +53,7 @@ def test_preprocess_remove_should_remove_selected_node(shining):
     assert data == {'cast': [{'name': 'Shelley Duvall'}]}
 
 
-def test_preprocess_remove_selected_none_should_remove_none(shining):
+def test_preprocess_remove_selected_none_should_not_cause_error(shining):
     items = [{"key": "cast",
               "value": {
                   "foreach": ".//table[@class='cast']/tr",
