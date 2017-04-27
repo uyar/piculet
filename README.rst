@@ -10,7 +10,7 @@ into applications.
 :Repository: https://bitbucket.org/uyar/piculet
 :Documentation: https://piculet.readthedocs.io/
 
-Piculet has been tested with Python 2.7, Python 3.4, and PyPy3 5.7.
+Piculet has been tested with Python 2.7, Python 3.3+, PyPy2 5.7, and PyPy3 5.7.
 You can install the latest version from PyPI::
 
    pip install piculet
