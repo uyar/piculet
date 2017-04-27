@@ -18,15 +18,20 @@ setup(
     license='LGPL',
     classifiers=[
         'Development Status :: 4 - Beta',
+        'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Text Processing :: Markup :: HTML',
-        'Topic :: Text Processing :: Markup :: XML'
+        'Topic :: Text Processing :: Markup :: XML',
+        'Topic :: Utilities'
     ],
-    keywords='xml html xpath scrape',
+    keywords='xml html xpath scrape json',
     py_modules=['piculet'],
     install_requires=[],
     extras_require={
