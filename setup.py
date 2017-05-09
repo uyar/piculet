@@ -41,7 +41,8 @@ setup(
         ],
         'doc': [
             'sphinx',
-            'sphinx_rtd_theme'
+            'sphinx_rtd_theme',
+            'pygenstub'
         ],
         'test': [
             'pytest',
