@@ -1,8 +1,8 @@
-Piculet is a utility for extracting data from XML documents using XPath
-queries. It can also scrape web pages by first converting the HTML source
-into XHTML. Piculet consists of a `single source file`_ with no dependencies
-other than the standard library, which makes it very easy to integrate
-into applications.
+Piculet is a module and a utility for extracting data from XML documents
+using XPath queries. It can also scrape web pages by first converting
+the HTML source into XHTML. Piculet consists of a `single source file`_
+with no dependencies other than the standard library, which makes it very easy
+to integrate into applications.
 
 .. _single source file: https://bitbucket.org/uyar/piculet/src/tip/piculet.py
 
@@ -14,16 +14,6 @@ Piculet has been tested with Python 2.7, Python 3.3+, PyPy2 5.7, and PyPy3 5.7.
 You can install the latest version from PyPI::
 
    pip install piculet
-
-.. note::
-
-   If you want to use the development version, which could have more features
-   but also be less stable, you can install it from the repository::
-
-      pip install hg+https://bitbucket.org/uyar/piculet
-
-The Command-Line Interface
---------------------------
 
 Installing Piculet creates a script named ``piculet`` which can be used
 to invoke the command-line interface::
