@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from pytest import mark, raises
 
-from hashlib import md5
 from io import StringIO
 
 import json
@@ -22,7 +21,7 @@ infile = os.path.join(base_dir, 'files', 'utf-8_charset_utf-8.html')
 
 wikipedia_spec = os.path.join(base_dir, '..', 'examples', 'wikipedia.json')
 wikipedia_bowie = 'https://en.wikipedia.org/wiki/David_Bowie'
-wikipedia_bowie_hash = md5(wikipedia_bowie.encode('utf-8')).hexdigest()
+wikipedia_bowie_hash = piculet.get_hash(wikipedia_bowie)
 wikipedia_bowie_cache = os.path.join(base_dir, '.cache', wikipedia_bowie_hash)
 
 
