@@ -482,6 +482,16 @@ def extract(root, items, pre=()):
     return data
 
 
+def get_hash(url):
+    """Get the hash value of a URL for cache lookups.
+
+    :sig: (str) -> str
+    :param url: URL to compute the hash for.
+    :return: Hash value of URL.
+    """
+    return md5(url.encode('utf-8')).hexdigest()
+
+
 def get_document(url):
     """Get the document with the given URL.
 
@@ -505,7 +515,7 @@ def get_document(url):
                 os.makedirs(cache_dir)
         else:
             os.makedirs(cache_dir, exist_ok=True)
-        key = md5(url.encode('utf-8')).hexdigest()
+        key = get_hash(url)
         cache_file = os.path.join(cache_dir, key)
         if not os.path.exists(cache_file):
             _logger.debug('page not in cache, downloading and storing')
