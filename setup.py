@@ -37,7 +37,8 @@ setup(
     extras_require={
         'dev': [
             'flake8',
-            'mypy'
+            'wheel',
+            'twine'
         ],
         'doc': [
             'sphinx',
