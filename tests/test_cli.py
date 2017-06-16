@@ -16,18 +16,8 @@ else:
 
 
 base_dir = os.path.dirname(__file__)
-
 infile = os.path.join(base_dir, 'files', 'utf-8_charset_utf-8.html')
-
 wikipedia_spec = os.path.join(base_dir, '..', 'examples', 'wikipedia.json')
-wikipedia_bowie = 'https://en.wikipedia.org/wiki/David_Bowie'
-wikipedia_bowie_hash = piculet.get_hash(wikipedia_bowie)
-wikipedia_bowie_cache = os.path.join(base_dir, '.cache', wikipedia_bowie_hash)
-
-
-def cache_test_page():
-    """Retrieve the test page and store in cache."""
-    piculet.get_document(wikipedia_bowie)
 
 
 def test_help_should_print_usage_and_exit(capsys):
@@ -100,17 +90,19 @@ def test_scrape_no_url_should_print_usage_and_exit(capsys):
     assert ('required: document' in err) or ('too few arguments' in err)
 
 
-def test_scrape_no_spec_should_print_usage_and_exit(capsys):
+def test_scrape_no_spec_should_print_usage_and_exit(capsys, test_pages):
+    url, _ = test_pages['bowie']
     with raises(SystemExit):
-        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie])
+        piculet.main(argv=['piculet', 'scrape', url])
     out, err = capsys.readouterr()
     assert err.startswith('usage: ')
     assert ('required: -s' in err) or ('--spec is required' in err)
 
 
-def test_scrape_missing_spec_file_should_fail_and_exit(capsys):
+def test_scrape_missing_spec_file_should_fail_and_exit(capsys, test_pages):
+    url, _ = test_pages['bowie']
     with raises(SystemExit):
-        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', 'foo.json'])
+        piculet.main(argv=['piculet', 'scrape', url, '-s', 'foo.json'])
     out, err = capsys.readouterr()
     assert 'No such file or directory: ' in err
 
@@ -125,47 +117,51 @@ def test_scrape_local_should_scrape_given_file(capsys):
     assert data['title'] == 'The Shining'
 
 
-def test_scrape_should_scrape_given_url(capsys):
-    piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec, '--html'])
+def test_scrape_should_scrape_given_url(capsys, test_pages):
+    url, _ = test_pages['bowie']
+    piculet.main(argv=['piculet', 'scrape', url, '-s', wikipedia_spec, '--html'])
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data['name'] == 'David Bowie'
 
 
-def test_scrape_cached_should_read_from_disk(capsys):
-    assert os.path.exists(wikipedia_bowie_cache)
-    piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec, '--html'])
+def test_scrape_cached_should_read_from_disk(capsys, test_pages):
+    url, cache = test_pages['bowie']
+    assert os.path.exists(cache)
+    piculet.main(argv=['piculet', 'scrape', url, '-s', wikipedia_spec, '--html'])
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data['name'] == 'David Bowie'
 
 
 @mark.download
-def test_scrape_cache_disabled_should_retrieve_from_web(capsys, enable_internet):
+def test_scrape_cache_disabled_should_retrieve_from_web(capsys, test_pages, enable_internet):
     cache_dir = os.environ['PICULET_WEB_CACHE']  # backup cache dir
     del os.environ['PICULET_WEB_CACHE']
-    assert os.path.exists(wikipedia_bowie_cache)
-    os.rename(wikipedia_bowie_cache, wikipedia_bowie_cache + '.BACKUP')
+    url, cache = test_pages['bowie']
+    assert os.path.exists(cache)
+    os.rename(cache, cache + '.BACKUP')
     try:
-        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec, '--html'])
-        assert not os.path.exists(wikipedia_bowie_cache)
+        piculet.main(argv=['piculet', 'scrape', url, '-s', wikipedia_spec, '--html'])
+        assert not os.path.exists(cache)
         out, err = capsys.readouterr()
         data = json.loads(out)
         assert data['name'] == 'David Bowie'
     finally:
-        os.rename(wikipedia_bowie_cache + '.BACKUP', wikipedia_bowie_cache)
+        os.rename(cache + '.BACKUP', cache)
         os.environ['PICULET_WEB_CACHE'] = cache_dir  # restore cache dir
 
 
 @mark.download
-def test_scrape_uncached_should_retrieve_from_web(capsys, enable_internet):
-    assert os.path.exists(wikipedia_bowie_cache)
-    os.rename(wikipedia_bowie_cache, wikipedia_bowie_cache + '.BACKUP')
+def test_scrape_uncached_should_retrieve_from_web(capsys, test_pages, enable_internet):
+    url, cache = test_pages['bowie']
+    assert os.path.exists(cache)
+    os.rename(cache, cache + '.BACKUP')
     try:
-        piculet.main(argv=['piculet', 'scrape', wikipedia_bowie, '-s', wikipedia_spec, '--html'])
-        assert os.path.exists(wikipedia_bowie_cache)
+        piculet.main(argv=['piculet', 'scrape', url, '-s', wikipedia_spec, '--html'])
+        assert os.path.exists(cache)
         out, err = capsys.readouterr()
         data = json.loads(out)
         assert data['name'] == 'David Bowie'
     finally:
-        os.rename(wikipedia_bowie_cache + '.BACKUP', wikipedia_bowie_cache)
+        os.rename(cache + '.BACKUP', cache)
