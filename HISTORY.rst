@@ -3,7 +3,7 @@
 History
 =======
 
-1.0b2 (unreleased)
+1.0b2 (2017-06-16)
 ------------------
 
 * Added helper function for getting cache hash keys of URLs.
