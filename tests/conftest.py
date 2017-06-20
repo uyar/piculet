@@ -14,7 +14,6 @@ logging.raiseExceptions = False
 
 cache_dir = os.path.join(os.path.dirname(__file__), '.cache')
 os.environ['PICULET_WEB_CACHE'] = cache_dir
-# os.environ['HTTPS_PROXY'] = 'http://localhost:8123'
 
 TEST_PAGES = {
     'bowie': 'https://en.wikipedia.org/wiki/David_Bowie'
