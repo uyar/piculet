@@ -2,11 +2,11 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from pytest import fixture
 
-import piculet
-
 import logging
 import os
 import socket
+
+import piculet
 
 
 logging.raiseExceptions = False

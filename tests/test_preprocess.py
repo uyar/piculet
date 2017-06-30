@@ -1,10 +1,11 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os
-
 from pytest import fixture, raises
 
+import os
+
 from piculet import build_tree, extract, reducers
+
 
 shining_file = os.path.join(os.path.dirname(__file__), '..', 'examples', 'shining.html')
 shining_content = open(shining_file).read()

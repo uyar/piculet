@@ -1,12 +1,13 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from pytest import mark, raises
+
 import json
 import os
 from io import StringIO
 
-from pytest import mark, raises
-
 import piculet
+
 
 if not piculet.PY3:
     from mock import patch

@@ -1,10 +1,11 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os
-
 from pytest import raises
 
+import os
+
 from piculet import build_tree, extract, reducers, woodpecker, xpath
+
 
 ########################################
 # xpath tests
