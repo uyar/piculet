@@ -30,7 +30,7 @@ clean-docs:
 	make -C docs clean
 
 lint:
-	flake8 piculet.py tests
+	python setup.py flake8
 
 test:
 	py.test -m "not download"
