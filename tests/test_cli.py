@@ -1,11 +1,10 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from pytest import mark, raises
-
-from io import StringIO
-
 import json
 import os
+from io import StringIO
+
+from pytest import mark, raises
 
 import piculet
 
