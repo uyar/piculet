@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Piculet.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Piculet is a package for extracting data from XML documents using XPath queries.
+"""Piculet is a package for extracting data from XML documents using XPath queries.
+
 It can also scrape web pages by first converting the HTML source into XHTML.
 Piculet consists of this single source file with no dependencies other than
 the standard library, which makes it very easy to integrate into applications.
@@ -132,16 +132,18 @@ class HTMLNormalizer(HTMLParser):
     """HTML cleaner and XHTML convertor.
 
     DOCTYPE declarations and comments are removed.
-
-    :sig: (Set[str], Set[str]) -> None
-    :param omit_tags: Tags to remove, along with all their content.
-    :param omit_attrs: Attributes to remove.
     """
 
     SELF_CLOSING_TAGS = {'br', 'hr', 'img', 'input', 'link', 'meta'}
     """Tags to handle as self-closing."""
 
     def __init__(self, omit_tags=(), omit_attrs=()):
+        """Initialize this normalizer.
+
+        :sig: (Set[str], Set[str]) -> None
+        :param omit_tags: Tags to remove, along with all their content.
+        :param omit_attrs: Attributes to remove.
+        """
         if not PY3:
             HTMLParser.__init__(self)
         elif not PY34:
@@ -321,7 +323,7 @@ reducers = SimpleNamespace(
 
 
 def woodpecker(path, reduce=None, reducer=None):
-    """A value extractor that combines an XPath query with a reducing function.
+    """Get a value extractor that combines an XPath query with a reducing function.
 
     This function returns a callable that takes an XML element as parameter and
     applies the XPath query to that element to get a list of strings; therefore
@@ -388,13 +390,8 @@ def extract(root, items, pre=()):
     :param pre: Preprocessing operations on the document tree.
     :return: Extracted data.
     """
-
     def gen(val):
-        """Value generator function.
-
-        It takes a value generator description and returns a callable
-        that takes an XML element and returns a value.
-        """
+        """Get a callable that generates a value when applied to an XML element."""
         if isinstance(val, str):
             # constant function
             return lambda _: val
@@ -595,7 +592,6 @@ def scrape_document(address, spec, content_format='xml'):
 
 def _get_parser(prog):
     """Get a parser for command line arguments."""
-
     def _h2x(arguments):
         h2x(arguments.file)
 
