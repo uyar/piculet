@@ -26,19 +26,17 @@ For more details, please refer to the documentation: https://piculet.readthedocs
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import json
+import logging
+import os
+import re
+import sys
 from argparse import ArgumentParser
 from collections import deque
 from functools import partial
 from hashlib import md5
 from operator import itemgetter
 from pkgutil import find_loader
-
-import json
-import logging
-import os
-import re
-import sys
-
 
 PY3 = sys.version_info >= (3, 0)
 PY33 = sys.version_info >= (3, 3)
