@@ -4,15 +4,16 @@ from pytest import mark, raises
 
 import json
 import os
+import sys
 from io import StringIO
 
 import piculet
 
 
-if not piculet.PY3:
-    from mock import patch
+if not piculet.PY33:
+    import mock
 else:
-    from unittest.mock import patch
+    from unittest import mock
 
 
 base_dir = os.path.dirname(__file__)
@@ -51,7 +52,7 @@ def test_unrecognized_arguments_should_print_usage_and_exit(capsys):
 
 
 def test_debug_mode_should_print_debug_messages_on_stderr(capsys):
-    with patch('sys.stdin', StringIO('<html></html>')):
+    with mock.patch('sys.stdin', StringIO('<html></html>')):
         piculet.main(argv=['piculet', '--debug', 'h2x', '-'])
     out, err = capsys.readouterr()
     assert 'running in debug mode' in err
@@ -65,18 +66,20 @@ def test_h2x_no_input_should_print_usage_and_exit(capsys):
     assert ('required: file' in err) or ('too few arguments' in err)
 
 
+@mark.skipif(sys.platform != 'linux', reason="/dev/shm only available on linux")
 def test_h2x_should_read_given_file(capsys):
     content = '<html></html>'
     with open('/dev/shm/test.html', 'w') as f:
         f.write(content)
     piculet.main(argv=['piculet', 'h2x', '/dev/shm/test.html'])
     out, err = capsys.readouterr()
+    os.unlink('/dev/shm/test.html')
     assert out == content
 
 
 def test_h2x_should_read_stdin_when_input_is_dash(capsys):
     content = '<html></html>'
-    with patch('sys.stdin', StringIO(content)):
+    with mock.patch('sys.stdin', StringIO(content)):
         piculet.main(argv=['piculet', 'h2x', '-'])
     out, err = capsys.readouterr()
     assert out == content
@@ -90,19 +93,17 @@ def test_scrape_no_url_should_print_usage_and_exit(capsys):
     assert ('required: document' in err) or ('too few arguments' in err)
 
 
-def test_scrape_no_spec_should_print_usage_and_exit(capsys, test_pages):
-    url, _ = test_pages['bowie']
+def test_scrape_no_spec_should_print_usage_and_exit(capsys):
     with raises(SystemExit):
-        piculet.main(argv=['piculet', 'scrape', url])
+        piculet.main(argv=['piculet', 'scrape', 'http://www.foo.com/'])
     out, err = capsys.readouterr()
     assert err.startswith('usage: ')
     assert ('required: -s' in err) or ('--spec is required' in err)
 
 
-def test_scrape_missing_spec_file_should_fail_and_exit(capsys, test_pages):
-    url, _ = test_pages['bowie']
+def test_scrape_missing_spec_file_should_fail_and_exit(capsys):
     with raises(SystemExit):
-        piculet.main(argv=['piculet', 'scrape', url, '-s', 'foo.json'])
+        piculet.main(argv=['piculet', 'scrape', 'http://www.foo.com/', '-s', 'foo.json'])
     out, err = capsys.readouterr()
     assert 'No such file or directory: ' in err
 
@@ -117,51 +118,9 @@ def test_scrape_local_should_scrape_given_file(capsys):
     assert data['title'] == 'The Shining'
 
 
-def test_scrape_should_scrape_given_url(capsys, test_pages):
-    url, _ = test_pages['bowie']
-    piculet.main(argv=['piculet', 'scrape', url, '-s', wikipedia_spec, '--html'])
+def test_scrape_should_scrape_given_url(capsys):
+    piculet.main(argv=['piculet', 'scrape', 'https://en.wikipedia.org/wiki/David_Bowie',
+                       '-s', wikipedia_spec, '--html'])
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data['name'] == 'David Bowie'
-
-
-def test_scrape_cached_should_read_from_disk(capsys, test_pages):
-    url, cache = test_pages['bowie']
-    assert os.path.exists(cache)
-    piculet.main(argv=['piculet', 'scrape', url, '-s', wikipedia_spec, '--html'])
-    out, err = capsys.readouterr()
-    data = json.loads(out)
-    assert data['name'] == 'David Bowie'
-
-
-@mark.download
-def test_scrape_cache_disabled_should_retrieve_from_web(capsys, test_pages, enable_internet):
-    cache_dir = os.environ['PICULET_WEB_CACHE']  # backup cache dir
-    del os.environ['PICULET_WEB_CACHE']
-    url, cache = test_pages['bowie']
-    assert os.path.exists(cache)
-    os.rename(cache, cache + '.BACKUP')
-    try:
-        piculet.main(argv=['piculet', 'scrape', url, '-s', wikipedia_spec, '--html'])
-        assert not os.path.exists(cache)
-        out, err = capsys.readouterr()
-        data = json.loads(out)
-        assert data['name'] == 'David Bowie'
-    finally:
-        os.rename(cache + '.BACKUP', cache)
-        os.environ['PICULET_WEB_CACHE'] = cache_dir  # restore cache dir
-
-
-@mark.download
-def test_scrape_uncached_should_retrieve_from_web(capsys, test_pages, enable_internet):
-    url, cache = test_pages['bowie']
-    assert os.path.exists(cache)
-    os.rename(cache, cache + '.BACKUP')
-    try:
-        piculet.main(argv=['piculet', 'scrape', url, '-s', wikipedia_spec, '--html'])
-        assert os.path.exists(cache)
-        out, err = capsys.readouterr()
-        data = json.loads(out)
-        assert data['name'] == 'David Bowie'
-    finally:
-        os.rename(cache + '.BACKUP', cache)

@@ -34,7 +34,6 @@ import sys
 from argparse import ArgumentParser
 from collections import deque
 from functools import partial
-from hashlib import md5
 from operator import itemgetter
 from pkgutil import find_loader
 
@@ -490,54 +489,6 @@ def extract(root, items, pre=()):
     return data
 
 
-def get_hash(url):
-    """Get the hash value of a URL for cache lookups.
-
-    :sig: (str) -> str
-    :param url: URL to compute the hash for.
-    :return: Hash value of URL.
-    """
-    return md5(url.encode('utf-8')).hexdigest()
-
-
-def get_document(url):
-    """Get the document with the given URL.
-
-    This function will check whether the requested document has already been retrieved
-    and return the cached content if possible. Note that cached documents are assumed
-    to be up-to-date.
-
-    :sig: (str) -> str
-    :param url: URL to get the document from.
-    :return: Content of the retrieved document.
-    """
-    _logger.debug('getting page [%s]', url)
-    cache_dir = os.environ.get('PICULET_WEB_CACHE')
-    if cache_dir is None:
-        _logger.debug('cache disabled, downloading page')
-        content = urlopen(url).read()
-    else:
-        _logger.debug('using cache dir [%s]', cache_dir)
-        if not PY3:
-            if not os.path.exists(cache_dir):
-                os.makedirs(cache_dir)
-        else:
-            os.makedirs(cache_dir, exist_ok=True)
-        key = get_hash(url)
-        cache_file = os.path.join(cache_dir, key)
-        if not os.path.exists(cache_file):
-            _logger.debug('page not in cache, downloading and storing')
-            content = urlopen(url).read()
-            with open(cache_file, 'wb') as f:
-                f.write(content)
-        else:
-            _logger.debug('using page found in cache')
-            with open(cache_file, 'rb') as f:
-                content = f.read()
-    _logger.debug('read %s bytes', len(content))
-    return decode_html(content)
-
-
 def scrape(document, rules, content_format='xml'):
     """Extract data from a document according to given rules.
 
@@ -590,8 +541,9 @@ def scrape_document(address, spec, content_format='xml'):
     with open(spec) as f:
         rules = json.loads(f.read())
     if address.startswith(('http://', 'https://')):
-        _logger.debug('scraping url [%s]', address)
-        document = get_document(address)
+        _logger.debug('getting url [%s]', address)
+        content = urlopen(address).read()
+        document = decode_html(content)
     else:
         _logger.debug('scraping file [%s]', address)
         with open(address, 'rb') as f:
