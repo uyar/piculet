@@ -1,4 +1,4 @@
-.PHONY: help clean clean-pyc clean-build list test test-all coverage docs dist release
+.PHONY: help clean clean-pyc clean-build lint test test-all coverage docs dist release
 
 release: RESPONSE = $(shell bash -c 'read -r -p "Do you want to upload [y/N]? " r; echo $$r')
 

@@ -1,9 +1,0 @@
-[report]
-exclude_lines =
-    if __name__ == .__main__.:
-    if not PY3:
-    if not PY33:
-    if not PY34:
-    if _USE_LXML:
-    def handle_entityref
-    def handle_charref
