@@ -66,7 +66,7 @@ def test_h2x_no_input_should_print_usage_and_exit(capsys):
     assert ('required: file' in err) or ('too few arguments' in err)
 
 
-@mark.skipif(sys.platform != 'linux', reason="/dev/shm only available on linux")
+@mark.skipif(sys.platform not in {'linux', 'linux2'}, reason="/dev/shm only available on linux")
 def test_h2x_should_read_given_file(capsys):
     content = '<html></html>'
     with open('/dev/shm/test.html', 'w') as f:
