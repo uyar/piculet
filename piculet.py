@@ -62,10 +62,14 @@ else:
 
 if not PY33:
     class SimpleNamespace:
+        """A simple, attribute-based namespace, adapted from Python 3.4+."""
+
         def __init__(self, **kwargs):
+            """Construct a new namespace."""
             self.__dict__.update(kwargs)
 
         def __eq__(self, other):
+            """Check whether this namespace is equal to another namespace."""
             return self.__dict__ == other.__dict__
 else:
     from types import SimpleNamespace
@@ -76,6 +80,7 @@ if not PY34:
 
     @contextmanager
     def redirect_stdout(new_stdout):
+        """Context manager for temporarily redirecting stdout, adapted from Python 3.5+."""
         old_stdout, sys.stdout = sys.stdout, new_stdout
         try:
             yield new_stdout
@@ -159,6 +164,7 @@ class HTMLNormalizer(HTMLParser):
         self._open_omitted_tags = deque()
 
     def handle_starttag(self, tag, attrs):
+        """Process the starting of a new element."""
         if tag in self.omit_tags:
             _logger.debug('omitting [%s] tag', tag)
             self._open_omitted_tags.append(tag)
@@ -191,6 +197,7 @@ class HTMLNormalizer(HTMLParser):
                 self._open_tags.append(tag)
 
     def handle_endtag(self, tag):
+        """Process the ending of an element."""
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             if tag not in self.SELF_CLOSING_TAGS:
@@ -217,16 +224,19 @@ class HTMLNormalizer(HTMLParser):
             self._open_omitted_tags.pop()
 
     def handle_data(self, data):
+        """Process collected character data."""
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             print(html_escape(data), end='')
 
     def handle_entityref(self, name):
+        """Process an entity reference."""
         # XXX: doesn't get called if convert_charrefs=True
         ref = self.unescape('&' + name + ';')
         print('&#%d;' % ord(ref))
 
     def handle_charref(self, name):
+        """Process an character reference."""
         # XXX: doesn't get called if convert_charrefs=True
         print('&#' + name + ';', end='')
 
