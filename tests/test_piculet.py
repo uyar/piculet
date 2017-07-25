@@ -73,7 +73,6 @@ def test_reducer_normalize_should_replace_spaces_with_underscores():
     assert reducers.normalize(['a', ' b', 'c']) == 'a_bc'
 
 
-
 ########################################
 # woodpecker tests
 ########################################
