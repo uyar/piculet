@@ -16,7 +16,6 @@ else:
 
 
 base_dir = os.path.dirname(__file__)
-infile = os.path.join(base_dir, 'files', 'utf-8_charset_utf-8.html')
 wikipedia_spec = os.path.join(base_dir, '..', 'examples', 'wikipedia.json')
 
 
@@ -52,7 +51,8 @@ def test_unrecognized_arguments_should_print_usage_and_exit(capsys):
 
 
 def test_debug_mode_should_print_debug_messages_on_stderr(capsys):
-    piculet.main(argv=['piculet', '--debug', 'h2x', infile])
+    with patch('sys.stdin', StringIO('<html></html>')):
+        piculet.main(argv=['piculet', '--debug', 'h2x', '-'])
     out, err = capsys.readouterr()
     assert 'running in debug mode' in err
 
@@ -66,16 +66,16 @@ def test_h2x_no_input_should_print_usage_and_exit(capsys):
 
 
 def test_h2x_should_read_given_file(capsys):
-    with open(infile, 'rb') as f:
-        content = piculet.decode_html(f.read())
-    piculet.main(argv=['piculet', 'h2x', infile])
+    content = '<html></html>'
+    with open('/dev/shm/test.html', 'w') as f:
+        f.write(content)
+    piculet.main(argv=['piculet', 'h2x', '/dev/shm/test.html'])
     out, err = capsys.readouterr()
     assert out == content
 
 
 def test_h2x_should_read_stdin_when_input_is_dash(capsys):
-    with open(infile, 'rb') as f:
-        content = piculet.decode_html(f.read())
+    content = '<html></html>'
     with patch('sys.stdin', StringIO(content)):
         piculet.main(argv=['piculet', 'h2x', '-'])
     out, err = capsys.readouterr()
