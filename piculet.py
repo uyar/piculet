@@ -602,28 +602,23 @@ def scrape_document(address, spec, content_format='xml'):
 
 def _get_parser(prog):
     """Get a parser for command line arguments."""
-    def _h2x(arguments):
-        h2x(arguments.file)
-
-    def _scrape(arguments):
-        content_format = 'html' if arguments.html else 'xml'
-        scrape_document(arguments.document, arguments.spec, content_format=content_format)
-
     parser = ArgumentParser(prog=prog)
     parser.add_argument('--debug', action='store_true', help='enable debug messages')
 
     commands = parser.add_subparsers(metavar='command', dest='command')
     commands.required = True
 
-    subparser = commands.add_parser('h2x', help='convert HTML to XHTML')
-    subparser.set_defaults(func=_h2x)
-    subparser.add_argument('file', help='file to convert')
+    h2x_parser = commands.add_parser('h2x', help='convert HTML to XHTML')
+    h2x_parser.add_argument('file', help='file to convert')
+    h2x_parser.set_defaults(func=lambda a: h2x(a.file))
 
-    subparser = commands.add_parser('scrape', help='scrape a document')
-    subparser.set_defaults(func=_scrape)
-    subparser.add_argument('document', help='file path or URL of document to scrape')
-    subparser.add_argument('-s', '--spec', required=True, help='spec file')
-    subparser.add_argument('--html', action='store_true', help='document is in HTML format')
+    scrape_parser = commands.add_parser('scrape', help='scrape a document')
+    scrape_parser.add_argument('document', help='file path or URL of document to scrape')
+    scrape_parser.add_argument('-s', '--spec', required=True, help='spec file')
+    scrape_parser.add_argument('--html', action='store_true', help='document is in HTML format')
+    scrape_parser.set_defaults(func=lambda a: scrape_document(
+        a.document, a.spec, content_format='html' if a.html else 'xml'
+    ))
 
     return parser
 
