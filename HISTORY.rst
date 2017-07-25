@@ -3,6 +3,11 @@
 History
 =======
 
+1.0b3 (2017-07-25)
+------------------
+
+* Removed the caching feature.
+
 1.0b2 (2017-06-16)
 ------------------
 
@@ -14,7 +19,6 @@ History
 * Added optional value transformations.
 * Added support for custom reducer callables.
 * Added command-line option for scraping documents from local files.
-
 
 1.0a2 (2017-04-04)
 ------------------

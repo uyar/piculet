@@ -4,51 +4,48 @@ from pytest import fixture
 
 import logging
 import os
-import socket
+from hashlib import md5
+from io import BytesIO
 
 import piculet
+
+
+if not piculet.PY33:
+    import mock
+else:
+    from unittest import mock
 
 
 logging.raiseExceptions = False
 
 
 cache_dir = os.path.join(os.path.dirname(__file__), '.cache')
-os.environ['PICULET_WEB_CACHE'] = cache_dir
-
-TEST_PAGES = {
-    'bowie': 'https://en.wikipedia.org/wiki/David_Bowie'
-}
-
-for page in TEST_PAGES.values():
-    piculet.get_document(page)
+if not os.path.exists(cache_dir):
+    os.makedirs(cache_dir)
 
 
-@fixture(scope='session')
-def test_pages():
-    """Addresses and cache locations of test pages."""
-    return {k: (v, os.path.join(cache_dir, piculet.get_hash(v)))
-            for k, v in TEST_PAGES.items()}
+def get_cache_file(url):
+    key = md5(url.encode('utf-8')).hexdigest()
+    return os.path.join(cache_dir, key)
 
 
-enabled_socket = socket.socket
+def cache_document(url):
+    cache_file = get_cache_file(url)
+    if not os.path.exists(cache_file):
+        content = piculet.urlopen(url).read()
+        with open(cache_file, 'wb') as f:
+            f.write(content)
+
+
+def mock_urlopen(url):
+    cache_file = get_cache_file(url)
+    with open(cache_file, 'rb') as f:
+        content = f.read()
+    return BytesIO(content)
 
 
 @fixture(scope='session', autouse=True)
-def disable_internet(request):
-    """Disable Internet access."""
-    def disabled_socket(*args, **kwargs):
-        raise RuntimeError('Internet access disabled')
-
-    old_socket = socket.socket
-    socket.socket = disabled_socket
+def setup_cache():
+    cache_document('https://en.wikipedia.org/wiki/David_Bowie')
+    piculet.urlopen = mock.Mock(wraps=mock_urlopen)
     yield
-    socket.socket = old_socket
-
-
-@fixture(scope='function')
-def enable_internet(request):
-    """Enable Internet access."""
-    old_socket = socket.socket
-    socket.socket = enabled_socket
-    yield
-    socket.socket = old_socket
