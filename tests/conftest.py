@@ -36,7 +36,6 @@ enabled_socket = socket.socket
 @fixture(scope='session', autouse=True)
 def disable_internet(request):
     """Disable Internet access."""
-
     def disabled_socket(*args, **kwargs):
         raise RuntimeError('Internet access disabled')
 
