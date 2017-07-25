@@ -46,6 +46,7 @@ def mock_urlopen(url):
 
 @fixture(scope='session', autouse=True)
 def setup_cache():
+    """Fetch all test pages and store them in the cache."""
     cache_document('https://en.wikipedia.org/wiki/David_Bowie')
     piculet.urlopen = mock.Mock(wraps=mock_urlopen)
     yield
