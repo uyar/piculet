@@ -557,6 +557,8 @@ def _get_parser(prog):
     parser = ArgumentParser(prog=prog)
     parser.add_argument('--debug', action='store_true', help='enable debug messages')
 
+    parser.add_argument('--version', action='version', version='%(prog)s 1.0b3')
+
     commands = parser.add_subparsers(metavar='command', dest='command')
     commands.required = True
 
@@ -582,7 +584,7 @@ def main(argv=None):
     :param argv: Command line arguments.
     """
     argv = argv if argv is not None else sys.argv
-    parser = _get_parser(prog=argv[0])
+    parser = _get_parser(prog='piculet')
     arguments = parser.parse_args(argv[1:])
 
     # set debug mode

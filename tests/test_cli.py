@@ -7,6 +7,8 @@ import os
 import sys
 from io import StringIO
 
+from pkg_resources import get_distribution
+
 import piculet
 
 
@@ -25,6 +27,13 @@ def test_help_should_print_usage_and_exit(capsys):
         piculet.main(argv=['piculet', '--help'])
     out, err = capsys.readouterr()
     assert out.startswith('usage: ')
+
+
+def test_version_should_print_version_number_and_exit(capsys):
+    with raises(SystemExit):
+        piculet.main(argv=['piculet', '--version'])
+    out, err = capsys.readouterr()
+    assert 'piculet ' + get_distribution('piculet').version + '\n' in {out, err}
 
 
 def test_no_command_should_print_usage_and_exit(capsys):
