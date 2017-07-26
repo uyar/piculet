@@ -15,6 +15,11 @@ if not piculet.PY33:
 else:
     from unittest import mock
 
+if not piculet.PY3:
+    from urllib2 import urlopen
+else:
+    from urllib.request import urlopen
+
 
 logging.raiseExceptions = False
 
@@ -24,29 +29,17 @@ if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
 
 
-def get_cache_file(url):
+def mock_urlopen(url):
     key = md5(url.encode('utf-8')).hexdigest()
-    return os.path.join(cache_dir, key)
-
-
-def cache_document(url):
-    cache_file = get_cache_file(url)
+    cache_file = os.path.join(cache_dir, key)
     if not os.path.exists(cache_file):
-        content = piculet.urlopen(url).read()
+        content = urlopen(url).read()
         with open(cache_file, 'wb') as f:
             f.write(content)
-
-
-def mock_urlopen(url):
-    cache_file = get_cache_file(url)
-    with open(cache_file, 'rb') as f:
-        content = f.read()
+    else:
+        with open(cache_file, 'rb') as f:
+            content = f.read()
     return BytesIO(content)
 
 
-@fixture(scope='session', autouse=True)
-def setup_cache():
-    """Fetch all test pages and store them in the cache."""
-    cache_document('https://en.wikipedia.org/wiki/David_Bowie')
-    piculet.urlopen = mock.Mock(wraps=mock_urlopen)
-    yield
+piculet.urlopen = mock.Mock(wraps=mock_urlopen)
