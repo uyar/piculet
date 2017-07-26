@@ -552,8 +552,8 @@ def scrape_document(address, spec, content_format='xml'):
     print(json.dumps(data, indent=2, sort_keys=True))
 
 
-def _get_parser(prog):
-    """Get a parser for command line arguments."""
+def make_parser(prog):
+    """Build a parser for command line arguments."""
     parser = ArgumentParser(prog=prog)
     parser.add_argument('--debug', action='store_true', help='enable debug messages')
 
@@ -584,7 +584,7 @@ def main(argv=None):
     :param argv: Command line arguments.
     """
     argv = argv if argv is not None else sys.argv
-    parser = _get_parser(prog='piculet')
+    parser = make_parser(prog='piculet')
     arguments = parser.parse_args(argv[1:])
 
     # set debug mode
