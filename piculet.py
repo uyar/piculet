@@ -555,9 +555,9 @@ def scrape_document(address, spec, content_format='xml'):
 def make_parser(prog):
     """Build a parser for command line arguments."""
     parser = ArgumentParser(prog=prog)
-    parser.add_argument('--debug', action='store_true', help='enable debug messages')
-
     parser.add_argument('--version', action='version', version='%(prog)s 1.0b3')
+
+    parser.add_argument('--debug', action='store_true', help='enable debug messages')
 
     commands = parser.add_subparsers(metavar='command', dest='command')
     commands.required = True
