@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from pytest import fixture
-
 import logging
 import os
 from hashlib import md5
