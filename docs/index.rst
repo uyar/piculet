@@ -12,7 +12,6 @@ Contents
    extract
    preprocess
    api
-   authors
    history
 
 
