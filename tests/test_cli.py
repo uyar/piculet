@@ -12,7 +12,7 @@ from pkg_resources import get_distribution
 import piculet
 
 
-if not piculet.PY33:
+if not piculet.PY3:
     import mock
 else:
     from unittest import mock

@@ -39,7 +39,6 @@ from pkgutil import find_loader
 
 
 PY3 = sys.version_info >= (3, 0)
-PY33 = sys.version_info >= (3, 3)
 PY34 = sys.version_info >= (3, 4)
 
 
@@ -59,7 +58,7 @@ else:
     from urllib.request import urlopen
 
 
-if not PY33:
+if not PY3:
     class SimpleNamespace:
         """A simple, attribute-based namespace, adapted from Python 3.4+."""
 
