@@ -8,7 +8,7 @@ from io import BytesIO
 import piculet
 
 
-if not piculet.PY33:
+if not piculet.PY3:
     import mock
 else:
     from unittest import mock
