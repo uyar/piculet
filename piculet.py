@@ -1,7 +1,5 @@
 # Copyright (C) 2014-2017 H. Turgut Uyar <uyar@tekir.org>
 #
-# This file is part of Piculet.
-#
 # Piculet is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -15,7 +13,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Piculet.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Piculet is a package for extracting data from XML documents using XPath queries.
+"""Piculet is a module for extracting data from XML documents using XPath queries.
 
 It can also scrape web pages by first converting the HTML source into XHTML.
 Piculet consists of this single source file with no dependencies other than
