@@ -455,7 +455,7 @@ def extract(root, items, pre=()):
                 _logger.debug('setting text to [%s] on [%s] element', text_value, element.tag)
                 element.text = text_value
         else:
-            raise ValueError('Unknow preprocessing operation: ' + op)
+            raise ValueError('Unknown preprocessing operation: ' + op)
 
     # actual extraction part
     data = {}
