@@ -378,7 +378,7 @@ def woodpecker(path, reduce=None, reducer=None):
     return apply
 
 
-def extract(root, items, pre=()):
+def extract(root, items, pre=None):
     """Extract data from an XML tree.
 
     This will extract the data items according to the supplied rules.
@@ -405,11 +405,10 @@ def extract(root, items, pre=()):
             # xpath and reducer
             if ('reduce' not in val) and ('reducer' not in val):
                 raise ValueError('Path extractor must have reducer: ' + val['path'])
-            return woodpecker(val['path'], reduce=val.get('reduce'),
-                              reducer=val.get('reducer'))
+            return woodpecker(val['path'], reduce=val.get('reduce'), reducer=val.get('reducer'))
         if 'items' in val:
             # recursive function for applying subrules
-            return partial(extract, items=val['items'], pre=val.get('pre', ()))
+            return partial(extract, items=val['items'], pre=val.get('pre'))
         raise ValueError('Unknown value generator: ' + str(val))
 
     # ElementTree doesn't support parent queries, so build a map for it
@@ -418,6 +417,7 @@ def extract(root, items, pre=()):
         ElementTree._Element.getparent
 
     # do the preprocessing operations
+    pre = pre if pre is not None else []
     for step in pre:
         op = step['op']
         if op == 'root':
@@ -500,7 +500,7 @@ def scrape(document, rules, content_format='xml'):
         document = html_to_xhtml(document)
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
     root = build_tree(document)
-    data = extract(root, rules['items'], pre=rules.get('pre', ()))
+    data = extract(root, rules['items'], pre=rules.get('pre'))
     return data
 
 
