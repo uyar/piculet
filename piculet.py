@@ -141,7 +141,7 @@ class HTMLNormalizer(HTMLParser):
     def __init__(self, omit_tags=(), omit_attrs=()):
         """Initialize this normalizer.
 
-        :sig: (Set[str], Set[str]) -> None
+        :sig: (Optional[Iterable[str]], Optional[Iterable[str]]) -> None
         :param omit_tags: Tags to remove, along with all their content.
         :param omit_attrs: Attributes to remove.
         """
