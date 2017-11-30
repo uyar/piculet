@@ -117,7 +117,7 @@ def decode_html(content, charset=None, fallback_charset='utf-8'):
         for tag in _CHARSET_TAGS:
             start = content.find(tag)
             if start >= 0:
-                _logger.debug('charset found in meta tag')
+                _logger.debug('charset meta tag found')
                 charset_start = start + len(tag)
                 charset_end = content.find(b'"', charset_start)
                 charset = content[charset_start:charset_end].decode('ascii')
@@ -162,20 +162,20 @@ class HTMLNormalizer(HTMLParser):
     def handle_starttag(self, tag, attrs):
         """Process the starting of a new element."""
         if tag in self.omit_tags:
-            _logger.debug('omitting [%s] tag', tag)
+            _logger.debug('omitting %s tag', tag)
             self._open_omitted_tags.append(tag)
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             if (tag == 'li') and (self._open_tags[-1] == 'li'):
-                _logger.debug('opened [li] without closing previous [li], adding closing tag')
+                _logger.debug('opened li without closing previous li, adding closing tag')
                 self.handle_endtag('li')
             attribs = []
             for attr_name, attr_value in attrs:
                 if attr_name in self.omit_attrs:
-                    _logger.debug('omitting [%s] attribute of [%s] tag', attr_name, tag)
+                    _logger.debug('omitting %s attribute of %s tag', attr_name, tag)
                     continue
                 if attr_value is None:
-                    _logger.debug('no value for [%s] attribute of [%s] tag, adding empty value',
+                    _logger.debug('no value for %s attribute of %s tag, adding empty value',
                                   attr_name, tag)
                     attr_value = ''
                 attribs.append((attr_name, attr_value))
@@ -199,17 +199,17 @@ class HTMLNormalizer(HTMLParser):
             if tag not in self.SELF_CLOSING_TAGS:
                 last = self._open_tags[-1]
                 if (tag == 'ul') and (last == 'li'):
-                    _logger.debug('closing [ul] without closing last [li], adding closing tag')
+                    _logger.debug('closing ul without closing last li, adding closing tag')
                     self.handle_endtag('li')
                 if tag == last:
                     # expected end tag
                     print('</%(tag)s>' % {'tag': tag}, end='')
                     self._open_tags.pop()
                 elif tag not in self._open_tags:
-                    _logger.debug('end tag [%s] without start tag', tag)
+                    _logger.debug('end tag %s without start tag', tag)
                     # XXX: for <a><b></a></b>, this case gets invoked after the case below
                 elif tag == self._open_tags[-2]:
-                    _logger.debug('unexpected end tag [%s] instead of [%s], closing both',
+                    _logger.debug('unexpected end tag %s instead of %s, closing both',
                                   tag, last)
                     print('</%(tag)s>' % {'tag': last}, end='')
                     print('</%(tag)s>' % {'tag': tag}, end='')
@@ -267,12 +267,12 @@ def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
 
 _USE_LXML = find_loader('lxml') is not None
 if _USE_LXML:
+    _logger.debug('using lxml')
     from lxml import etree as ElementTree
     from lxml.html import fromstring as from_html
-    _logger.debug('using lxml')
 else:
-    from xml.etree import ElementTree
     _logger.debug('lxml not found, falling back to elementtree')
+    from xml.etree import ElementTree
     from_html = None
 
 
@@ -302,11 +302,11 @@ def xpath_etree(element, path):
     :return: Elements or strings resulting from the query.
     """
     if path.endswith('//text()'):
-        _logger.debug('handling descendant text path [%s]', path)
+        _logger.debug('handling descendant text path %s', path)
         return [t for e in element.findall(path[:-8]) for t in e.itertext() if t]
 
     if path.endswith('/text()'):
-        _logger.debug('handling child text path [%s]', path)
+        _logger.debug('handling child text path %s', path)
         return [t for e in element.findall(path[:-7])
                 for t in ([e.text] + [c.tail if c.tail else '' for c in e]) if t]
 
@@ -314,11 +314,11 @@ def xpath_etree(element, path):
     epath, last_step = path_tokens[:-1], path_tokens[-1]
     # PY3: *epath, last_step = path.split('/')
     if last_step.startswith('@'):
-        _logger.debug('handling attribute path [%s]', path)
+        _logger.debug('handling attribute path %s', path)
         result = [e.attrib.get(last_step[1:]) for e in element.findall('/'.join(epath))]
         return [r for r in result if r is not None]
 
-    _logger.debug('handling element producing path [%s]', path)
+    _logger.debug('handling element producing path %s', path)
     return element.findall(path)
 
 
@@ -373,12 +373,12 @@ def woodpecker(path, reduce=None, reducer=None):
         """
         values = xpath(element, path)
         if len(values) == 0:
-            _logger.debug('no match for [%s]', path)
+            _logger.debug('no match for %s', path)
             return None
 
-        _logger.debug('extracted value [%s]', values)
+        _logger.debug('extracted value %s', values)
         value = reduce(values)
-        _logger.debug('applied [%s] reducer, new value [%s]', reducer, value)
+        _logger.debug('applied %s reducer, new value %s', reducer, value)
         return value
 
     return apply
@@ -416,7 +416,7 @@ def preprocess(root, pre):
         op = step['op']
         if op == 'root':
             path = step['path']
-            _logger.debug('selecting new root using [%s]', path)
+            _logger.debug('selecting new root using %s', path)
             elements = xpath(root, path)
             if len(elements) > 1:
                 raise ValueError('Root expression must not select multiple elements: ' + path)
@@ -431,7 +431,7 @@ def preprocess(root, pre):
                 get_parent = {e: p for p in root.iter() for e in p}.get
             path = step['path']
             elements = xpath(root, path)
-            _logger.debug('removing %s elements using [%s]', len(elements), path)
+            _logger.debug('removing %s elements using %s', len(elements), path)
             for element in elements:
                 # XXX: could this be hazardous? parent removed in earlier iteration?
                 get_parent(element).remove(element)
@@ -442,7 +442,7 @@ def preprocess(root, pre):
             for element in xpath(root, path):
                 attr_name = attr_name_gen(element)
                 attr_value = attr_value_gen(element)
-                _logger.debug('setting [%s] attribute to [%s] on [%s] element',
+                _logger.debug('setting %s attribute to %s on %s element',
                               attr_name, attr_value, element.tag)
                 element.attrib[attr_name] = attr_value
         elif op == 'set_text':
@@ -450,7 +450,7 @@ def preprocess(root, pre):
             text_gen = _gen(step['text'])
             for element in xpath(root, path):
                 text_value = text_gen(element)
-                _logger.debug('setting text to [%s] on [%s] element', text_value, element.tag)
+                _logger.debug('setting text to %s on %s element', text_value, element.tag)
                 element.text = text_value
         else:
             raise ValueError('Unknown preprocessing operation: ' + op)
@@ -544,7 +544,7 @@ def h2x(source):
         content = sys.stdin.read()
     else:
         path = os.path.abspath(source)
-        _logger.debug('reading from file [%s]', path)
+        _logger.debug('reading from file %s', path)
         with open(path, 'rb') as f:
             content = decode_html(f.read())
     print(html_to_xhtml(content), end='')
@@ -561,11 +561,11 @@ def scrape_document(address, spec, content_format='xml'):
     with open(spec) as f:
         rules = json.loads(f.read())
     if address.startswith(('http://', 'https://')):
-        _logger.debug('getting url [%s]', address)
+        _logger.debug('getting url %s', address)
         content = urlopen(address).read()
         document = decode_html(content)
     else:
-        _logger.debug('scraping file [%s]', address)
+        _logger.debug('scraping file %s', address)
         with open(address, 'rb') as f:
             document = decode_html(f.read())
     data = scrape(document, rules, content_format=content_format)
