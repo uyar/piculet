@@ -85,7 +85,7 @@
         "reducer": "normalize"
       },
       "value": {
-        "path": "./div//text()",
+        "path": "./p/text()",
         "reducer": "first"
       }
     }
