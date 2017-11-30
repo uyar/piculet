@@ -268,20 +268,26 @@ def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
 _USE_LXML = find_loader('lxml') is not None
 if _USE_LXML:
     from lxml import etree as ElementTree
+    from lxml.html import fromstring as from_html
     _logger.debug('using lxml')
 else:
     from xml.etree import ElementTree
     _logger.debug('lxml not found, falling back to elementtree')
+    from_html = None
 
 
-def build_tree(document):
+def build_tree(document, force_html=False):
     """Build a tree from an XML document.
 
-    :sig: (str) -> ElementTree.Element
+    :sig: (str, Optional[bool]) -> ElementTree.Element
     :param document: XML document to build the tree from.
+    :param force_html: Force to parse from HTML without converting.
     :return: Root node of the XML tree.
     """
-    return ElementTree.fromstring(document if PY3 else document.encode('utf-8'))
+    content = document if PY3 else document.encode('utf-8')
+    if force_html and (from_html is not None):
+        return from_html(content)
+    return ElementTree.fromstring(content)
 
 
 def xpath_etree(element, path):
