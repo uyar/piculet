@@ -65,3 +65,56 @@ def test_preprocess_remove_selected_none_should_not_cause_error(shining):
               }}]
     data = extract(shining, items, pre=[{"op": "remove", "path": ".//tr[50]"}])
     assert data == {'cast': [{'name': 'Jack Nicholson'}, {'name': 'Shelley Duvall'}]}
+
+
+def test_preprocess_set_attr_value_from_str_should_set_attribute_for_selected_nodes(shining):
+    items = [{"key": "genres",
+              "value": {
+                  "foreach": ".//li[@foo='bar']",
+                  "path": "./text()",
+                  "reduce": reducers.first
+              }}]
+    data = extract(shining, items,
+                   pre=[{"op": "set_attr", "path": ".//ul[@class='genres']/li",
+                         "name": "foo", "value": "bar"}])
+    assert data == {'genres': ['Horror', 'Drama']}
+
+
+def test_preprocess_set_attr_value_from_path_should_set_attribute_for_selected_nodes(shining):
+    items = [{"key": "genres",
+              "value": {
+                  "foreach": ".//li[@foo]",
+                  "path": "./@foo",
+                  "reduce": reducers.first
+              }}]
+    data = extract(shining, items,
+                   pre=[{"op": "set_attr", "path": ".//ul[@class='genres']/li",
+                         "name": "foo",
+                         "value": {"path": "./text()", "reduce": reducers.first}}])
+    assert data == {'genres': ['Horror', 'Drama']}
+
+
+def test_preprocess_set_attr_name_from_path_should_set_attribute_for_selected_nodes(shining):
+    items = [{"key": "genres",
+              "value": {
+                  "foreach": ".//li[@Horror]",
+                  "path": "./@Horror",
+                  "reduce": reducers.first
+              }}]
+    data = extract(shining, items,
+                   pre=[{"op": "set_attr", "path": ".//ul[@class='genres']/li",
+                         "name": {"path": "./text()", "reduce": reducers.first},
+                         "value": "bar"}])
+    assert data == {'genres': ['bar']}
+
+
+def test_preprocess_set_attr_selected_none_should_not_cause_error(shining):
+    items = [{"key": "genres",
+              "value": {
+                  "foreach": ".//li[@foo='bar']",
+                  "path": "./@foo",
+                  "reduce": reducers.first
+              }}]
+    data = extract(shining, items,
+                   pre=[{"op": "set_attr", "path": ".//foo", "name": "foo", "value": "bar"}])
+    assert data == {}
