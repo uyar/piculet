@@ -125,7 +125,7 @@ def decode_html(content, charset=None, fallback_charset='utf-8'):
         else:
             _logger.debug('charset not found, using fallback')
             charset = fallback_charset
-    _logger.debug('decoding for charset [%s]', charset)
+    _logger.debug('decoding for charset %s', charset)
     return content.decode(charset)
 
 
@@ -252,7 +252,6 @@ def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
     :param omit_attrs: Attributes to exclude from the output.
     :return: Normalized XHTML content.
     """
-    _logger.debug('cleaning html and converting to xhtml')
     out = StringIO()
     normalizer = HTMLNormalizer(omit_tags=omit_tags, omit_attrs=omit_attrs)
     with redirect_stdout(out):
@@ -519,7 +518,7 @@ def scrape(document, rules, content_format='xml'):
     :return: Extracted data.
     """
     if content_format == 'html':
-        _logger.debug('converting html document to xml')
+        _logger.debug('converting html document to xhtml')
         document = html_to_xhtml(document)
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
     root = build_tree(document)
@@ -538,14 +537,12 @@ def h2x(source):
     :sig: (str) -> None
     :param source: Path of HTML file to convert.
     """
-    _logger.debug('converting html to xhtml')
     if source == '-':
         _logger.debug('reading from stdin')
         content = sys.stdin.read()
     else:
-        path = os.path.abspath(source)
-        _logger.debug('reading from file %s', path)
-        with open(path, 'rb') as f:
+        _logger.debug('reading from file %s', os.path.abspath(source))
+        with open(source, 'rb') as f:
             content = decode_html(f.read())
     print(html_to_xhtml(content), end='')
 
@@ -558,17 +555,20 @@ def scrape_document(address, spec, content_format='xml'):
     :param spec: Path of spec file.
     :param content_format: Whether the content is XML or HTML.
     """
+    _logger.debug('loading spec from file %s', os.path.abspath(spec))
     with open(spec) as f:
         rules = json.loads(f.read())
+
     if address.startswith(('http://', 'https://')):
-        _logger.debug('getting url %s', address)
+        _logger.debug('loading url %s', address)
         with urlopen(address) as f:
             content = f.read()
     else:
-        _logger.debug('scraping file %s', address)
+        _logger.debug('loading file %s', os.path.abspath(address))
         with open(address, 'rb') as f:
             content = f.read()
     document = decode_html(content)
+
     data = scrape(document, rules, content_format=content_format)
     print(json.dumps(data, indent=2, sort_keys=True))
 
@@ -577,7 +577,6 @@ def make_parser(prog):
     """Build a parser for command line arguments."""
     parser = ArgumentParser(prog=prog)
     parser.add_argument('--version', action='version', version='%(prog)s 1.0b3')
-
     parser.add_argument('--debug', action='store_true', help='enable debug messages')
 
     commands = parser.add_subparsers(metavar='command', dest='command')
