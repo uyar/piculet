@@ -431,8 +431,8 @@ def preprocess(root, pre):
                 get_parent(element).remove(element)
         elif op == 'set_attr':
             path = step['path']
-            attr_name_gen = gen(step['name'])
-            attr_value_gen = gen(step['value'])
+            attr_name_gen = _gen(step['name'])
+            attr_value_gen = _gen(step['value'])
             for element in xpath(root, path):
                 attr_name = attr_name_gen(element)
                 attr_value = attr_value_gen(element)
