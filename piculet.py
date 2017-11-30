@@ -232,7 +232,7 @@ class HTMLNormalizer(HTMLParser):
         print('&#%d;' % ord(ref))
 
     def handle_charref(self, name):
-        """Process an character reference."""
+        """Process a character reference."""
         # XXX: doesn't get called if convert_charrefs=True
         print('&#' + name + ';', end='')
 
