@@ -95,10 +95,10 @@ _logger = logging.getLogger(__name__)
 
 
 # TODO: this is too fragile
-_CHARSET_TAGS = {
-    'meta charset': b'<meta charset="',
-    'meta http-equiv': b'<meta http-equiv="content-type" content="text/html; charset='
-}
+_CHARSET_TAGS = [
+    b'<meta http-equiv="content-type" content="text/html; charset=',
+    b'<meta charset="'
+]
 
 
 def decode_html(content, charset=None, fallback_charset='utf-8'):
@@ -114,10 +114,10 @@ def decode_html(content, charset=None, fallback_charset='utf-8'):
     :return: Decoded content of the document.
     """
     if charset is None:
-        for key, tag in _CHARSET_TAGS.items():
+        for tag in _CHARSET_TAGS:
             start = content.find(tag)
             if start >= 0:
-                _logger.debug('charset found in [%s] tag', key)
+                _logger.debug('charset found in meta tag')
                 charset_start = start + len(tag)
                 charset_end = content.find(b'"', charset_start)
                 charset = content[charset_start:charset_end].decode('ascii')
