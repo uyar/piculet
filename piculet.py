@@ -562,12 +562,13 @@ def scrape_document(address, spec, content_format='xml'):
         rules = json.loads(f.read())
     if address.startswith(('http://', 'https://')):
         _logger.debug('getting url %s', address)
-        content = urlopen(address).read()
-        document = decode_html(content)
+        with urlopen(address) as f:
+            content = f.read()
     else:
         _logger.debug('scraping file %s', address)
         with open(address, 'rb') as f:
-            document = decode_html(f.read())
+            content = f.read()
+    document = decode_html(content)
     data = scrape(document, rules, content_format=content_format)
     print(json.dumps(data, indent=2, sort_keys=True))
 
