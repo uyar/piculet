@@ -138,7 +138,7 @@ class HTMLNormalizer(HTMLParser):
     SELF_CLOSING_TAGS = {'br', 'hr', 'img', 'input', 'link', 'meta'}
     """Tags to handle as self-closing."""
 
-    def __init__(self, omit_tags=(), omit_attrs=()):
+    def __init__(self, omit_tags=None, omit_attrs=None):
         """Initialize this normalizer.
 
         :sig: (Optional[Iterable[str]], Optional[Iterable[str]]) -> None
@@ -152,8 +152,8 @@ class HTMLNormalizer(HTMLParser):
         else:
             super().__init__(convert_charrefs=True)
 
-        self.omit_tags = set(omit_tags)     # sig: Set[str]
-        self.omit_attrs = set(omit_attrs)   # sig: Set[str]
+        self.omit_tags = set(omit_tags) if omit_tags is not None else set()     # sig: Set[str]
+        self.omit_attrs = set(omit_attrs) if omit_attrs is not None else set()  # sig: Set[str]
 
         # stacks used during normalization
         self._open_tags = deque()
@@ -243,7 +243,7 @@ class HTMLNormalizer(HTMLParser):
         #     print('</%(tag)s>' % {'tag': tag}, end='')
 
 
-def html_to_xhtml(document, omit_tags=(), omit_attrs=()):
+def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
     """Clean HTML and convert to XHTML.
 
     :sig: (str, Optional[Iterable[str]], Optional[Iterable[str]]) -> str
