@@ -60,11 +60,11 @@ def test_unrecognized_arguments_should_print_usage_and_exit(capsys):
     assert 'unrecognized arguments: --foo' in err
 
 
-def test_debug_mode_should_print_debug_messages_on_stderr(capsys):
+@mark.skipif(not piculet.PY34, reason='pytest version with caplog does not support py33')
+def test_debug_mode_should_print_debug_messages(caplog):
     with mock.patch('sys.stdin', StringIO('<html></html>')):
         piculet.main(argv=['piculet', '--debug', 'h2x', '-'])
-    out, err = capsys.readouterr()
-    assert 'running in debug mode' in err
+    assert caplog.record_tuples[0][-1] == 'running in debug mode'
 
 
 def test_h2x_no_input_should_print_usage_and_exit(capsys):
