@@ -43,6 +43,11 @@ def woodpecker(
         reducer: Optional[str] = ...
 ) -> Callable[[ElementTree.Element], Optional[str]]: ...
 
+def preprocess(
+        root: ElementTree.Element,
+        pre: Iterable[Mapping[str, Any]]
+) -> ElementTree.Element: ...
+
 def extract(
         root: ElementTree.Element,
         items: Iterable[Mapping[str, Any]],

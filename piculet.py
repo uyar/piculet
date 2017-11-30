@@ -378,44 +378,34 @@ def woodpecker(path, reduce=None, reducer=None):
     return apply
 
 
-def extract(root, items, pre=None):
-    """Extract data from an XML tree.
+def _gen(val):
+    """Get a callable that generates a value when applied to an XML element."""
+    if isinstance(val, str):
+        # constant function
+        return lambda _: val
+    if 'path' in val:
+        # xpath and reducer
+        if ('reduce' not in val) and ('reducer' not in val):
+            raise ValueError('Path extractor must have reducer: ' + val['path'])
+        return woodpecker(val['path'], reduce=val.get('reduce'), reducer=val.get('reducer'))
+    if 'items' in val:
+        # recursive function for applying subrules
+        return partial(extract, items=val['items'], pre=val.get('pre'))
+    raise ValueError('Unknown value generator: ' + str(val))
 
-    This will extract the data items according to the supplied rules.
-    If given, it will use the ``pre`` parameter to carry out preprocessing
-    operations on the tree before starting data extraction.
 
-    :sig:
-        (
-            ElementTree.Element,
-            Iterable[Mapping[str, Any]],
-            Optional[Iterable[Mapping[str, Any]]]
-        ) -> Mapping[str, Any]
-    :param root: Root of the XML tree to extract the data from.
-    :param items: Rules that specify how to extract the data items.
-    :param pre: Preprocessing operations on the document tree.
-    :return: Extracted data.
+def preprocess(root, pre):
+    """Process a tree before starting extraction.
+
+    :sig: (ElementTree.Element, Iterable[Mapping[str, Any]]) -> ElementTree.Element
+    :param root: Root of tree to process.
+    :param pre: Preprocessing operations.
+    :return: Root of preprocessed tree.
+    :raise ValueError: When unknown operation or root setting path selects multiple nodes.
     """
-    def gen(val):
-        """Get a callable that generates a value when applied to an XML element."""
-        if isinstance(val, str):
-            # constant function
-            return lambda _: val
-        if 'path' in val:
-            # xpath and reducer
-            if ('reduce' not in val) and ('reducer' not in val):
-                raise ValueError('Path extractor must have reducer: ' + val['path'])
-            return woodpecker(val['path'], reduce=val.get('reduce'), reducer=val.get('reducer'))
-        if 'items' in val:
-            # recursive function for applying subrules
-            return partial(extract, items=val['items'], pre=val.get('pre'))
-        raise ValueError('Unknown value generator: ' + str(val))
-
     # ElementTree doesn't support parent queries, we'll build a map for it if needed
     get_parent = None if not _USE_LXML else ElementTree._Element.getparent
 
-    # do the preprocessing operations
-    pre = pre if pre is not None else []
     for step in pre:
         op = step['op']
         if op == 'root':
@@ -425,9 +415,11 @@ def extract(root, items, pre=None):
             if len(elements) > 1:
                 raise ValueError('Root expression must not select multiple elements: ' + path)
             if len(elements) == 0:
-                _logger.debug('no matches for new root, no data to extract')
-                return {}
-            root = elements[0]
+                _logger.debug('no matches for new root')
+                root = None
+            else:
+                _logger.debug('setting new root')
+                root = elements[0]
         elif op == 'remove':
             if get_parent is None:
                 get_parent = {e: p for p in root.iter() for e in p}.get
@@ -449,18 +441,43 @@ def extract(root, items, pre=None):
                 element.attrib[attr_name] = attr_value
         elif op == 'set_text':
             path = step['path']
-            text_gen = gen(step['text'])
+            text_gen = _gen(step['text'])
             for element in xpath(root, path):
                 text_value = text_gen(element)
                 _logger.debug('setting text to [%s] on [%s] element', text_value, element.tag)
                 element.text = text_value
         else:
             raise ValueError('Unknown preprocessing operation: ' + op)
+    return root
 
-    # actual extraction part
+
+def extract(root, items, pre=None):
+    """Extract data from an XML tree.
+
+    This will extract the data items according to the supplied rules.
+    If given, it will use the ``pre`` parameter to carry out preprocessing
+    operations on the tree before starting data extraction.
+
+    :sig:
+        (
+            ElementTree.Element,
+            Iterable[Mapping[str, Any]],
+            Optional[Iterable[Mapping[str, Any]]]
+        ) -> Mapping[str, Any]
+    :param root: Root of the XML tree to extract the data from.
+    :param items: Rules that specify how to extract the data items.
+    :param pre: Preprocessing operations on the document tree.
+    :return: Extracted data.
+    """
+    if pre is not None:
+        root = preprocess(root, pre)
+        if root is None:
+            # no data to extract
+            return {}
+
     data = {}
     for item in items:
-        key_gen = gen(item['key'])
+        key_gen = _gen(item['key'])
         foreach_key = item.get('foreach')
         subroots = [root] if foreach_key is None else xpath(root, foreach_key)
         for subroot in subroots:
@@ -471,7 +488,7 @@ def extract(root, items, pre=None):
                 key_transform = None
             key = raw_key if key_transform is None else key_transform(raw_key)
 
-            value_gen = gen(item['value'])
+            value_gen = _gen(item['value'])
             foreach_value = item['value'].get('foreach')
             transform = item['value'].get('transform')
             if foreach_value is None:

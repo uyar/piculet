@@ -6,7 +6,8 @@ History
 1.0b4 (unreleased)
 ------------------
 
-* Added --version option to command line arguments.
+* Added "--version" option to command line arguments.
+* Added separate preprocessing function to API.
 
 1.0b3 (2017-07-25)
 ------------------
