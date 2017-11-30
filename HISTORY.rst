@@ -7,6 +7,7 @@ History
 ------------------
 
 - Added "--version" option to command line arguments.
+- Added option to force the use of lxml's HTML builder.
 - Added separate preprocessing function to API.
 
 1.0b3 (2017-07-25)
