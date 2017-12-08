@@ -498,11 +498,12 @@ def extract(root, items, pre=None):
                 if raw_value:   # None from pecker, or {} from extract
                     # XXX: consider '', 0, and other non-truthy values
                     data[key] = raw_value if transform is None else transform(raw_value)
+                    _logger.debug('extracted value for "%s": "%s"', key, data[key])
             else:
                 values = [value_gen(r) for r in xpath(subroot, foreach_value)]
                 if values:
                     data[key] = values if transform is None else [transform(v) for v in values]
-            _logger.debug('extracted value for "%s": "%s"', key, data[key])
+                    _logger.debug('extracted value for "%s": "%s"', key, data[key])
     return data
 
 
