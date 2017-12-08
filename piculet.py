@@ -266,11 +266,10 @@ def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
 
 _USE_LXML = find_loader('lxml') is not None
 if _USE_LXML:
-    _logger.debug('using lxml')
+    _logger.info('using lxml')
     from lxml import etree as ElementTree
     from lxml.html import fromstring as from_html
 else:
-    _logger.debug('lxml not available, falling back to elementtree')
     from xml.etree import ElementTree
     from_html = None
 
@@ -285,7 +284,7 @@ def build_tree(document, force_html=False):
     """
     content = document if PY3 else document.encode('utf-8')
     if _USE_LXML and force_html:
-        _logger.debug('using lxml html builder')
+        _logger.info('using lxml html builder')
         return from_html(content)
     return ElementTree.fromstring(content)
 
