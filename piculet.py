@@ -302,11 +302,9 @@ def xpath_etree(element, path):
     :return: Elements or strings resulting from the query.
     """
     if path.endswith('//text()'):
-        _logger.debug('handling descendant text path: "%s"', path)
         return [t for e in element.findall(path[:-8]) for t in e.itertext() if t]
 
     if path.endswith('/text()'):
-        _logger.debug('handling child text path: "%s"', path)
         return [t for e in element.findall(path[:-7])
                 for t in ([e.text] + [c.tail if c.tail else '' for c in e]) if t]
 
@@ -314,11 +312,9 @@ def xpath_etree(element, path):
     epath, last_step = path_tokens[:-1], path_tokens[-1]
     # PY3: *epath, last_step = path.split('/')
     if last_step.startswith('@'):
-        _logger.debug('handling attribute path: "%s"', path)
         result = [e.attrib.get(last_step[1:]) for e in element.findall('/'.join(epath))]
         return [r for r in result if r is not None]
 
-    _logger.debug('handling element path: "%s"', path)
     return element.findall(path)
 
 
