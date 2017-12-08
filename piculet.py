@@ -480,12 +480,15 @@ def extract(root, items, pre=None):
         foreach_key = item.get('foreach')
         subroots = [root] if foreach_key is None else xpath(root, foreach_key)
         for subroot in subroots:
+            _logger.debug('setting current root to: "%s"', subroot.tag)
+
             raw_key = key_gen(subroot)
             try:
                 key_transform = item['key'].get('transform')
             except AttributeError:
                 key_transform = None
             key = raw_key if key_transform is None else key_transform(raw_key)
+            _logger.debug('extracting key: "%s"', key)
 
             value_gen = _gen(item['value'])
             foreach_value = item['value'].get('foreach')
@@ -499,6 +502,7 @@ def extract(root, items, pre=None):
                 values = [value_gen(r) for r in xpath(subroot, foreach_value)]
                 if values:
                     data[key] = values if transform is None else [transform(v) for v in values]
+            _logger.debug('extracted value for "%s": "%s"', key, data[key])
     return data
 
 
