@@ -325,7 +325,7 @@ xpath = xpath_etree if not _USE_LXML else ElementTree._Element.xpath
 
 
 _REDUCERS = {
-    'first':itemgetter(0),
+    'first': itemgetter(0),
     'join': partial(str.join, ''),
     'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
     'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
