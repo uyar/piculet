@@ -285,6 +285,7 @@ def build_tree(document, force_html=False):
     """
     content = document if PY3 else document.encode('utf-8')
     if _USE_LXML and force_html:
+        _logger.debug('using lxml html builder')
         return from_html(content)
     return ElementTree.fromstring(content)
 
@@ -354,14 +355,15 @@ def woodpecker(path, reduce):
         :param element: Element to extract the value from.
         :return: Extracted value or ``None`` if no match.
         """
+        _logger.debug('applying path "%s" on "%s" element', path, element.tag)
         values = xpath(element, path)
         if len(values) == 0:
-            _logger.debug('no match for path: "%s"', path)
+            _logger.debug('no match')
             return None
 
-        _logger.debug('extracted value: "%s"', values)
+        _logger.debug('selected nodes: "%s"', values)
         value = reduce(values)
-        _logger.debug('applied reducer: "%s", new value: "%s"', reduce, value)
+        _logger.debug('reduced using "%s": "%s"', reduce, value)
         return value
 
     return apply
