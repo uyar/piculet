@@ -284,7 +284,7 @@ def build_tree(document, force_html=False):
     :return: Root node of the XML tree.
     """
     content = document if PY3 else document.encode('utf-8')
-    if force_html and (from_html is not None):
+    if _USE_LXML and force_html:
         return from_html(content)
     return ElementTree.fromstring(content)
 
