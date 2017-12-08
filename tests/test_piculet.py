@@ -82,24 +82,8 @@ people_content = '<p><p1><n>John Smith</n><a>42</a></p1><p2><n>Jane Doe</n></p2>
 people_root = build_tree(people_content)
 
 
-def test_peck_no_reducer_should_raise_error():
-    with raises(ValueError):
-        woodpecker(path=".//n/text()")
-
-
-def test_peck_unknown_predefined_reducer_should_raise_error():
-    with raises(ValueError):
-        woodpecker(path=".//n/text()", reducer="merge")
-
-
 def test_peck_known_predefined_reducer_should_be_ok():
     pecker = woodpecker(path=".//n/text()", reduce=reducers.first)
-    data = pecker(people_root)
-    assert data == 'John Smith'
-
-
-def test_peck_known_predefined_reducer_by_name_should_be_ok():
-    pecker = woodpecker(path=".//n/text()", reducer="first")
     data = pecker(people_root)
     assert data == 'John Smith'
 
@@ -110,14 +94,8 @@ def test_peck_callable_reducer_should_be_ok():
     assert data == 'Jane Doe'
 
 
-def test_peck_callable_reducer_should_take_precedence():
-    pecker = woodpecker(path=".//n/text()", reducer="first", reduce=lambda xs: xs[1])
-    data = pecker(people_root)
-    assert data == 'Jane Doe'
-
-
 def test_peck_non_matching_path_should_return_none():
-    pecker = woodpecker(path=".//foo/text()", reducer="first")
+    pecker = woodpecker(path=".//foo/text()", reduce=reducers.first)
     data = pecker(people_root)
     assert data is None
 
@@ -160,6 +138,12 @@ def test_extract_predefined_reducer_should_be_ok():
     assert data == {'title': 'The Shining'}
 
 
+def test_extract_unknown_reducer_should_raise_error():
+    items = [{"key": "title", "value": {"path": ".//title/text()", "reducer": "merge"}}]
+    with raises(ValueError):
+        extract(shining, items)
+
+
 def test_extract_predefined_reducer_by_name_first_should_be_ok():
     items = [{"key": "title", "value": {"path": ".//title/text()", "reducer": "first"}}]
     data = extract(shining, items)
@@ -177,6 +161,13 @@ def test_extract_predefined_reducer_by_name_clean_should_be_ok():
               "value": {"path": ".//div[@class='review']//text()", "reducer": "clean"}}]
     data = extract(shining, items)
     assert data == {'review': 'Fantastic movie. Definitely recommended.'}
+
+
+def test_extract_callable_reducer_should_take_precedence():
+    items = [{"key": "full_title",
+              "value": {"path": ".//h1//text()", "reducer": "join", "reduce": reducers.first}}]
+    data = extract(shining, items)
+    assert data == {'full_title': 'The Shining ('}
 
 
 def test_extract_multiple_rules_should_generate_multiple_items():

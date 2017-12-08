@@ -324,16 +324,18 @@ def xpath_etree(element, path):
 xpath = xpath_etree if not _USE_LXML else ElementTree._Element.xpath
 
 
-reducers = SimpleNamespace(
-    first=itemgetter(0),
-    join=partial(str.join, ''),
-    clean=lambda xs: re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
-    normalize=lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
-)
+_REDUCERS = {
+    'first':itemgetter(0),
+    'join': partial(str.join, ''),
+    'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
+    'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
+}
+
+reducers = SimpleNamespace(**_REDUCERS)
 """Predefined reducers."""
 
 
-def woodpecker(path, reduce=None, reducer=None):
+def woodpecker(path, reduce):
     """Get a value extractor that combines an XPath query with a reducing function.
 
     This function returns a callable that takes an XML element as parameter and
@@ -341,30 +343,11 @@ def woodpecker(path, reduce=None, reducer=None):
     the query has to end with ``text()`` or ``@attr``. The list will then be passed
     to the reducing function to generate a single string as the result.
 
-    Either the ``reduce`` parameter must be supplied as a callable,
-    or the ``reducer`` must be supplied as the name of a predefined reducer function.
-    If both are supplied, the ``reduce`` parameter will be used.
-
-    :sig:
-        (
-            str,
-            Optional[Callable[[List[str]], str]],
-            Optional[str]
-        ) -> Callable[[ElementTree.Element], Optional[str]]
+    :sig: (str, Callable[[List[str]], str]) -> Callable[[ElementTree.Element], Optional[str]]
     :param path: XPath query to select the values.
     :param reduce: Function to reduce the selected elements to a single value.
-    :param reducer: Name of predefined reducer function.
     :return: A callable that can apply this path and reducer to an element.
-    :raise ValueError: When no reducing function is specified.
     """
-    if reduce is None:
-        if reducer is None:
-            raise ValueError('A reducing function must be specified')
-        try:
-            reduce = getattr(reducers, reducer)
-        except AttributeError:
-            raise ValueError('Unknown reducer: ' + reducer)
-
     def apply(element):
         """Extract a value from an element.
 
@@ -378,22 +361,35 @@ def woodpecker(path, reduce=None, reducer=None):
 
         _logger.debug('extracted value: "%s"', values)
         value = reduce(values)
-        _logger.debug('applied reducer: "%s", new value: "%s"', reducer, value)
+        _logger.debug('applied reducer: "%s", new value: "%s"', reduce, value)
         return value
 
     return apply
 
 
 def _gen(val):
-    """Get a callable that generates a value when applied to an XML element."""
+    """Get a callable that generates a value when applied to an XML element.
+
+    Either the ``reduce`` parameter must be supplied as a callable,
+    or the ``reducer`` must be supplied as the name of a predefined reducer function.
+    If both are supplied, the ``reduce`` parameter will be used.
+
+    :raise ValueError: When no valid reducing function is specified.
+    """
     if isinstance(val, str):
         # constant function
         return lambda _: val
     if 'path' in val:
         # xpath and reducer
-        if ('reduce' not in val) and ('reducer' not in val):
-            raise ValueError('Path extractor must have reducer: ' + val['path'])
-        return woodpecker(val['path'], reduce=val.get('reduce'), reducer=val.get('reducer'))
+        reduce = val.get('reduce')
+        if reduce is None:
+            reducer = val.get('reducer')
+            if reducer is None:
+                raise ValueError('Path extractor must have reducer: ' + val['path'])
+            reduce = _REDUCERS.get(reducer)
+            if reduce is None:
+                raise ValueError('Unknown reducer: ' + reducer)
+        return woodpecker(val['path'], reduce=reduce)
     if 'items' in val:
         # recursive function for applying subrules
         return partial(extract, items=val['items'], pre=val.get('pre'))

@@ -42,8 +42,7 @@ def xpath_etree(
 
 def woodpecker(
         path: str,
-        reduce: Optional[Callable[[List[str]], str]] = ...,
-        reducer: Optional[str] = ...
+        reduce: Callable[[List[str]], str]
 ) -> Callable[[ElementTree.Element], Optional[str]]: ...
 
 def preprocess(
