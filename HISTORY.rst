@@ -10,6 +10,7 @@ History
 - Added option to force the use of lxml's HTML builder.
 - Added support for transforming set text during preprocess.
 - Added separate preprocessing function to API.
+- 100% test coverage.
 
 1.0b3 (2017-07-25)
 ------------------
