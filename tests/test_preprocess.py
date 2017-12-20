@@ -118,3 +118,46 @@ def test_preprocess_set_attr_selected_none_should_not_cause_error(shining):
     data = extract(shining, items,
                    pre=[{"op": "set_attr", "path": ".//foo", "name": "foo", "value": "bar"}])
     assert data == {}
+
+
+def test_preprocess_set_text_value_from_str_should_set_text_for_selected_nodes(shining):
+    items = [{"key": "genres",
+              "value": {
+                  "foreach": ".//ul[@class='genres']/li",
+                  "path": "./text()",
+                  "reduce": reducers.first
+              }}]
+    data = extract(shining, items,
+                   pre=[{"op": "set_text", "path": ".//ul[@class='genres']/li",
+                         "text": "Foo"}])
+    assert data == {'genres': ['Foo', 'Foo']}
+
+
+def test_preprocess_set_text_value_from_path_should_set_text_for_selected_nodes(shining):
+    items = [{"key": "genres",
+              "value": {
+                  "foreach": ".//ul[@class='genres']/li",
+                  "path": "./text()",
+                  "reduce": reducers.first
+              }}]
+    data = extract(shining, items,
+                   pre=[{"op": "set_text", "path": ".//ul[@class='genres']/li",
+                         "text": {
+                             "path": "./text()",
+                             "reduce": reducers.first,
+                             "transform": str.lower
+                         }}])
+    assert data == {'genres': ['horror', 'drama']}
+
+
+def test_preprocess_set_text_no_value_should_raise_error(shining):
+    items = [{"key": "genres",
+              "value": {
+                  "foreach": ".//ul[@class='genres']/li",
+                  "path": "./text()",
+                  "reduce": reducers.first
+              }}]
+    with raises(ValueError):
+        extract(shining, items,
+                pre=[{"op": "set_text", "path": ".//ul[@class='genres']/li",
+                      "text": {"path": "./@foo", "reduce": reducers.first}}])
