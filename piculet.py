@@ -440,9 +440,14 @@ def preprocess(root, pre):
                 element.attrib[attr_name] = attr_value
         elif op == 'set_text':
             path = step['path']
-            text_gen = _gen(step['text'])
+            text = step['text']
+            text_gen = _gen(text)
             for element in xpath(root, path):
-                text_value = text_gen(element)
+                raw_value = text_gen(element)
+                transform = text.get('transform') if isinstance(text, dict) else None
+                text_value = raw_value if transform is None else transform(raw_value)
+                if not text_value:
+                    raise ValueError('Path element must produce value to set as text')
                 _logger.debug('setting text to "%s" on "%s" element', text_value, element.tag)
                 element.text = text_value
         else:
