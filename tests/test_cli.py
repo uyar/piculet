@@ -12,7 +12,7 @@ from pkg_resources import get_distribution
 import piculet
 
 
-if not piculet.PY3:
+if sys.version_info.major < 3:
     import mock
 else:
     from unittest import mock
@@ -60,7 +60,8 @@ def test_unrecognized_arguments_should_print_usage_and_exit(capsys):
     assert 'unrecognized arguments: --foo' in err
 
 
-@mark.skipif(not piculet.PY34, reason='pytest version with caplog does not support py33')
+@mark.skipif(sys.version_info[:2] == (3, 3),
+             reason='pytest version with caplog does not support py33')
 def test_debug_mode_should_print_debug_messages(caplog):
     with mock.patch('sys.stdin', StringIO('<html></html>')):
         piculet.main(argv=['piculet', '--debug', 'h2x', '-'])
