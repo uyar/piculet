@@ -17,9 +17,9 @@ def shining():
     return build_tree(shining_content)
 
 
-def test_preprocess_unknown_operation_should_raise_error(shining):
-    with raises(ValueError):
-        extract(shining, [], pre=[{"op": "foo"}])
+# def test_preprocess_unknown_operation_should_raise_error(shining):
+#     with raises(ValueError):
+#         extract(shining, [], pre=[{"op": "foo"}])
 
 
 def test_preprocess_root_multiple_should_raise_error(shining):

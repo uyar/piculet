@@ -391,7 +391,7 @@ def _gen(spec):
     :return: Value generation function.
     """
     if 'items' in spec:
-        # recursive function for applying subrules
+        # apply subrules
         peck = partial(extract, items=spec['items'], pre=spec.get('pre'))
     else:
         # xpath and reduce
@@ -403,7 +403,14 @@ def _gen(spec):
     return peck if transform is None else _compose(transform, peck)
 
 
-def _preprocess_set_root(root, path):
+def set_root_node(root, path):
+    """Change the root node of the tree.
+
+    :sig: (ElementTree.Element, str) -> ElementTree.Element
+    :param root: Current root of the tree.
+    :param path: XPath to select the new root.
+    :return: New root node of the tree.
+    """
     _logger.debug('selecting new root using path: "%s"', path)
     elements = xpath(root, path)
     if len(elements) > 1:
@@ -416,19 +423,42 @@ def _preprocess_set_root(root, path):
     return root
 
 
-def _preprocess_remove(root, path, get_parent=None):
-    if get_parent is None:
-        _logger.debug('building map for parents')
-        get_parent = {e: p for p in root.iter() for e in p}.get
+def remove_nodes(root, path):
+    """Remove selected nodes from the tree.
+
+    :sig: (ElementTree.Element, str) -> ElementTree.Element
+    :param root: Root node of the tree.
+    :param path: XPath to select the nodes to remove.
+    :return: Root node of the tree.
+    """
+    # ElementTree doesn't support parent queries, we'll build a map for it
+    get_parent = ElementTree._Element.getparent if _USE_LXML else \
+        {e: p for p in root.iter() for e in p}.get
     elements = xpath(root, path)
     _logger.debug('removing %s elements using path: "%s"', len(elements), path)
     for element in elements:
         _logger.debug('removing element: "%s"', element.tag)
         # XXX: could this be hazardous? parent removed in earlier iteration?
         get_parent(element).remove(element)
+    return root
 
 
-def _preprocess_set_attr(root, path, name, value):
+def set_node_attr(root, path, name, value):
+    """Set an attribute for selected nodes.
+
+    :sig:
+        (
+            ElementTree.Element,
+            str,
+            Union[str, Mapping[str, Any]],
+            Union[str, Mapping[str, Any]]
+        ) -> ElementTree.Element
+    :param root: Root node of the tree.
+    :param path: XPath to select the nodes to set attributes for.
+    :param name: Description for name generation.
+    :param value: Description for value generation.
+    :return: Root node of the tree.
+    """
     gen_attr_name = _gen(name) if isinstance(name, dict) else None
     gen_attr_value = _gen(value) if isinstance(value, dict) else None
     elements = xpath(root, path)
@@ -443,9 +473,23 @@ def _preprocess_set_attr(root, path, name, value):
         _logger.debug('setting "%s" attribute to "%s" on "%s" element',
                       attr_name, attr_value, element.tag)
         element.attrib[attr_name] = attr_value
+    return root
 
 
-def _preprocess_set_text(root, path, text):
+def set_node_text(root, path, text):
+    """Set the text for selected nodes.
+
+    :sig:
+        (
+            ElementTree.Element,
+            str,
+            Union[str, Mapping[str, Any]]
+        ) -> ElementTree.Element
+    :param root: Root node of the tree.
+    :param path: XPath to select the nodes to set attributes for.
+    :param text: Description for oğöo generation.
+    :return: Root node of the tree.
+    """
     gen_text = _gen(text) if isinstance(text, dict) else None
     elements = xpath(root, path)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
@@ -455,6 +499,15 @@ def _preprocess_set_text(root, path, text):
             raise ValueError('Path element must produce value to set as text')
         _logger.debug('setting text to "%s" on "%s" element', text, element.tag)
         element.text = text
+    return root
+
+
+_PREPROCESSORS = {
+    'root': set_root_node,
+    'remove': remove_nodes,
+    'set_attr': set_node_attr,
+    'set_text': set_node_text
+}
 
 
 def preprocess(root, pre):
@@ -464,23 +517,12 @@ def preprocess(root, pre):
     :param root: Root of tree to process.
     :param pre: Preprocessing operations.
     :return: Root of preprocessed tree.
-    :raise ValueError: When operation is unknown or root setting path selects multiple nodes.
     """
-    # ElementTree doesn't support parent queries, we'll build a map for it if needed
-    get_parent = None if not _USE_LXML else ElementTree._Element.getparent
-
     for step in pre:
         op = step['op']
-        if op == 'root':
-            root = _preprocess_set_root(root, step['path'])
-        elif op == 'remove':
-            _preprocess_remove(root, step['path'], get_parent=get_parent)
-        elif op == 'set_attr':
-            _preprocess_set_attr(root, step['path'], step['name'], step['value'])
-        elif op == 'set_text':
-            _preprocess_set_text(root, step['path'], step['text'])
-        else:
-            raise ValueError('Unknown preprocessing operation: ' + op)
+        del step['op']
+        func = _PREPROCESSORS[op]
+        root = func(root, **step)
     return root
 
 

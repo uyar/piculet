@@ -45,6 +45,29 @@ def woodpecker(
         reduce: Callable[[List[str]], str]
 ) -> Callable[[ElementTree.Element], Optional[str]]: ...
 
+def set_root_node(
+        root: ElementTree.Element,
+        path: str
+) -> ElementTree.Element: ...
+
+def remove_nodes(
+        root: ElementTree.Element,
+        path: str
+) -> ElementTree.Element: ...
+
+def set_node_attr(
+        root: ElementTree.Element,
+        path: str,
+        name: Union[str, Mapping[str, Any]],
+        value: Union[str, Mapping[str, Any]]
+) -> ElementTree.Element: ...
+
+def set_node_text(
+        root: ElementTree.Element,
+        path: str,
+        text: Union[str, Mapping[str, Any]]
+) -> ElementTree.Element: ...
+
 def preprocess(
         root: ElementTree.Element,
         pre: Iterable[Mapping[str, Any]]
