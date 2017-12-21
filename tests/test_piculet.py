@@ -114,16 +114,16 @@ def test_extract_no_rules_should_return_empty_result():
     assert data == {}
 
 
-def test_extract_unknown_value_generator_should_raise_error():
-    items = [{"key": "title", "value": {"foo": ".//title/text()"}}]
-    with raises(ValueError):
-        extract(shining, items)
+# def test_extract_unknown_value_generator_should_raise_error():
+#     items = [{"key": "title", "value": {"foo": ".//title/text()"}}]
+#     with raises(ValueError):
+#         extract(shining, items)
 
 
-def test_extract_path_value_generator_with_missing_reducer_should_raise_error():
-    items = [{"key": "title", "value": {"path": ".//title/text()"}}]
-    with raises(ValueError):
-        extract(shining, items)
+# def test_extract_path_value_generator_with_missing_reducer_should_raise_error():
+#     items = [{"key": "title", "value": {"path": ".//title/text()"}}]
+#     with raises(ValueError):
+#         extract(shining, items)
 
 
 def test_extract_reducer_by_lambda_should_be_ok():
@@ -138,10 +138,10 @@ def test_extract_predefined_reducer_should_be_ok():
     assert data == {'title': 'The Shining'}
 
 
-def test_extract_unknown_reducer_should_raise_error():
-    items = [{"key": "title", "value": {"path": ".//title/text()", "reducer": "merge"}}]
-    with raises(ValueError):
-        extract(shining, items)
+# def test_extract_unknown_reducer_should_raise_error():
+#     items = [{"key": "title", "value": {"path": ".//title/text()", "reducer": "merge"}}]
+#     with raises(ValueError):
+#         extract(shining, items)
 
 
 def test_extract_predefined_reducer_by_name_first_should_be_ok():
@@ -297,17 +297,17 @@ def test_extract_subitems_should_be_transformable():
                              'Shelley Duvall as Wendy Torrance']}
 
 
-def test_extract_generated_key_path_with_missing_reducer_should_raise_error():
-    items = [
-        {
-            "foreach": ".//div[@class='info']",
-            "key": {"path": "./h3/text()"},
-            "value": {"path": "./p/text()",
-                      "reduce": reducers.first}
-        }
-    ]
-    with raises(ValueError):
-        extract(shining, items)
+# def test_extract_generated_key_path_with_missing_reducer_should_raise_error():
+#     items = [
+#         {
+#             "foreach": ".//div[@class='info']",
+#             "key": {"path": "./h3/text()"},
+#             "value": {"path": "./p/text()",
+#                       "reduce": reducers.first}
+#         }
+#     ]
+#     with raises(ValueError):
+#         extract(shining, items)
 
 
 def test_extract_generated_key_path_and_reducer_should_be_ok():
