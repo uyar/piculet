@@ -188,6 +188,32 @@ def test_extract_items_with_no_data_should_be_excluded():
     assert data == {'title': 'The Shining'}
 
 
+def test_extract_items_with_non_truthy_data_empty_str_should_be_included():
+    content = '<root><foo val=""/></root>'
+    items = [{"key": "foo",
+              "value": {"path": ".//foo/@val", "reduce": reducers.first}}]
+    data = extract(build_tree(content), items)
+    assert data == {'foo': ''}
+
+
+def test_extract_items_with_non_truthy_data_zero_should_be_included():
+    content = '<root><foo val="0"/></root>'
+    items = [{"key": "foo",
+              "value": {"path": ".//foo/@val", "reduce": reducers.first,
+                        'transform': int}}]
+    data = extract(build_tree(content), items)
+    assert data == {'foo': 0}
+
+
+def test_extract_items_with_non_truthy_data_false_should_be_included():
+    content = '<root><foo val="0"/></root>'
+    items = [{"key": "foo",
+              "value": {"path": ".//foo/@val", "reduce": reducers.first,
+                        'transform': lambda x: bool(int(x))}}]
+    data = extract(build_tree(content), items)
+    assert data == {'foo': False}
+
+
 def test_extract_transforming_should_be_applied_after_reducing():
     items = [{"key": "year",
               "value": {"path": ".//span[@class='year']/text()",
