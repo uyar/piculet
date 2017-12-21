@@ -430,20 +430,20 @@ def preprocess(root, pre):
                 get_parent(element).remove(element)
         elif op == 'set_attr':
             path = step['path']
-            attr_name_gen = _gen(step['name'])
-            attr_value_gen = _gen(step['value'])
+            gen_attr_name = _gen(step['name'])
+            gen_attr_value = _gen(step['value'])
             for element in xpath(root, path):
-                attr_name = attr_name_gen(element)
-                attr_value = attr_value_gen(element)
+                attr_name = gen_attr_name(element)
+                attr_value = gen_attr_value(element)
                 _logger.debug('setting "%s" attribute to "%s" on "%s" element',
                               attr_name, attr_value, element.tag)
                 element.attrib[attr_name] = attr_value
         elif op == 'set_text':
             path = step['path']
             text = step['text']
-            text_gen = _gen(text)
+            gen_text = _gen(text)
             for element in xpath(root, path):
-                raw_value = text_gen(element)
+                raw_value = gen_text(element)
                 transform = text.get('transform') if isinstance(text, dict) else None
                 text_value = raw_value if transform is None else transform(raw_value)
                 if not text_value:
@@ -481,33 +481,35 @@ def extract(root, items, pre=None):
 
     data = {}
     for item in items:
-        key_gen = _gen(item['key'])
+        gen_key = _gen(item['key'])
         foreach_key = item.get('foreach')
         subroots = [root] if foreach_key is None else xpath(root, foreach_key)
         for subroot in subroots:
             _logger.debug('setting current root to: "%s"', subroot.tag)
 
-            raw_key = key_gen(subroot)
+            raw_key = gen_key(subroot)
             try:
-                key_transform = item['key'].get('transform')
+                transform_key = item['key'].get('transform')
             except AttributeError:
-                key_transform = None
-            key = raw_key if key_transform is None else key_transform(raw_key)
+                transform_key = None
+            key = raw_key if transform_key is None else transform_key(raw_key)
             _logger.debug('extracting key: "%s"', key)
 
-            value_gen = _gen(item['value'])
+            gen_value = _gen(item['value'])
             foreach_value = item['value'].get('foreach')
-            transform = item['value'].get('transform')
+            transform_value = item['value'].get('transform')
             if foreach_value is None:
-                raw_value = value_gen(subroot)
+                raw_value = gen_value(subroot)
                 if raw_value:   # None from pecker, or {} from extract
                     # XXX: consider '', 0, and other non-truthy values
-                    data[key] = raw_value if transform is None else transform(raw_value)
+                    data[key] = raw_value if transform_value is None else \
+                        transform_value(raw_value)
                     _logger.debug('extracted value for "%s": "%s"', key, data[key])
             else:
-                values = [value_gen(r) for r in xpath(subroot, foreach_value)]
+                values = [gen_value(r) for r in xpath(subroot, foreach_value)]
                 if values:
-                    data[key] = values if transform is None else [transform(v) for v in values]
+                    data[key] = values if transform_value is None else \
+                        [transform_value(v) for v in values]
                     _logger.debug('extracted value for "%s": "%s"', key, data[key])
     return data
 
