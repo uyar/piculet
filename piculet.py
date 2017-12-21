@@ -444,22 +444,33 @@ def preprocess(root, pre):
             elements = xpath(root, path)
             _logger.debug('removing %s elements using path: "%s"', len(elements), path)
             for element in elements:
+                _logger.debug('removing element: "%s"', element.tag)
                 # XXX: could this be hazardous? parent removed in earlier iteration?
                 get_parent(element).remove(element)
         elif op == 'set_attr':
+            path = step['path']
             gen_attr_name = _gen(step['name'])
             gen_attr_value = _gen(step['value'])
-            for element in xpath(root, step['path']):
+            elements = xpath(root, path)
+            _logger.debug('updating %s elements using path: "%s"', len(elements), path)
+            for element in elements:
                 attr_name = gen_attr_name(element)
+                if attr_name is None:
+                    raise ValueError('Path must produce value to set as attribute name')
                 attr_value = gen_attr_value(element)
+                if attr_value is None:
+                    raise ValueError('Path must produce value to set as attribute value')
                 _logger.debug('setting "%s" attribute to "%s" on "%s" element',
                               attr_name, attr_value, element.tag)
                 element.attrib[attr_name] = attr_value
         elif op == 'set_text':
+            path = step['path']
             gen_text = _gen(step['text'])
-            for element in xpath(root, step['path']):
+            elements = xpath(root, path)
+            _logger.debug('updating %s elements using path: "%s"', len(elements), path)
+            for element in elements:
                 text = gen_text(element)
-                if not text:
+                if text is None:
                     raise ValueError('Path element must produce value to set as text')
                 _logger.debug('setting text to "%s" on "%s" element', text, element.tag)
                 element.text = text
