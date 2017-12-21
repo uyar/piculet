@@ -391,9 +391,6 @@ def _gen(spec):
     :return: Value generation function.
     :raise ValueError: When no valid reducing function is specified.
     """
-    if isinstance(spec, str):
-        # constant function
-        return lambda _: spec
     if 'path' in spec:
         # xpath, reduce, transform
         reduce = spec.get('reduce')
@@ -451,28 +448,32 @@ def preprocess(root, pre):
                 # XXX: could this be hazardous? parent removed in earlier iteration?
                 get_parent(element).remove(element)
         elif op == 'set_attr':
+            step_name = step['name']
+            gen_attr_name = _gen(step_name) if isinstance(step_name, dict) else None
+            step_value = step['value']
+            gen_attr_value = _gen(step_value) if isinstance(step_value, dict) else None
+
             path = step['path']
-            gen_attr_name = _gen(step['name'])
-            gen_attr_value = _gen(step['value'])
             elements = xpath(root, path)
             _logger.debug('updating %s elements using path: "%s"', len(elements), path)
             for element in elements:
-                attr_name = gen_attr_name(element)
+                attr_name = step_name if gen_attr_name is None else gen_attr_name(element)
                 if attr_name is None:
                     raise ValueError('Path must produce value to set as attribute name')
-                attr_value = gen_attr_value(element)
+                attr_value = step_value if gen_attr_value is None else gen_attr_value(element)
                 if attr_value is None:
                     raise ValueError('Path must produce value to set as attribute value')
                 _logger.debug('setting "%s" attribute to "%s" on "%s" element',
                               attr_name, attr_value, element.tag)
                 element.attrib[attr_name] = attr_value
         elif op == 'set_text':
+            step_text = step['text']
+            gen_text = _gen(step_text) if isinstance(step_text, dict) else None
             path = step['path']
-            gen_text = _gen(step['text'])
             elements = xpath(root, path)
             _logger.debug('updating %s elements using path: "%s"', len(elements), path)
             for element in elements:
-                text = gen_text(element)
+                text = step_text if gen_text is None else gen_text(element)
                 if text is None:
                     raise ValueError('Path element must produce value to set as text')
                 _logger.debug('setting text to "%s" on "%s" element', text, element.tag)
@@ -508,7 +509,9 @@ def extract(root, items, pre=None):
 
     data = {}
     for item in items:
-        gen_key = _gen(item['key'])
+        item_key = item['key']
+        gen_key = _gen(item_key) if isinstance(item_key, dict) else None
+
         gen_value = _gen(item['value'])
         foreach_value = item['value'].get('foreach')
 
@@ -517,7 +520,7 @@ def extract(root, items, pre=None):
         for subroot in subroots:
             _logger.debug('setting current root to: "%s"', subroot.tag)
 
-            key = gen_key(subroot)
+            key = item_key if gen_key is None else gen_key(subroot)
             _logger.debug('extracting key: "%s"', key)
 
             if foreach_value is None:
