@@ -364,33 +364,36 @@ def woodpecker(path, reduce):
     return apply
 
 
-def _gen(val):
+def _gen(spec):
     """Get a callable that generates a value when applied to an XML element.
 
-    Either the ``reduce`` parameter must be supplied as a callable,
-    or the ``reducer`` must be supplied as the name of a predefined reducer function.
-    If both are supplied, the ``reduce`` parameter will be used.
+    If the value generation specification uses XPath, either the ``reduce`` parameter
+    must be supplied as a callable, or the ``reducer`` must be supplied as the name
+    of a predefined reducer function. If both are supplied, the ``reduce`` paramete
+    will be used.
 
+    :param spec: Value generation specification.
+    :return: Value generation function.
     :raise ValueError: When no valid reducing function is specified.
     """
-    if isinstance(val, str):
+    if isinstance(spec, str):
         # constant function
-        return lambda _: val
-    if 'path' in val:
+        return lambda _: spec
+    if 'path' in spec:
         # xpath and reducer
-        reduce = val.get('reduce')
+        reduce = spec.get('reduce')
         if reduce is None:
-            reducer = val.get('reducer')
+            reducer = spec.get('reducer')
             if reducer is None:
-                raise ValueError('Path extractor must have reducer: ' + val['path'])
+                raise ValueError('Path extractor must have reducer: ' + spec['path'])
             reduce = _REDUCERS.get(reducer)
             if reduce is None:
                 raise ValueError('Unknown reducer: ' + reducer)
-        return woodpecker(val['path'], reduce=reduce)
-    if 'items' in val:
+        return woodpecker(spec['path'], reduce=reduce)
+    if 'items' in spec:
         # recursive function for applying subrules
-        return partial(extract, items=val['items'], pre=val.get('pre'))
-    raise ValueError('Unknown value generator: ' + str(val))
+        return partial(extract, items=spec['items'], pre=spec.get('pre'))
+    raise ValueError('Unknown value generator: ' + str(spec))
 
 
 def preprocess(root, pre):
