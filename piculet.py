@@ -403,6 +403,60 @@ def _gen(spec):
     return peck if transform is None else _compose(transform, peck)
 
 
+def _preprocess_set_root(root, path):
+    _logger.debug('selecting new root using path: "%s"', path)
+    elements = xpath(root, path)
+    if len(elements) > 1:
+        raise ValueError('Root expression must not select multiple elements: ' + path)
+    if len(elements) == 0:
+        _logger.debug('no match for new root')
+        root = None
+    else:
+        root = elements[0]
+    return root
+
+
+def _preprocess_remove(root, path, get_parent=None):
+    if get_parent is None:
+        _logger.debug('building map for parents')
+        get_parent = {e: p for p in root.iter() for e in p}.get
+    elements = xpath(root, path)
+    _logger.debug('removing %s elements using path: "%s"', len(elements), path)
+    for element in elements:
+        _logger.debug('removing element: "%s"', element.tag)
+        # XXX: could this be hazardous? parent removed in earlier iteration?
+        get_parent(element).remove(element)
+
+
+def _preprocess_set_attr(root, path, name, value):
+    gen_attr_name = _gen(name) if isinstance(name, dict) else None
+    gen_attr_value = _gen(value) if isinstance(value, dict) else None
+    elements = xpath(root, path)
+    _logger.debug('updating %s elements using path: "%s"', len(elements), path)
+    for element in elements:
+        attr_name = name if gen_attr_name is None else gen_attr_name(element)
+        if attr_name is None:
+            raise ValueError('Path must produce value to set as attribute name')
+        attr_value = value if gen_attr_value is None else gen_attr_value(element)
+        if attr_value is None:
+            raise ValueError('Path must produce value to set as attribute value')
+        _logger.debug('setting "%s" attribute to "%s" on "%s" element',
+                      attr_name, attr_value, element.tag)
+        element.attrib[attr_name] = attr_value
+
+
+def _preprocess_set_text(root, path, text):
+    gen_text = _gen(text) if isinstance(text, dict) else None
+    elements = xpath(root, path)
+    _logger.debug('updating %s elements using path: "%s"', len(elements), path)
+    for element in elements:
+        text = text if gen_text is None else gen_text(element)
+        if text is None:
+            raise ValueError('Path element must produce value to set as text')
+        _logger.debug('setting text to "%s" on "%s" element', text, element.tag)
+        element.text = text
+
+
 def preprocess(root, pre):
     """Process a tree before starting extraction.
 
@@ -418,58 +472,13 @@ def preprocess(root, pre):
     for step in pre:
         op = step['op']
         if op == 'root':
-            path = step['path']
-            _logger.debug('selecting new root using path: "%s"', path)
-            elements = xpath(root, path)
-            if len(elements) > 1:
-                raise ValueError('Root expression must not select multiple elements: ' + path)
-            if len(elements) == 0:
-                _logger.debug('no match for new root')
-                root = None
-            else:
-                root = elements[0]
+            root = _preprocess_set_root(root, step['path'])
         elif op == 'remove':
-            if get_parent is None:
-                _logger.debug('building map for parents')
-                get_parent = {e: p for p in root.iter() for e in p}.get
-            path = step['path']
-            elements = xpath(root, path)
-            _logger.debug('removing %s elements using path: "%s"', len(elements), path)
-            for element in elements:
-                _logger.debug('removing element: "%s"', element.tag)
-                # XXX: could this be hazardous? parent removed in earlier iteration?
-                get_parent(element).remove(element)
+            _preprocess_remove(root, step['path'], get_parent=get_parent)
         elif op == 'set_attr':
-            step_name = step['name']
-            gen_attr_name = _gen(step_name) if isinstance(step_name, dict) else None
-            step_value = step['value']
-            gen_attr_value = _gen(step_value) if isinstance(step_value, dict) else None
-
-            path = step['path']
-            elements = xpath(root, path)
-            _logger.debug('updating %s elements using path: "%s"', len(elements), path)
-            for element in elements:
-                attr_name = step_name if gen_attr_name is None else gen_attr_name(element)
-                if attr_name is None:
-                    raise ValueError('Path must produce value to set as attribute name')
-                attr_value = step_value if gen_attr_value is None else gen_attr_value(element)
-                if attr_value is None:
-                    raise ValueError('Path must produce value to set as attribute value')
-                _logger.debug('setting "%s" attribute to "%s" on "%s" element',
-                              attr_name, attr_value, element.tag)
-                element.attrib[attr_name] = attr_value
+            _preprocess_set_attr(root, step['path'], step['name'], step['value'])
         elif op == 'set_text':
-            step_text = step['text']
-            gen_text = _gen(step_text) if isinstance(step_text, dict) else None
-            path = step['path']
-            elements = xpath(root, path)
-            _logger.debug('updating %s elements using path: "%s"', len(elements), path)
-            for element in elements:
-                text = step_text if gen_text is None else gen_text(element)
-                if text is None:
-                    raise ValueError('Path element must produce value to set as text')
-                _logger.debug('setting text to "%s" on "%s" element', text, element.tag)
-                element.text = text
+            _preprocess_set_text(root, step['path'], step['text'])
         else:
             raise ValueError('Unknown preprocessing operation: ' + op)
     return root
