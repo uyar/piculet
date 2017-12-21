@@ -442,9 +442,9 @@ def preprocess(root, pre):
             path = step['path']
             text = step['text']
             gen_text = _gen(text)
+            transform = text.get('transform') if isinstance(text, dict) else None
             for element in xpath(root, path):
                 raw_value = gen_text(element)
-                transform = text.get('transform') if isinstance(text, dict) else None
                 text_value = raw_value if transform is None else transform(raw_value)
                 if not text_value:
                     raise ValueError('Path element must produce value to set as text')
@@ -481,23 +481,24 @@ def extract(root, items, pre=None):
 
     data = {}
     for item in items:
-        gen_key = _gen(item['key'])
+        item_key = item['key']
+        gen_key = _gen(item_key)
+        transform_key = item_key.get('transform') if isinstance(item_key, dict) else None
+
+        item_value = item['value']
+        gen_value = _gen(item_value)
+        transform_value = item_value.get('transform')
+        foreach_value = item_value.get('foreach')
+
         foreach_key = item.get('foreach')
         subroots = [root] if foreach_key is None else xpath(root, foreach_key)
         for subroot in subroots:
             _logger.debug('setting current root to: "%s"', subroot.tag)
 
             raw_key = gen_key(subroot)
-            try:
-                transform_key = item['key'].get('transform')
-            except AttributeError:
-                transform_key = None
             key = raw_key if transform_key is None else transform_key(raw_key)
             _logger.debug('extracting key: "%s"', key)
 
-            gen_value = _gen(item['value'])
-            foreach_value = item['value'].get('foreach')
-            transform_value = item['value'].get('transform')
             if foreach_value is None:
                 raw_value = gen_value(subroot)
                 if raw_value:   # None from pecker, or {} from extract
