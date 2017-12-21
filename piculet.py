@@ -512,8 +512,9 @@ def extract(root, items, pre=None):
         item_key = item['key']
         gen_key = _gen(item_key) if isinstance(item_key, dict) else None
 
-        gen_value = _gen(item['value'])
-        foreach_value = item['value'].get('foreach')
+        item_value = item['value']
+        gen_value = _gen(item_value)
+        foreach_value = item_value.get('foreach')
 
         foreach_key = item.get('foreach')
         subroots = [root] if foreach_key is None else xpath(root, foreach_key)
