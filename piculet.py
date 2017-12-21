@@ -331,6 +331,9 @@ reducers = SimpleNamespace(**_REDUCERS)
 """Predefined reducers."""
 
 
+_EMPTY = {}
+
+
 def woodpecker(path, reduce):
     """Get a value extractor that combines an XPath query with a reducing function.
 
@@ -372,7 +375,7 @@ def _compose(f, g):
     """
     def wrapped(*args, **kwargs):
         v = g(*args, **kwargs)
-        return None if v is None else f(v)
+        return v if (v is None) or (v is _EMPTY) else f(v)
     return wrapped
 
 
@@ -501,7 +504,7 @@ def extract(root, items, pre=None):
         root = preprocess(root, pre)
         if root is None:
             # no data to extract
-            return {}
+            return _EMPTY
 
     data = {}
     for item in items:
@@ -519,8 +522,7 @@ def extract(root, items, pre=None):
 
             if foreach_value is None:
                 value = gen_value(subroot)
-                if value:   # None from pecker, or {} from extract
-                    # XXX: consider '', 0, and other non-truthy values
+                if (value is not None) and (value is not _EMPTY):
                     data[key] = value
                     _logger.debug('extracted value for "%s": "%s"', key, data[key])
             else:
@@ -528,7 +530,7 @@ def extract(root, items, pre=None):
                 if values:
                     data[key] = values
                     _logger.debug('extracted value for "%s": "%s"', key, data[key])
-    return data
+    return data if len(data) > 0 else _EMPTY
 
 
 def scrape(document, rules, content_format='xml'):

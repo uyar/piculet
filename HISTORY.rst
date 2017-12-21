@@ -8,6 +8,7 @@ History
 
 - Added "--version" option to command line arguments.
 - Added option to force the use of lxml's HTML builder.
+- Fixed the mistake where non-truthy values would be excluded from the result.
 - Added support for transforming set text during preprocess.
 - Added separate preprocessing function to API.
 - 100% test coverage.
