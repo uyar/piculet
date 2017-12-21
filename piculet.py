@@ -364,6 +364,18 @@ def woodpecker(path, reduce):
     return apply
 
 
+def _compose(f, g):
+    """Compose two functions.
+
+    If the first applied function generates None, the second function
+    will not be applied.
+    """
+    def wrapped(*args, **kwargs):
+        v = g(*args, **kwargs)
+        return None if v is None else f(v)
+    return wrapped
+
+
 def _gen(spec):
     """Get a callable that generates a value when applied to an XML element.
 
@@ -380,7 +392,7 @@ def _gen(spec):
         # constant function
         return lambda _: spec
     if 'path' in spec:
-        # xpath and reducer
+        # xpath, reduce, transform
         reduce = spec.get('reduce')
         if reduce is None:
             reducer = spec.get('reducer')
@@ -389,11 +401,14 @@ def _gen(spec):
             reduce = _REDUCERS.get(reducer)
             if reduce is None:
                 raise ValueError('Unknown reducer: ' + reducer)
-        return woodpecker(spec['path'], reduce=reduce)
-    if 'items' in spec:
+        peck = woodpecker(spec['path'], reduce=reduce)
+    elif 'items' in spec:
         # recursive function for applying subrules
-        return partial(extract, items=spec['items'], pre=spec.get('pre'))
-    raise ValueError('Unknown value generator: ' + str(spec))
+        peck = partial(extract, items=spec['items'], pre=spec.get('pre'))
+    else:
+        raise ValueError('Unknown value generator: ' + str(spec))
+    transform = spec.get('transform')
+    return peck if transform is None else _compose(transform, peck)
 
 
 def preprocess(root, pre):
@@ -432,27 +447,22 @@ def preprocess(root, pre):
                 # XXX: could this be hazardous? parent removed in earlier iteration?
                 get_parent(element).remove(element)
         elif op == 'set_attr':
-            path = step['path']
             gen_attr_name = _gen(step['name'])
             gen_attr_value = _gen(step['value'])
-            for element in xpath(root, path):
+            for element in xpath(root, step['path']):
                 attr_name = gen_attr_name(element)
                 attr_value = gen_attr_value(element)
                 _logger.debug('setting "%s" attribute to "%s" on "%s" element',
                               attr_name, attr_value, element.tag)
                 element.attrib[attr_name] = attr_value
         elif op == 'set_text':
-            path = step['path']
-            text = step['text']
-            gen_text = _gen(text)
-            transform = text.get('transform') if isinstance(text, dict) else None
-            for element in xpath(root, path):
-                raw_value = gen_text(element)
-                text_value = raw_value if transform is None else transform(raw_value)
-                if not text_value:
+            gen_text = _gen(step['text'])
+            for element in xpath(root, step['path']):
+                text = gen_text(element)
+                if not text:
                     raise ValueError('Path element must produce value to set as text')
-                _logger.debug('setting text to "%s" on "%s" element', text_value, element.tag)
-                element.text = text_value
+                _logger.debug('setting text to "%s" on "%s" element', text, element.tag)
+                element.text = text
         else:
             raise ValueError('Unknown preprocessing operation: ' + op)
     return root
@@ -484,36 +494,28 @@ def extract(root, items, pre=None):
 
     data = {}
     for item in items:
-        item_key = item['key']
-        gen_key = _gen(item_key)
-        transform_key = item_key.get('transform') if isinstance(item_key, dict) else None
-
-        item_value = item['value']
-        gen_value = _gen(item_value)
-        transform_value = item_value.get('transform')
-        foreach_value = item_value.get('foreach')
+        gen_key = _gen(item['key'])
+        gen_value = _gen(item['value'])
+        foreach_value = item['value'].get('foreach')
 
         foreach_key = item.get('foreach')
         subroots = [root] if foreach_key is None else xpath(root, foreach_key)
         for subroot in subroots:
             _logger.debug('setting current root to: "%s"', subroot.tag)
 
-            raw_key = gen_key(subroot)
-            key = raw_key if transform_key is None else transform_key(raw_key)
+            key = gen_key(subroot)
             _logger.debug('extracting key: "%s"', key)
 
             if foreach_value is None:
-                raw_value = gen_value(subroot)
-                if raw_value:   # None from pecker, or {} from extract
+                value = gen_value(subroot)
+                if value:   # None from pecker, or {} from extract
                     # XXX: consider '', 0, and other non-truthy values
-                    data[key] = raw_value if transform_value is None else \
-                        transform_value(raw_value)
+                    data[key] = value
                     _logger.debug('extracted value for "%s": "%s"', key, data[key])
             else:
                 values = [gen_value(r) for r in xpath(subroot, foreach_value)]
                 if values:
-                    data[key] = values if transform_value is None else \
-                        [transform_value(v) for v in values]
+                    data[key] = values
                     _logger.debug('extracted value for "%s": "%s"', key, data[key])
     return data
 
