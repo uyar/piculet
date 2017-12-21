@@ -384,29 +384,21 @@ def _gen(spec):
 
     If the value generation specification uses XPath, either the ``reduce`` parameter
     must be supplied as a callable, or the ``reducer`` must be supplied as the name
-    of a predefined reducer function. If both are supplied, the ``reduce`` paramete
+    of a predefined reducer function. If both are supplied, the ``reduce`` parameter
     will be used.
 
     :param spec: Value generation specification.
     :return: Value generation function.
-    :raise ValueError: When no valid reducing function is specified.
     """
-    if 'path' in spec:
-        # xpath, reduce, transform
-        reduce = spec.get('reduce')
-        if reduce is None:
-            reducer = spec.get('reducer')
-            if reducer is None:
-                raise ValueError('Path extractor must have reducer: ' + spec['path'])
-            reduce = _REDUCERS.get(reducer)
-            if reduce is None:
-                raise ValueError('Unknown reducer: ' + reducer)
-        peck = woodpecker(spec['path'], reduce=reduce)
-    elif 'items' in spec:
+    if 'items' in spec:
         # recursive function for applying subrules
         peck = partial(extract, items=spec['items'], pre=spec.get('pre'))
     else:
-        raise ValueError('Unknown value generator: ' + str(spec))
+        # xpath and reduce
+        reduce = spec.get('reduce')
+        if reduce is None:
+            reduce = _REDUCERS[spec['reducer']]
+        peck = woodpecker(spec['path'], reduce=reduce)
     transform = spec.get('transform')
     return peck if transform is None else _compose(transform, peck)
 
