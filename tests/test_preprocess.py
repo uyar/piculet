@@ -191,4 +191,4 @@ def test_preprocess_set_text_no_value_should_be_ignored(shining):
     data = extract(shining, items,
                    pre=[{"op": "set_text", "path": ".//ul[@class='genres']/li",
                          "text": {"path": "./@foo", "reduce": reducers.first}}])
-    assert data == {'genres': ['Horror', 'Drama']}
+    assert data == {'genres': [None, None]}
