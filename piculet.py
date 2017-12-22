@@ -271,7 +271,7 @@ if _USE_LXML:
     from lxml.html import fromstring as from_html
 else:
     from xml.etree import ElementTree
-    from_html = None
+    from_html = id
 
 
 def build_tree(document, force_html=False):
