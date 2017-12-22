@@ -466,16 +466,15 @@ _PREPROCESSORS = {
 def preprocess(root, pre):
     """Process a tree before starting extraction.
 
-    :sig: (ElementTree.Element, Iterable[MutableMapping[str, Any]]) -> ElementTree.Element
+    :sig: (ElementTree.Element, Iterable[Mapping[str, Any]]) -> ElementTree.Element
     :param root: Root of tree to process.
     :param pre: Preprocessing operations.
     :return: Root of preprocessed tree.
     """
     for step in pre:
         op = step['op']
-        del step['op']
         func = _PREPROCESSORS[op]
-        root = func(root, **step)
+        root = func(root, **{k: v for k, v in step.items() if k != 'op'})
     return root
 
 

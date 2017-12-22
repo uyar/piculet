@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from pytest import mark, raises
+from pytest import config, mark, raises
 
 import json
 import os
@@ -128,6 +128,7 @@ def test_scrape_local_should_scrape_given_file(capsys):
     assert data['title'] == 'The Shining'
 
 
+@mark.skipif(not config.getvalue('--cov'), reason='slows down tests')
 def test_scrape_should_scrape_given_url(capsys):
     piculet.main(argv=['piculet', 'scrape', 'https://en.wikipedia.org/wiki/David_Bowie',
                        '-s', wikipedia_spec, '--html'])
