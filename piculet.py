@@ -442,7 +442,7 @@ def set_node_text(root, path, text):
         ) -> ElementTree.Element
     :param root: Root node of the tree.
     :param path: XPath to select the nodes to set attributes for.
-    :param text: Description for oğöo generation.
+    :param text: Description for text generation.
     :return: Root node of the tree.
     """
     elements = xpath(root, path)
@@ -524,7 +524,7 @@ def extract(root, items, pre=None):
             else:
                 raw_values = [_gen_value(r, item_value) for r in xpath(subroot, foreach_value)]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
-                if values:
+                if len(values) > 0:
                     data[key] = values
                     _logger.debug('extracted value for "%s": "%s"', key, data[key])
     return data if len(data) > 0 else _EMPTY
