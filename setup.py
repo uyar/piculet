@@ -54,7 +54,8 @@ setup(
         ],
         'test': [
             'pytest',
-            'pytest-cov'
+            'pytest-cov',
+            'pytest-profiling'
         ],
     },
     entry_points="""
