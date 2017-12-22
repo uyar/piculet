@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from pytest import fixture, raises
+from pytest import fixture
 
 import os
 
@@ -22,9 +22,12 @@ def shining():
 #         extract(shining, [], pre=[{"op": "foo"}])
 
 
-def test_preprocess_root_multiple_should_raise_error(shining):
-    with raises(ValueError):
-        extract(shining, [], pre=[{"op": "root", "path": ".//div"}])
+def test_preprocess_root_multiple_should_return_empty_result(shining):
+    # with raises(ValueError):
+    #     extract(shining, [], pre=[{"op": "root", "path": ".//div"}])
+    items = [{"key": "title", "value": {"path": ".//title/text()", "reduce": reducers.first}}]
+    data = extract(shining, items, pre=[{"op": "root", "path": ".//div"}])
+    assert data == {}
 
 
 def test_preprocess_root_none_should_return_empty_result(shining):
@@ -94,18 +97,18 @@ def test_preprocess_set_attr_value_from_path_should_set_attribute_for_selected_n
     assert data == {'genres': ['Horror', 'Drama']}
 
 
-def test_preprocess_set_attr_value_from_path_no_value_should_raise_error(shining):
+def test_preprocess_set_attr_value_from_path_no_value_should_be_ignored(shining):
     items = [{"key": "genres",
               "value": {
                   "foreach": ".//li[@foo]",
                   "path": "./@foo",
                   "reduce": reducers.first
               }}]
-    with raises(ValueError):
-        extract(shining, items,
-                pre=[{"op": "set_attr", "path": ".//ul[@class='genres']/li",
-                      "name": "foo",
-                      "value": {"path": "./@bar", "reduce": reducers.first}}])
+    data = extract(shining, items,
+                   pre=[{"op": "set_attr", "path": ".//ul[@class='genres']/li",
+                         "name": "foo",
+                         "value": {"path": "./@bar", "reduce": reducers.first}}])
+    assert data == {}
 
 
 def test_preprocess_set_attr_name_from_path_should_set_attribute_for_selected_nodes(shining):
@@ -122,18 +125,18 @@ def test_preprocess_set_attr_name_from_path_should_set_attribute_for_selected_no
     assert data == {'genres': ['bar']}
 
 
-def test_preprocess_set_attr_name_from_path_no_value_should_raise_error(shining):
+def test_preprocess_set_attr_name_from_path_no_value_should_be_ignored(shining):
     items = [{"key": "genres",
               "value": {
                   "foreach": ".//li[@Horror]",
                   "path": "./@Horror",
                   "reduce": reducers.first
               }}]
-    with raises(ValueError):
-        extract(shining, items,
-                pre=[{"op": "set_attr", "path": ".//ul[@class='genres']/li",
-                      "name": {"path": "./@bar", "reduce": reducers.first},
-                      "value": "bar"}])
+    data = extract(shining, items,
+                   pre=[{"op": "set_attr", "path": ".//ul[@class='genres']/li",
+                         "name": {"path": "./@bar", "reduce": reducers.first},
+                         "value": "bar"}])
+    assert data == {}
 
 
 def test_preprocess_set_attr_selected_none_should_not_cause_error(shining):
@@ -178,14 +181,14 @@ def test_preprocess_set_text_value_from_path_should_set_text_for_selected_nodes(
     assert data == {'genres': ['horror', 'drama']}
 
 
-def test_preprocess_set_text_no_value_should_raise_error(shining):
+def test_preprocess_set_text_no_value_should_be_ignored(shining):
     items = [{"key": "genres",
               "value": {
                   "foreach": ".//ul[@class='genres']/li",
                   "path": "./text()",
                   "reduce": reducers.first
               }}]
-    with raises(ValueError):
-        extract(shining, items,
-                pre=[{"op": "set_text", "path": ".//ul[@class='genres']/li",
-                      "text": {"path": "./@foo", "reduce": reducers.first}}])
+    data = extract(shining, items,
+                   pre=[{"op": "set_text", "path": ".//ul[@class='genres']/li",
+                         "text": {"path": "./@foo", "reduce": reducers.first}}])
+    assert data == {'genres': ['Horror', 'Drama']}
