@@ -340,18 +340,16 @@ def _gen_value(element, spec):
         value = extract(element, items=spec['items'], pre=spec.get('pre'))
     else:
         # xpath and reduce
-        reduce = spec.get('reduce')
-        if reduce is None:
-            reduce = _REDUCERS[spec['reducer']]
-
-        path = spec['path']
-        _logger.debug('applying path "%s" on "%s" element', path, element.tag)
-        nodes = xpath(element, path)
+        _logger.debug('applying path "%s" on "%s" element', spec['path'], element.tag)
+        nodes = xpath(element, spec['path'])
         if len(nodes) == 0:
             _logger.debug('no match')
             value = None
         else:
             _logger.debug('selected nodes: "%s"', nodes)
+            reduce = spec.get('reduce')
+            if reduce is None:
+                reduce = _REDUCERS[spec['reducer']]
             value = reduce(nodes)
             _logger.debug('reduced using "%s": "%s"', reduce, value)
 
