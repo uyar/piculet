@@ -497,6 +497,7 @@ def set_node_text(root, path, text):
         text = text if gen_text is None else gen_text(element)
         if text is None:
             _logger.debug('no value generated for node text on "%s" element', element.tag)
+            element.text = None
             continue
         _logger.debug('setting text to "%s" on "%s" element', text, element.tag)
         element.text = text
