@@ -575,7 +575,8 @@ def extract(root, items, pre=None):
                     data[key] = value
                     _logger.debug('extracted value for "%s": "%s"', key, data[key])
             else:
-                values = [gen_value(r) for r in xpath(subroot, foreach_value)]
+                raw_values = [gen_value(r) for r in xpath(subroot, foreach_value)]
+                values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
                 if values:
                     data[key] = values
                     _logger.debug('extracted value for "%s": "%s"', key, data[key])
