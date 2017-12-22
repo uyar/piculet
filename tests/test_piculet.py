@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 
-from piculet import build_tree, extract, reducers, woodpecker, xpath
+from piculet import build_tree, extract, reducers, xpath
 
 
 ########################################
@@ -69,33 +69,6 @@ def test_reducer_normalize_should_keep_underscores():
 
 def test_reducer_normalize_should_replace_spaces_with_underscores():
     assert reducers.normalize(['a', ' b', 'c']) == 'a_bc'
-
-
-########################################
-# woodpecker tests
-########################################
-
-
-people_content = '<p><p1><n>John Smith</n><a>42</a></p1><p2><n>Jane Doe</n></p2></p>'
-people_root = build_tree(people_content)
-
-
-def test_peck_known_predefined_reducer_should_be_ok():
-    pecker = woodpecker(path=".//n/text()", reduce=reducers.first)
-    data = pecker(people_root)
-    assert data == 'John Smith'
-
-
-def test_peck_callable_reducer_should_be_ok():
-    pecker = woodpecker(path=".//n/text()", reduce=lambda xs: xs[1])
-    data = pecker(people_root)
-    assert data == 'Jane Doe'
-
-
-def test_peck_non_matching_path_should_return_none():
-    pecker = woodpecker(path=".//foo/text()", reduce=reducers.first)
-    data = pecker(people_root)
-    assert data is None
 
 
 ########################################

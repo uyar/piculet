@@ -334,73 +334,32 @@ reducers = SimpleNamespace(**_REDUCERS)
 _EMPTY = {}
 
 
-def woodpecker(path, reduce):
-    """Get a value extractor that combines an XPath query with a reducing function.
-
-    This function returns a callable that takes an XML element as parameter and
-    applies the XPath query to that element to get a list of strings; therefore
-    the query has to end with ``text()`` or ``@attr``. The list will then be passed
-    to the reducing function to generate a single string as the result.
-
-    :sig: (str, Callable[[List[str]], str]) -> Callable[[ElementTree.Element], Optional[str]]
-    :param path: XPath query to select the values.
-    :param reduce: Function to reduce the selected elements to a single value.
-    :return: A callable that can apply this path and reducer to an element.
-    """
-    def apply(element):
-        """Extract a value from an element.
-
-        :param element: Element to extract the value from.
-        :return: Extracted value or ``None`` if no match.
-        """
-        _logger.debug('applying path "%s" on "%s" element', path, element.tag)
-        values = xpath(element, path)
-        if len(values) == 0:
-            _logger.debug('no match')
-            return None
-
-        _logger.debug('selected nodes: "%s"', values)
-        value = reduce(values)
-        _logger.debug('reduced using "%s": "%s"', reduce, value)
-        return value
-
-    return apply
-
-
-def _compose(f, g):
-    """Compose two functions.
-
-    If the first applied function generates None, the second function
-    will not be applied.
-    """
-    def wrapped(*args, **kwargs):
-        v = g(*args, **kwargs)
-        return v if (v is None) or (v is _EMPTY) else f(v)
-    return wrapped
-
-
-def _gen(spec):
-    """Get a callable that generates a value when applied to an XML element.
-
-    If the value generation specification uses XPath, either the ``reduce`` parameter
-    must be supplied as a callable, or the ``reducer`` must be supplied as the name
-    of a predefined reducer function. If both are supplied, the ``reduce`` parameter
-    will be used.
-
-    :param spec: Value generation specification.
-    :return: Value generation function.
-    """
+def _gen_value(element, spec):
     if 'items' in spec:
         # apply subrules
-        peck = partial(extract, items=spec['items'], pre=spec.get('pre'))
+        value = extract(element, items=spec['items'], pre=spec.get('pre'))
     else:
         # xpath and reduce
         reduce = spec.get('reduce')
         if reduce is None:
             reduce = _REDUCERS[spec['reducer']]
-        peck = woodpecker(spec['path'], reduce=reduce)
+
+        path = spec['path']
+        _logger.debug('applying path "%s" on "%s" element', path, element.tag)
+        nodes = xpath(element, path)
+        if len(nodes) == 0:
+            _logger.debug('no match')
+            value = None
+        else:
+            _logger.debug('selected nodes: "%s"', nodes)
+            value = reduce(nodes)
+            _logger.debug('reduced using "%s": "%s"', reduce, value)
+
+    if (value is None) or (value is _EMPTY):
+        return value
+
     transform = spec.get('transform')
-    return peck if transform is None else _compose(transform, peck)
+    return value if transform is None else transform(value)
 
 
 def set_root_node(root, path):
@@ -457,16 +416,14 @@ def set_node_attr(root, path, name, value):
     :param value: Description for value generation.
     :return: Root node of the tree.
     """
-    gen_attr_name = _gen(name) if isinstance(name, dict) else None
-    gen_attr_value = _gen(value) if isinstance(value, dict) else None
     elements = xpath(root, path)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
-        attr_name = name if gen_attr_name is None else gen_attr_name(element)
+        attr_name = name if isinstance(name, str) else _gen_value(element, name)
         if attr_name is None:
             _logger.debug('no value generated for attribute name on "%s" element', element.tag)
             continue
-        attr_value = value if gen_attr_value is None else gen_attr_value(element)
+        attr_value = value if isinstance(value, str) else _gen_value(element, value)
         if attr_value is None:
             _logger.debug('no value generated for attribute value on "%s" element', element.tag)
             continue
@@ -490,17 +447,13 @@ def set_node_text(root, path, text):
     :param text: Description for oğöo generation.
     :return: Root node of the tree.
     """
-    gen_text = _gen(text) if isinstance(text, dict) else None
     elements = xpath(root, path)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
-        text = text if gen_text is None else gen_text(element)
-        if text is None:
-            _logger.debug('no value generated for node text on "%s" element', element.tag)
-            element.text = None
-            continue
+        value = text if isinstance(text, str) else _gen_value(element, text)
+        # note that value can be None in which case the existing text will be cleared
         _logger.debug('setting text to "%s" on "%s" element', text, element.tag)
-        element.text = text
+        element.text = value
     return root
 
 
@@ -555,10 +508,7 @@ def extract(root, items, pre=None):
     data = {}
     for item in items:
         item_key = item['key']
-        gen_key = _gen(item_key) if isinstance(item_key, dict) else None
-
         item_value = item['value']
-        gen_value = _gen(item_value)
         foreach_value = item_value.get('foreach')
 
         foreach_key = item.get('foreach')
@@ -566,16 +516,16 @@ def extract(root, items, pre=None):
         for subroot in subroots:
             _logger.debug('setting current root to: "%s"', subroot.tag)
 
-            key = item_key if gen_key is None else gen_key(subroot)
+            key = item_key if isinstance(item_key, str) else _gen_value(subroot, item_key)
             _logger.debug('extracting key: "%s"', key)
 
             if foreach_value is None:
-                value = gen_value(subroot)
+                value = _gen_value(subroot, item_value)
                 if (value is not None) and (value is not _EMPTY):
                     data[key] = value
                     _logger.debug('extracted value for "%s": "%s"', key, data[key])
             else:
-                raw_values = [gen_value(r) for r in xpath(subroot, foreach_value)]
+                raw_values = [_gen_value(r, item_value) for r in xpath(subroot, foreach_value)]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
                 if values:
                     data[key] = values
