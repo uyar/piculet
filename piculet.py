@@ -413,10 +413,8 @@ def set_root_node(root, path):
     """
     _logger.debug('selecting new root using path: "%s"', path)
     elements = xpath(root, path)
-    if len(elements) > 1:
-        raise ValueError('Root expression must not select multiple elements: ' + path)
-    if len(elements) == 0:
-        _logger.debug('no match for new root')
+    if len(elements) != 1:
+        _logger.debug('%s elements match for new root', len(elements))
         root = None
     else:
         root = elements[0]
@@ -466,10 +464,12 @@ def set_node_attr(root, path, name, value):
     for element in elements:
         attr_name = name if gen_attr_name is None else gen_attr_name(element)
         if attr_name is None:
-            raise ValueError('Path must produce value to set as attribute name')
+            _logger.debug('no value generated for attribute name on "%s" element', element.tag)
+            continue
         attr_value = value if gen_attr_value is None else gen_attr_value(element)
         if attr_value is None:
-            raise ValueError('Path must produce value to set as attribute value')
+            _logger.debug('no value generated for attribute value on "%s" element', element.tag)
+            continue
         _logger.debug('setting "%s" attribute to "%s" on "%s" element',
                       attr_name, attr_value, element.tag)
         element.attrib[attr_name] = attr_value
@@ -496,7 +496,8 @@ def set_node_text(root, path, text):
     for element in elements:
         text = text if gen_text is None else gen_text(element)
         if text is None:
-            raise ValueError('Path element must produce value to set as text')
+            _logger.debug('no value generated for node text on "%s" element', element.tag)
+            continue
         _logger.debug('setting text to "%s" on "%s" element', text, element.tag)
         element.text = text
     return root
@@ -513,7 +514,7 @@ _PREPROCESSORS = {
 def preprocess(root, pre):
     """Process a tree before starting extraction.
 
-    :sig: (ElementTree.Element, Iterable[Mapping[str, Any]]) -> ElementTree.Element
+    :sig: (ElementTree.Element, Iterable[MutableMapping[str, Any]]) -> ElementTree.Element
     :param root: Root of tree to process.
     :param pre: Preprocessing operations.
     :return: Root of preprocessed tree.
