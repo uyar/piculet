@@ -368,10 +368,11 @@ def set_root_node(root, path):
     _logger.debug('selecting new root using path: "%s"', path)
     elements = xpath(root, path)
     if len(elements) != 1:
-        _logger.debug('%s elements match for new root', len(elements))
         root = None
+        _logger.debug('%s elements match for new root', len(elements))
     else:
         root = elements[0]
+        _logger.debug('setting root to "%s" element', root.tag)
     return root
 
 
@@ -448,7 +449,7 @@ def set_node_text(root, path, text):
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
         node_text = text if isinstance(text, str) else _gen_value(element, text)
-        # note that value can be None in which case the existing text will be cleared
+        # note that the text can be None in which case the existing text will be cleared
         _logger.debug('setting text to "%s" on "%s" element', text, element.tag)
         element.text = node_text
     return root
@@ -528,8 +529,7 @@ def extract(root, items, pre=None):
                 data[key] = value
                 # _logger.debug('extracted value for "%s": "%s"', key, data[key])
             else:
-                # don't try to transform list items by default
-                # it might waste a lot of time
+                # don't try to transform list items by default, it might waste a lot of time
                 raw_values = [_gen_value(r, item_value, trans=False)
                               for r in xpath(subroot, foreach_value)]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
