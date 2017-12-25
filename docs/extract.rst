@@ -137,8 +137,8 @@ The reducing function that returns the first element of a list
        "reduce": reducers.first
    }
 
-Other commonly used predefined reducing operations are joining and cleaning.
-The ``join`` reducer joins all selected strings into one:
+Other commonly used predefined reducing operations are concatenating and
+cleaning. The ``concat`` reducer concatenates all selected strings into one:
 
 >>> rules = {
 ...     "items": [
@@ -146,7 +146,7 @@ The ``join`` reducer joins all selected strings into one:
 ...             "key": "full_title",
 ...             "value": {
 ...                 "path": ".//h1//text()",
-...                 "reduce": reducers.join
+...                 "reduce": reducers.concat
 ...             }
 ...         }
 ...     ]
@@ -155,8 +155,8 @@ The ``join`` reducer joins all selected strings into one:
 {'full_title': 'The Shining (1980)'}
 
 If you want to get rid of extra whitespace, you can use the ``clean`` reducer.
-After joining the strings, this will remove leading and trailing whitespace
-and replace multiple whitespace with a single space:
+After concatenating the strings, this will remove leading and trailing
+whitespace and replace multiple whitespace with a single space:
 
 >>> rules = {
 ...     "items": [
@@ -172,7 +172,7 @@ and replace multiple whitespace with a single space:
 >>> scrape(document, rules)
 {'review': 'Fantastic movie. Definitely recommended.'}
 
-In this example, the ``join`` reducer would have produced the value
+In this example, the ``concat`` reducer would have produced the value
 ``'\n            Fantastic movie.\n            Definitely recommended.\n        '``
 
 The predefined reducers can also be accessed by name using the "reducer"
@@ -427,7 +427,7 @@ to the selected section element:
 >>> scrape(document, rules)
 {'Language:': 'English', 'Runtime:': '144 minutes'}
 
-The ``normalize`` predefined reducer joins the strings, converts it
+The ``normalize`` predefined reducer concatenates the strings, converts it
 to lowercase, replaces spaces with underscores and strips other
 non-alphanumeric characters:
 
