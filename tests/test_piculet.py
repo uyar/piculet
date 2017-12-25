@@ -43,8 +43,8 @@ def test_reducer_first_should_return_first_item():
     assert reducers.first(['a', 'b', 'c']) == 'a'
 
 
-def test_reducer_join_should_return_joined_items():
-    assert reducers.join(['a', 'b', 'c']) == 'abc'
+def test_reducer_concat_should_return_concatenated_items():
+    assert reducers.concat(['a', 'b', 'c']) == 'abc'
 
 
 def test_reducer_clean_should_remove_extra_space():
@@ -121,8 +121,8 @@ def test_extract_predefined_reducer_by_name_first_should_be_ok():
     assert data == {'title': 'The Shining'}
 
 
-def test_extract_predefined_reducer_by_name_join_should_be_ok():
-    items = [{"key": "full_title", "value": {"path": ".//h1//text()", "reducer": "join"}}]
+def test_extract_predefined_reducer_by_name_concat_should_be_ok():
+    items = [{"key": "full_title", "value": {"path": ".//h1//text()", "reducer": "concat"}}]
     data = extract(shining, items)
     assert data == {'full_title': 'The Shining (1980)'}
 
@@ -136,7 +136,8 @@ def test_extract_predefined_reducer_by_name_clean_should_be_ok():
 
 def test_extract_callable_reducer_should_take_precedence():
     items = [{"key": "full_title",
-              "value": {"path": ".//h1//text()", "reducer": "join", "reduce": reducers.first}}]
+              "value": {"path": ".//h1//text()",
+                        "reducer": "concat", "reduce": reducers.first}}]
     data = extract(shining, items)
     assert data == {'full_title': 'The Shining ('}
 

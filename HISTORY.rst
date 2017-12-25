@@ -11,6 +11,7 @@ History
 - Fixed the error where non-truthy values would be excluded from the result.
 - Added support for transforming node text during preprocess.
 - Added separate preprocessing function to API.
+- Renamed the "join" reducer as "concat".
 - 100% test coverage.
 - Removed some low level debug messages to substantially increase speed.
 
