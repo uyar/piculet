@@ -412,7 +412,7 @@ to the selected section element:
 >>> rules = {
 ...     "items": [
 ...         {
-...             "foreach": ".//div[@class='info']",
+...             "section": ".//div[@class='info']",
 ...             "key": {
 ...                 "path": "./h3/text()",
 ...                 "reduce": reducers.first
@@ -434,7 +434,7 @@ non-alphanumeric characters:
 >>> rules = {
 ...     "items": [
 ...         {
-...             "foreach": ".//div[@class='info']",
+...             "section": ".//div[@class='info']",
 ...             "key": {
 ...                 "path": "./h3/text()",
 ...                 "reduce": reducers.normalize

@@ -285,7 +285,7 @@ def test_extract_subitems_should_be_transformable():
 def test_extract_generated_key_none_should_be_excluded():
     items = [
         {
-            "foreach": ".//div[@class='info']",
+            "section": ".//div[@class='info']",
             "key": {"path": "./foo/text()",
                     "reduce": reducers.first},
             "value": {"path": "./p/text()",
@@ -299,7 +299,7 @@ def test_extract_generated_key_none_should_be_excluded():
 def test_extract_generated_key_path_and_reducer_should_be_ok():
     items = [
         {
-            "foreach": ".//div[@class='info']",
+            "section": ".//div[@class='info']",
             "key": {"path": "./h3/text()",
                     "reduce": reducers.first},
             "value": {"path": "./p/text()",
@@ -313,7 +313,7 @@ def test_extract_generated_key_path_and_reducer_should_be_ok():
 def test_extract_generated_key_normalize_reducer_should_be_ok():
     items = [
         {
-            "foreach": ".//div[@class='info']",
+            "section": ".//div[@class='info']",
             "key": {"path": "./h3/text()",
                     "reduce": reducers.normalize},
             "value": {"path": "./p/text()",
@@ -327,7 +327,7 @@ def test_extract_generated_key_normalize_reducer_should_be_ok():
 def test_extract_generated_key_should_be_transformable():
     items = [
         {
-            "foreach": ".//div[@class='info']",
+            "section": ".//div[@class='info']",
             "key": {"path": "./h3/text()",
                     "reduce": reducers.normalize,
                     "transform": lambda x: x.upper()},
