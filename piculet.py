@@ -513,8 +513,8 @@ def extract(root, items, pre=None):
         transform_value = item_value.get('transform')
         foreach_value = item_value.get('foreach')
 
-        foreach_key = item.get('foreach')
-        subroots = [root] if foreach_key is None else xpath(root, foreach_key)
+        section = item.get('section')
+        subroots = [root] if section is None else xpath(root, section)
         for subroot in subroots:
             # _logger.debug('setting current root to: "%s"', subroot.tag)
 

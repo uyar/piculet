@@ -12,6 +12,7 @@ History
 - Added support for transforming node text during preprocess.
 - Added separate preprocessing function to API.
 - Renamed the "join" reducer as "concat".
+- Renamed the "foreach" keyword for keys as "section".
 - 100% test coverage.
 - Removed some low level debug messages to substantially increase speed.
 
