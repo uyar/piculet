@@ -555,7 +555,7 @@ def scrape(document, rules, content_format='xml'):
         document = html_to_xhtml(document)
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
     root = build_tree(document)
-    data = extract(root, rules['items'], pre=rules.get('pre'))
+    data = extract(root, rules.get('items', []), pre=rules.get('pre'))
     return data
 
 
