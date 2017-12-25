@@ -3,16 +3,16 @@
 History
 =======
 
-1.0b4 (unreleased)
+1.0b4 (2017-07-26)
 ------------------
 
 - Added "--version" option to command line arguments.
 - Added option to force the use of lxml's HTML builder.
 - Fixed the error where non-truthy values would be excluded from the result.
-- Added support for transforming set text during preprocess.
+- Added support for transforming node text during preprocess.
 - Added separate preprocessing function to API.
 - 100% test coverage.
-- Commented out some debug level logging to substantially increase speed.
+- Removed some low level debug messages to substantially increase speed.
 
 1.0b3 (2017-07-25)
 ------------------
