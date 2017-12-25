@@ -281,6 +281,20 @@ def test_extract_subitems_should_be_transformable():
 #         extract(shining, items)
 
 
+def test_extract_generated_key_none_should_be_excluded():
+    items = [
+        {
+            "foreach": ".//div[@class='info']",
+            "key": {"path": "./foo/text()",
+                    "reduce": reducers.first},
+            "value": {"path": "./p/text()",
+                      "reduce": reducers.first}
+        }
+    ]
+    data = extract(shining, items)
+    assert data == {}
+
+
 def test_extract_generated_key_path_and_reducer_should_be_ok():
     items = [
         {
