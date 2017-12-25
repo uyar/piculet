@@ -58,7 +58,7 @@ else:
 
 if not PY3:
     class SimpleNamespace:
-        """A simple, attribute-based namespace, adapted from Python 3.4+."""
+        """A simple, attribute-based namespace."""
 
         def __init__(self, **kwargs):
             """Construct a new namespace."""
@@ -76,7 +76,7 @@ if not PY34:
 
     @contextmanager
     def redirect_stdout(new_stdout):
-        """Context manager for temporarily redirecting stdout, adapted from Python 3.5+."""
+        """Context manager for temporarily redirecting stdout."""
         old_stdout, sys.stdout = sys.stdout, new_stdout
         try:
             yield new_stdout
@@ -169,7 +169,7 @@ class HTMLNormalizer(HTMLParser):
             if (tag == 'li') and (self._open_tags[-1] == 'li'):
                 _logger.debug('opened "li" without closing previous "li", adding closing tag')
                 self.handle_endtag('li')
-            attribs = []
+            attributes = []
             for attr_name, attr_value in attrs:
                 if attr_name in self.omit_attrs:
                     _logger.debug('omitting "%s" attribute of "%s"', attr_name, tag)
@@ -178,14 +178,14 @@ class HTMLNormalizer(HTMLParser):
                     _logger.debug('no value for "%s" attribute of "%s", adding empty value',
                                   attr_name, tag)
                     attr_value = ''
-                attribs.append((attr_name, attr_value))
-            attrs = ['%(name)s="%(value)s"' % {
-                'name': name,
-                'value': html_escape(value, quote=True)
-            } for name, value in attribs]
+                markup = '%(name)s="%(value)s"' % {
+                    'name': attr_name,
+                    'value': html_escape(attr_value, quote=True)
+                }
+                attributes.append(markup)
             line = '<%(tag)s%(attrs)s%(slash)s>' % {
                 'tag': tag,
-                'attrs': (' ' + ' '.join(attrs)) if len(attrs) > 0 else '',
+                'attrs': (' ' + ' '.join(attributes)) if len(attributes) > 0 else '',
                 'slash': ' /' if tag in self.SELF_CLOSING_TAGS else ''
             }
             print(line, end='')
@@ -238,7 +238,7 @@ class HTMLNormalizer(HTMLParser):
 
     # def feed(self, data):
         # super().feed(data)
-        # close all remaining open tags
+        # # close all remaining open tags
         # for tag in reversed(self._open_tags):
         #     print('</%(tag)s>' % {'tag': tag}, end='')
 
