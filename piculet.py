@@ -341,21 +341,16 @@ def _gen_value(element, spec):
     else:
         # xpath and reduce
         # _logger.debug('applying path "%s" on "%s" element', spec['path'], element.tag)
-        nodes = xpath(element, spec['path'])
-        if len(nodes) == 0:
+        selected = xpath(element, spec['path'])
+        if len(selected) == 0:
             # _logger.debug('no match')
             value = None
         else:
-            # _logger.debug('selected nodes: "%s"', nodes)
+            # _logger.debug('selected nodes: "%s"', selected)
             reduce = spec.get('reduce', _REDUCERS.get(spec.get('reducer')))
-            value = reduce(nodes)
+            value = reduce(selected)
             # _logger.debug('reduced using "%s": "%s"', reduce, value)
-
-    if (value is None) or (value is _EMPTY):
-        return value
-
-    transform = spec.get('transform')
-    return value if transform is None else transform(value)
+    return value
 
 
 def set_root_node(root, path):
@@ -414,15 +409,21 @@ def set_node_attr(root, path, name, value):
     """
     elements = xpath(root, path)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
+    trans_name = name.get('transform') if isinstance(name, dict) else None
+    trans_value = value.get('transform') if isinstance(value, dict) else None
     for element in elements:
-        attr_name = name if isinstance(name, str) else _gen_value(element, name)
-        if attr_name is None:
-            _logger.debug('no value generated for attribute name on "%s" element', element.tag)
+        raw_name = name if isinstance(name, str) else _gen_value(element, name)
+        if raw_name is None:
+            _logger.debug('no match for generating attribute name on "%s" element', element.tag)
             continue
-        attr_value = value if isinstance(value, str) else _gen_value(element, value)
-        if attr_value is None:
-            _logger.debug('no value generated for attribute value on "%s" element', element.tag)
+        attr_name = raw_name if trans_name is None else trans_name(raw_name)
+
+        raw_value = value if isinstance(value, str) else _gen_value(element, value)
+        if raw_value is None:
+            _logger.debug('no match for generating attribute value on "%s" element', element.tag)
             continue
+        attr_value = raw_value if trans_value is None else trans_value(raw_value)
+
         _logger.debug('setting "%s" attribute to "%s" on "%s" element',
                       attr_name, attr_value, element.tag)
         element.attrib[attr_name] = attr_value
@@ -445,9 +446,13 @@ def set_node_text(root, path, text):
     """
     elements = xpath(root, path)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
+    trans_text = text.get('transform') if isinstance(text, dict) else None
     for element in elements:
-        value = text if isinstance(text, str) else _gen_value(element, text)
-        # note that value can be None in which case the existing text will be cleared
+        raw_value = text if isinstance(text, str) else _gen_value(element, text)
+        if raw_value is None:
+            element.text = None
+            continue
+        value = raw_value if trans_text is None else trans_text(raw_value)
         _logger.debug('setting text to "%s" on "%s" element', text, element.tag)
         element.text = value
     return root
@@ -503,28 +508,39 @@ def extract(root, items, pre=None):
     data = {}
     for item in items:
         item_key = item['key']
+        trans_key = item_key.get('transform') if isinstance(item_key, dict) else None
+
         item_value = item['value']
+        trans_value = item_value.get('transform') if isinstance(item_value, dict) else None
         foreach_value = item_value.get('foreach')
 
         foreach_key = item.get('foreach')
         subroots = [root] if foreach_key is None else xpath(root, foreach_key)
         for subroot in subroots:
-            _logger.debug('setting current root to: "%s"', subroot.tag)
+            # _logger.debug('setting current root to: "%s"', subroot.tag)
 
-            key = item_key if isinstance(item_key, str) else _gen_value(subroot, item_key)
-            _logger.debug('extracting key: "%s"', key)
+            raw_key = item_key if isinstance(item_key, str) else _gen_value(subroot, item_key)
+            if raw_key is None:
+                # _logger.debug('no match')
+                continue
+            key = raw_key if trans_key is None else trans_key(raw_key)
+            # _logger.debug('extracting key: "%s"', key)
 
             if foreach_value is None:
-                value = _gen_value(subroot, item_value)
-                if (value is not None) and (value is not _EMPTY):
-                    data[key] = value
-                    _logger.debug('extracted value for "%s": "%s"', key, data[key])
+                raw_value = _gen_value(subroot, item_value)
+                if (raw_value is None) or (raw_value is _EMPTY):
+                    # _logger.debug('no match')
+                    continue
+                data[key] = raw_value if trans_value is None else trans_value(raw_value)
+                # _logger.debug('extracted value for "%s": "%s"', key, data[key])
             else:
                 raw_values = [_gen_value(r, item_value) for r in xpath(subroot, foreach_value)]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
-                if len(values) > 0:
-                    data[key] = values
-                    _logger.debug('extracted value for "%s": "%s"', key, data[key])
+                if len(values) == 0:
+                    # _logger.debug('no match')
+                    continue
+                data[key] = values if trans_value is None else list(map(trans_value, values))
+                # _logger.debug('extracted value for "%s": "%s"', key, data[key])
     return data if len(data) > 0 else _EMPTY
 
 
