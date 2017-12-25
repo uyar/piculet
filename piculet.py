@@ -268,10 +268,8 @@ _USE_LXML = find_loader('lxml') is not None
 if _USE_LXML:
     _logger.info('using lxml')
     from lxml import etree as ElementTree
-    from lxml.html import fromstring as from_html
 else:
     from xml.etree import ElementTree
-    from_html = id
 
 
 def build_tree(document, force_html=False):
@@ -285,7 +283,8 @@ def build_tree(document, force_html=False):
     content = document if PY3 else document.encode('utf-8')
     if _USE_LXML and force_html:
         _logger.info('using lxml html builder')
-        return from_html(content)
+        import lxml.html
+        return lxml.html.fromstring(content)
     return ElementTree.fromstring(content)
 
 
