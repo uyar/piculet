@@ -347,9 +347,7 @@ def _gen_value(element, spec):
             value = None
         else:
             # _logger.debug('selected nodes: "%s"', nodes)
-            reduce = spec.get('reduce')
-            if reduce is None:
-                reduce = _REDUCERS[spec['reducer']]
+            reduce = spec.get('reduce', _REDUCERS.get(spec.get('reducer')))
             value = reduce(nodes)
             # _logger.debug('reduced using "%s": "%s"', reduce, value)
 
