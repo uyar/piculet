@@ -330,7 +330,7 @@ reducers = SimpleNamespace(**_REDUCERS)
 """Predefined reducers."""
 
 
-_EMPTY = {}
+_EMPTY = {}     # empty result singleton
 
 
 def _gen_value(element, spec, trans=True):
@@ -368,8 +368,8 @@ def set_root_node(root, path):
     _logger.debug('selecting new root using path: "%s"', path)
     elements = xpath(root, path)
     if len(elements) != 1:
-        root = None
         _logger.debug('%s elements match for new root', len(elements))
+        root = None
     else:
         root = elements[0]
         _logger.debug('setting root to "%s" element', root.tag)
@@ -384,15 +384,18 @@ def remove_nodes(root, path):
     :param path: XPath to select the nodes to remove.
     :return: Root node of the tree.
     """
-    # ElementTree doesn't support parent queries, we'll build a map for it
-    get_parent = ElementTree._Element.getparent if _USE_LXML else \
-        {e: p for p in root.iter() for e in p}.get
     elements = xpath(root, path)
     _logger.debug('removing %s elements using path: "%s"', len(elements), path)
-    for element in elements:
-        _logger.debug('removing element: "%s"', element.tag)
-        # XXX: could this be hazardous? parent removed in earlier iteration?
-        get_parent(element).remove(element)
+
+    if len(elements) > 0:
+        # ElementTree doesn't support parent queries, so we'll build a map for it
+        get_parent = ElementTree._Element.getparent if _USE_LXML else \
+            {e: p for p in root.iter() for e in p}.get
+
+        for element in elements:
+            _logger.debug('removing element: "%s"', element.tag)
+            # XXX: could this be hazardous? parent removed in earlier iteration?
+            get_parent(element).remove(element)
     return root
 
 
