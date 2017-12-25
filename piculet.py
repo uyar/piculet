@@ -333,7 +333,7 @@ reducers = SimpleNamespace(**_REDUCERS)
 _EMPTY = {}     # empty result singleton
 
 
-def _gen_value(element, spec, trans=True):
+def _gen_value(element, spec, transform=True):
     if 'items' in spec:
         # apply subrules
         value = extract(element, items=spec['items'], pre=spec.get('pre'))
@@ -350,11 +350,11 @@ def _gen_value(element, spec, trans=True):
             value = reduce(selected)
             # _logger.debug('reduced using "%s": "%s"', reduce, value)
 
-    if (value is None) or (value is _EMPTY) or (not trans):
+    if (value is None) or (value is _EMPTY) or (not transform):
         return value
 
-    transform = spec.get('transform')
-    return value if transform is None else transform(value)
+    transform_value = spec.get('transform')
+    return value if transform_value is None else transform_value(value)
 
 
 def set_root_node(root, path):
@@ -453,7 +453,7 @@ def set_node_text(root, path, text):
     for element in elements:
         node_text = text if isinstance(text, str) else _gen_value(element, text)
         # note that the text can be None in which case the existing text will be cleared
-        _logger.debug('setting text to "%s" on "%s" element', text, element.tag)
+        _logger.debug('setting text to "%s" on "%s" element', node_text, element.tag)
         element.text = node_text
     return root
 
@@ -510,7 +510,7 @@ def extract(root, items, pre=None):
         item_key = item['key']
 
         item_value = item['value']
-        trans_value = item_value.get('transform') if isinstance(item_value, dict) else None
+        transform_value = item_value.get('transform')
         foreach_value = item_value.get('foreach')
 
         foreach_key = item.get('foreach')
@@ -533,13 +533,14 @@ def extract(root, items, pre=None):
                 # _logger.debug('extracted value for "%s": "%s"', key, data[key])
             else:
                 # don't try to transform list items by default, it might waste a lot of time
-                raw_values = [_gen_value(r, item_value, trans=False)
+                raw_values = [_gen_value(r, item_value, transform=False)
                               for r in xpath(subroot, foreach_value)]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
                 if len(values) == 0:
                     # _logger.debug('no items found in list')
                     continue
-                data[key] = values if trans_value is None else list(map(trans_value, values))
+                data[key] = values if transform_value is None else \
+                    list(map(transform_value, values))
                 # _logger.debug('extracted value for "%s": "%s"', key, data[key])
     return data if len(data) > 0 else _EMPTY
 
