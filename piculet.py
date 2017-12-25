@@ -416,12 +416,12 @@ def set_node_attr(root, path, name, value):
     for element in elements:
         attr_name = name if isinstance(name, str) else _gen_value(element, name)
         if attr_name is None:
-            _logger.debug('no match for generating attribute name on "%s" element', element.tag)
+            _logger.debug('no attribute name generated for "%s" element', element.tag)
             continue
 
         attr_value = value if isinstance(value, str) else _gen_value(element, value)
         if attr_value is None:
-            _logger.debug('no match for generating attribute value on "%s" element', element.tag)
+            _logger.debug('no attribute value generated for "%s" element', element.tag)
             continue
 
         _logger.debug('setting "%s" attribute to "%s" on "%s" element',
@@ -472,7 +472,7 @@ def preprocess(root, pre):
     """
     for step in pre:
         op = step['op']
-        func = _PREPROCESSORS[op]
+        func = _PREPROCESSORS.get(op)
         root = func(root, **{k: v for k, v in step.items() if k != 'op'})
     return root
 
@@ -516,23 +516,25 @@ def extract(root, items, pre=None):
 
             key = item_key if isinstance(item_key, str) else _gen_value(subroot, item_key)
             if key is None:
-                # _logger.debug('no match')
+                # _logger.debug('no value generated for key name')
                 continue
             # _logger.debug('extracting key: "%s"', key)
 
             if foreach_value is None:
                 value = _gen_value(subroot, item_value)
                 if (value is None) or (value is _EMPTY):
-                    # _logger.debug('no match')
+                    # _logger.debug('no value generated for key')
                     continue
                 data[key] = value
                 # _logger.debug('extracted value for "%s": "%s"', key, data[key])
             else:
+                # don't try to transform list items by default
+                # it might waste a lot of time
                 raw_values = [_gen_value(r, item_value, trans=False)
                               for r in xpath(subroot, foreach_value)]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
                 if len(values) == 0:
-                    # _logger.debug('no match')
+                    # _logger.debug('no items found in list')
                     continue
                 data[key] = values if trans_value is None else list(map(trans_value, values))
                 # _logger.debug('extracted value for "%s": "%s"', key, data[key])
