@@ -3,7 +3,7 @@
 History
 =======
 
-1.0b4 (2017-07-26)
+1.0b4 (2018-02-01)
 ------------------
 
 - Added "--version" option to command line arguments.
@@ -13,7 +13,6 @@ History
 - Added separate preprocessing function to API.
 - Renamed the "join" reducer as "concat".
 - Renamed the "foreach" keyword for keys as "section".
-- 100% test coverage.
 - Removed some low level debug messages to substantially increase speed.
 
 1.0b3 (2017-07-25)
