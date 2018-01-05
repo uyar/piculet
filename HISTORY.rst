@@ -6,6 +6,7 @@ History
 1.0b5 (unreleased)
 ------------------
 
+- Added rule and extractor classes for better type checking.
 - Preprocessing will be done only once when the tree is built.
 - Concatenation is now the default reducing operation.
 
