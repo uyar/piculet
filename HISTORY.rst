@@ -7,6 +7,7 @@ History
 ------------------
 
 - Preprocessing will be done only once when the tree is built.
+- Concatenation is now the default reducing operation.
 
 1.0b4 (2018-02-01)
 ------------------
