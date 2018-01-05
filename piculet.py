@@ -336,7 +336,7 @@ _EMPTY = {}     # empty result singleton
 def _gen_value(element, spec, transform=True):
     if 'items' in spec:
         # apply subrules
-        value = extract(element, items=spec['items'], pre=spec.get('pre'))
+        value = extract(element, items=spec['items'])
     else:
         # xpath and reduce
         # _logger.debug('applying path "%s" on "%s" element', spec['path'], element.tag)
@@ -355,6 +355,57 @@ def _gen_value(element, spec, transform=True):
 
     transform_value = spec.get('transform')
     return value if transform_value is None else transform_value(value)
+
+
+def extract(root, items):
+    """Extract data from an XML tree.
+
+    :sig: (ElementTree.Element, Iterable[Mapping[str, Any]]) -> Mapping[str, Any]
+    :param root: Root of the XML tree to extract the data from.
+    :param items: Rules that specify how to extract the data items.
+    :return: Extracted data.
+    """
+    if root is None:
+        return _EMPTY
+
+    data = {}
+    for item in items:
+        item_key = item['key']
+
+        item_value = item['value']
+        transform_value = item_value.get('transform')
+        foreach_value = item_value.get('foreach')
+
+        section = item.get('section')
+        subroots = [root] if section is None else xpath(root, section)
+        for subroot in subroots:
+            # _logger.debug('setting current root to: "%s"', subroot.tag)
+
+            key = item_key if isinstance(item_key, str) else _gen_value(subroot, item_key)
+            if key is None:
+                # _logger.debug('no value generated for key name')
+                continue
+            # _logger.debug('extracting key: "%s"', key)
+
+            if foreach_value is None:
+                value = _gen_value(subroot, item_value)
+                if (value is None) or (value is _EMPTY):
+                    # _logger.debug('no value generated for key')
+                    continue
+                data[key] = value
+                # _logger.debug('extracted value for "%s": "%s"', key, data[key])
+            else:
+                # don't try to transform list items by default, it might waste a lot of time
+                raw_values = [_gen_value(r, item_value, transform=False)
+                              for r in xpath(subroot, foreach_value)]
+                values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
+                if len(values) == 0:
+                    # _logger.debug('no items found in list')
+                    continue
+                data[key] = values if transform_value is None else \
+                    list(map(transform_value, values))
+                # _logger.debug('extracted value for "%s": "%s"', key, data[key])
+    return data if len(data) > 0 else _EMPTY
 
 
 def set_root_node(root, path):
@@ -475,74 +526,12 @@ def preprocess(root, pre):
     :return: Root of preprocessed tree.
     """
     for step in pre:
+        if root is None:
+            break
         op = step['op']
         func = _PREPROCESSORS.get(op)
         root = func(root, **{k: v for k, v in step.items() if k != 'op'})
     return root
-
-
-def extract(root, items, pre=None):
-    """Extract data from an XML tree.
-
-    This will extract the data items according to the supplied rules.
-    If given, it will use the ``pre`` parameter to carry out preprocessing
-    operations on the tree before starting data extraction.
-
-    :sig:
-        (
-            ElementTree.Element,
-            Iterable[Mapping[str, Any]],
-            Optional[Iterable[Mapping[str, Any]]]
-        ) -> Mapping[str, Any]
-    :param root: Root of the XML tree to extract the data from.
-    :param items: Rules that specify how to extract the data items.
-    :param pre: Preprocessing operations on the document tree.
-    :return: Extracted data.
-    """
-    if pre is not None:
-        root = preprocess(root, pre)
-        if root is None:
-            # no data to extract
-            return _EMPTY
-
-    data = {}
-    for item in items:
-        item_key = item['key']
-
-        item_value = item['value']
-        transform_value = item_value.get('transform')
-        foreach_value = item_value.get('foreach')
-
-        section = item.get('section')
-        subroots = [root] if section is None else xpath(root, section)
-        for subroot in subroots:
-            # _logger.debug('setting current root to: "%s"', subroot.tag)
-
-            key = item_key if isinstance(item_key, str) else _gen_value(subroot, item_key)
-            if key is None:
-                # _logger.debug('no value generated for key name')
-                continue
-            # _logger.debug('extracting key: "%s"', key)
-
-            if foreach_value is None:
-                value = _gen_value(subroot, item_value)
-                if (value is None) or (value is _EMPTY):
-                    # _logger.debug('no value generated for key')
-                    continue
-                data[key] = value
-                # _logger.debug('extracted value for "%s": "%s"', key, data[key])
-            else:
-                # don't try to transform list items by default, it might waste a lot of time
-                raw_values = [_gen_value(r, item_value, transform=False)
-                              for r in xpath(subroot, foreach_value)]
-                values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
-                if len(values) == 0:
-                    # _logger.debug('no items found in list')
-                    continue
-                data[key] = values if transform_value is None else \
-                    list(map(transform_value, values))
-                # _logger.debug('extracted value for "%s": "%s"', key, data[key])
-    return data if len(data) > 0 else _EMPTY
 
 
 def scrape(document, rules, content_format='xml'):
@@ -558,8 +547,10 @@ def scrape(document, rules, content_format='xml'):
         _logger.debug('converting html document to xhtml')
         document = html_to_xhtml(document)
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
+
     root = build_tree(document)
-    data = extract(root, rules.get('items', []), pre=rules.get('pre'))
+    root = preprocess(root, rules.get('pre', []))
+    data = extract(root, rules.get('items', []))
     return data
 
 

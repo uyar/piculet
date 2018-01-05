@@ -40,6 +40,11 @@ def xpath_etree(
         path: str
 ) -> Union[List[str], List[ElementTree.Element]]: ...
 
+def extract(
+        root: ElementTree.Element,
+        items: Iterable[Mapping[str, Any]]
+) -> Mapping[str, Any]: ...
+
 def set_root_node(
         root: ElementTree.Element,
         path: str
@@ -67,12 +72,6 @@ def preprocess(
         root: ElementTree.Element,
         pre: Iterable[Mapping[str, Any]]
 ) -> ElementTree.Element: ...
-
-def extract(
-        root: ElementTree.Element,
-        items: Iterable[Mapping[str, Any]],
-        pre: Optional[Iterable[Mapping[str, Any]]] = ...
-) -> Mapping[str, Any]: ...
 
 def scrape(
         document: str,
