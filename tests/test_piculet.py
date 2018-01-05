@@ -142,28 +142,29 @@ def test_extract_callable_reducer_should_take_precedence():
     assert data == {'full_title': 'The Shining ('}
 
 
+def test_extract_predefined_default_reducer_should_be_concat():
+    items = [{"key": "full_title", "value": {"path": ".//h1//text()"}}]
+    data = extract(shining, items)
+    assert data == {'full_title': 'The Shining (1980)'}
+
+
 def test_extract_multiple_rules_should_generate_multiple_items():
-    items = [{"key": "title",
-              "value": {"path": ".//title/text()", "reduce": reducers.first}},
-             {"key": "year",
-              "value": {"path": ".//span[@class='year']/text()", "reduce": reducers.first}}]
+    items = [{"key": "title", "value": {"path": ".//title/text()"}},
+             {"key": "year", "value": {"path": ".//span[@class='year']/text()"}}]
     data = extract(shining, items)
     assert data == {'title': 'The Shining', 'year': '1980'}
 
 
 def test_extract_items_with_no_data_should_be_excluded():
-    items = [{"key": "title",
-              "value": {"path": ".//title/text()", "reduce": reducers.first}},
-             {"key": "foo",
-              "value": {"path": ".//foo/text()", "reduce": reducers.first}}]
+    items = [{"key": "title", "value": {"path": ".//title/text()"}},
+             {"key": "foo", "value": {"path": ".//foo/text()"}}]
     data = extract(shining, items)
     assert data == {'title': 'The Shining'}
 
 
 def test_extract_items_with_non_truthy_data_empty_str_should_be_included():
     content = '<root><foo val=""/></root>'
-    items = [{"key": "foo",
-              "value": {"path": ".//foo/@val", "reduce": reducers.first}}]
+    items = [{"key": "foo", "value": {"path": ".//foo/@val"}}]
     data = extract(build_tree(content), items)
     assert data == {'foo': ''}
 
@@ -171,8 +172,7 @@ def test_extract_items_with_non_truthy_data_empty_str_should_be_included():
 def test_extract_items_with_non_truthy_data_zero_should_be_included():
     content = '<root><foo val="0"/></root>'
     items = [{"key": "foo",
-              "value": {"path": ".//foo/@val", "reduce": reducers.first,
-                        'transform': int}}]
+              "value": {"path": ".//foo/@val", 'transform': int}}]
     data = extract(build_tree(content), items)
     assert data == {'foo': 0}
 
@@ -180,17 +180,14 @@ def test_extract_items_with_non_truthy_data_zero_should_be_included():
 def test_extract_items_with_non_truthy_data_false_should_be_included():
     content = '<root><foo val="0"/></root>'
     items = [{"key": "foo",
-              "value": {"path": ".//foo/@val", "reduce": reducers.first,
-                        'transform': lambda x: bool(int(x))}}]
+              "value": {"path": ".//foo/@val", 'transform': lambda x: bool(int(x))}}]
     data = extract(build_tree(content), items)
     assert data == {'foo': False}
 
 
 def test_extract_transforming_should_be_applied_after_reducing():
     items = [{"key": "year",
-              "value": {"path": ".//span[@class='year']/text()",
-                        "reduce": reducers.first,
-                        "transform": int}}]
+              "value": {"path": ".//span[@class='year']/text()", "transform": int}}]
     data = extract(shining, items)
     assert data == {'year': 1980}
 
@@ -198,8 +195,7 @@ def test_extract_transforming_should_be_applied_after_reducing():
 def test_extract_multivalued_item_should_be_list():
     items = [{"key": "genres",
               "value": {"foreach": ".//ul[@class='genres']/li",
-                        "path": "./text()",
-                        "reduce": reducers.first}}]
+                        "path": "./text()"}}]
     data = extract(shining, items)
     assert data == {'genres': ['Horror', 'Drama']}
 
@@ -207,8 +203,7 @@ def test_extract_multivalued_item_should_be_list():
 def test_extract_multivalued_item_empty_should_be_excluded():
     items = [{"key": "foos",
               "value": {"foreach": ".//ul[@class='foos']/li",
-                        "path": "./text()",
-                        "reduce": reducers.first}}]
+                        "path": "./text()"}}]
     data = extract(shining, items)
     assert data == {}
 
@@ -217,11 +212,9 @@ def test_extract_subrules_should_generate_submappings():
     items = [{"key": "director",
               "value": {
                   "items": [{"key": "name",
-                             "value": {"path": ".//div[@class='director']//a/text()",
-                                       "reduce": reducers.first}},
+                             "value": {"path": ".//div[@class='director']//a/text()"}},
                             {"key": "link",
-                             "value": {"path": ".//div[@class='director']//a/@href",
-                                       "reduce": reducers.first}}]
+                             "value": {"path": ".//div[@class='director']//a/@href"}}]
               }}]
     data = extract(shining, items)
     assert data == {'director': {'link': '/people/1', 'name': 'Stanley Kubrick'}}
@@ -232,15 +225,9 @@ def test_extract_multivalued_subrules_should_be_allowed():
               "value": {
                   "foreach": ".//table[@class='cast']/tr",
                   "items": [
-                      {"key": "name",
-                       "value": {"path": "./td[1]/a/text()",
-                                 "reduce": reducers.first}},
-                      {"key": "link",
-                       "value": {"path": "./td[1]/a/@href",
-                                 "reduce": reducers.first}},
-                      {"key": "character",
-                       "value": {"path": "./td[2]/text()",
-                                 "reduce": reducers.first}}
+                      {"key": "name", "value": {"path": "./td[1]/a/text()"}},
+                      {"key": "link", "value": {"path": "./td[1]/a/@href"}},
+                      {"key": "character", "value": {"path": "./td[2]/text()"}}
                   ]
               }}]
     data = extract(shining, items)
@@ -255,12 +242,8 @@ def test_extract_subitems_should_be_transformable():
               "value": {
                   "foreach": ".//table[@class='cast']/tr",
                   "items": [
-                      {"key": "name",
-                       "value": {"path": "./td[1]/a/text()",
-                                 "reduce": reducers.first}},
-                      {"key": "character",
-                       "value": {"path": "./td[2]/text()",
-                                 "reduce": reducers.first}}
+                      {"key": "name", "value": {"path": "./td[1]/a/text()"}},
+                      {"key": "character", "value": {"path": "./td[2]/text()"}}
                   ],
                   "transform": lambda x: x.get('name') + ' as ' + x.get('character')
               }}]
@@ -286,10 +269,8 @@ def test_extract_generated_key_none_should_be_excluded():
     items = [
         {
             "section": ".//div[@class='info']",
-            "key": {"path": "./foo/text()",
-                    "reduce": reducers.first},
-            "value": {"path": "./p/text()",
-                      "reduce": reducers.first}
+            "key": {"path": "./foo/text()"},
+            "value": {"path": "./p/text()"}
         }
     ]
     data = extract(shining, items)
@@ -300,10 +281,8 @@ def test_extract_generated_key_path_and_reducer_should_be_ok():
     items = [
         {
             "section": ".//div[@class='info']",
-            "key": {"path": "./h3/text()",
-                    "reduce": reducers.first},
-            "value": {"path": "./p/text()",
-                      "reduce": reducers.first}
+            "key": {"path": "./h3/text()", "reduce": reducers.first},
+            "value": {"path": "./p/text()"}
         }
     ]
     data = extract(shining, items)
@@ -314,10 +293,8 @@ def test_extract_generated_key_normalize_reducer_should_be_ok():
     items = [
         {
             "section": ".//div[@class='info']",
-            "key": {"path": "./h3/text()",
-                    "reduce": reducers.normalize},
-            "value": {"path": "./p/text()",
-                      "reduce": reducers.first}
+            "key": {"path": "./h3/text()", "reduce": reducers.normalize},
+            "value": {"path": "./p/text()"}
         }
     ]
     data = extract(shining, items)
@@ -328,11 +305,9 @@ def test_extract_generated_key_should_be_transformable():
     items = [
         {
             "section": ".//div[@class='info']",
-            "key": {"path": "./h3/text()",
-                    "reduce": reducers.normalize,
+            "key": {"path": "./h3/text()", "reduce": reducers.normalize,
                     "transform": lambda x: x.upper()},
-            "value": {"path": "./p/text()",
-                      "reduce": reducers.first}
+            "value": {"path": "./p/text()"}
         }
     ]
     data = extract(shining, items)
