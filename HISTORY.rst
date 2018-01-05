@@ -3,6 +3,11 @@
 History
 =======
 
+1.0b5 (unreleased)
+------------------
+
+- Preprocessing will be done only once when the tree is built.
+
 1.0b4 (2018-02-01)
 ------------------
 
