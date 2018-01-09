@@ -338,35 +338,17 @@ reducers = SimpleNamespace(**_REDUCERS)
 class Extractor:
     """An extractor for getting data out of a DOM tree."""
 
-    def __init__(self, path=None, reduce=None, subrules=None, transform=None, foreach=None):
+    def __init__(self, transform=None, foreach=None):
         """Initialize this extractor.
 
         :sig:
             (
-                Optional[str],
-                Optional[Callable[[Sequence[str]], str]],
-                Optional[Iterable[Rule]],
                 Optional[Callable[[Union[str, Mapping[str, Any]]], Any]],
                 Optional[str]
             ) -> None
-        :param path: Path to apply to get the data.
-        :param reduce: Function to reduce selected texts into a single string.
-        :param subrules: Rules for generating subitems.
         :param transform: Function to transform extracted value.
         :param foreach: Path to apply for generating a collection of data.
         """
-        self.path = path            # sig: Optional[str]
-        """Path to apply to get the data."""
-
-        if reduce is None:
-            reduce = reducers.concat
-
-        self.reduce = reduce        # sig: Optional[Callable[[Sequence[str]], str]]
-        """Function to reduce selected texts into a single string."""
-
-        self.subrules = subrules    # sig: Optional[Iterable[Rule]]
-        """Rules for generating subobjects."""
-
         self.transform = transform  # sig: Optional[Callable[[str], Any]]
         """Function to transform extracted value."""
 
@@ -381,14 +363,69 @@ class Extractor:
         :param item: Extractor description.
         :return: Extractor object.
         """
-        path = item.get('path')
-        reduce = item.get('reduce', _REDUCERS.get(item.get('reducer')))
-        transform = item.get('transform')
-        foreach = item.get('foreach')
         items = item.get('items')
-        subrules = [Rule.from_map(i) for i in items] if items is not None else None
-        return Extractor(path=path, reduce=reduce, subrules=subrules,
-                         transform=transform, foreach=foreach)
+        if items is not None:
+            subrules = [Rule.from_map(i) for i in items]
+            extractor = Rules(subrules)
+        else:
+            path = item.get('path')
+            reduce = item.get('reduce', _REDUCERS.get(item.get('reducer')))
+            extractor = Path(path, reduce)
+        extractor.transform = item.get('transform')
+        extractor.foreach = item.get('foreach')
+        return extractor
+
+
+class Path(Extractor):
+    """An extractor for getting data out of a DOM tree."""
+
+    def __init__(self, path=None, reduce=None, transform=None, foreach=None):
+        """Initialize this extractor.
+
+        :sig:
+            (
+                Optional[str],
+                Optional[Callable[[Sequence[str]], str]],
+                Optional[Callable[[Union[str, Mapping[str, Any]]], Any]],
+                Optional[str]
+            ) -> None
+        :param path: Path to apply to get the data.
+        :param reduce: Function to reduce selected texts into a single string.
+        :param transform: Function to transform extracted value.
+        :param foreach: Path to apply for generating a collection of data.
+        """
+        super().__init__(transform=transform, foreach=foreach)
+
+        self.path = path            # sig: Optional[str]
+        """Path to apply to get the data."""
+
+        if reduce is None:
+            reduce = reducers.concat
+
+        self.reduce = reduce        # sig: Optional[Callable[[Sequence[str]], str]]
+        """Function to reduce selected texts into a single string."""
+
+
+class Rules(Extractor):
+    """An extractor for getting data out of a DOM tree."""
+
+    def __init__(self, subrules=None, transform=None, foreach=None):
+        """Initialize this extractor.
+
+        :sig:
+            (
+                Optional[Iterable[Rule]],
+                Optional[Callable[[Union[str, Mapping[str, Any]]], Any]],
+                Optional[str]
+            ) -> None
+        :param subrules: Rules for generating subitems.
+        :param transform: Function to transform extracted value.
+        :param foreach: Path to apply for generating a collection of data.
+        """
+        super().__init__(transform=transform, foreach=foreach)
+
+        self.subrules = subrules    # sig: Optional[Iterable[Rule]]
+        """Rules for generating subobjects."""
 
 
 class Rule:
@@ -429,7 +466,7 @@ _EMPTY = {}     # empty result singleton
 
 
 def _extract(element, extractor, transform=True):
-    if extractor.subrules is not None:
+    if isinstance(extractor, Rules):
         # apply subrules
         value = extract_r(element, rules=extractor.subrules)
     else:

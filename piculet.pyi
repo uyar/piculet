@@ -41,23 +41,39 @@ def xpath_etree(
 ) -> Union[Sequence[str], Sequence[ElementTree.Element]]: ...
 
 class Extractor:
-    path = ...       # type: Optional[str]
-    reduce = ...     # type: Optional[Callable[[Sequence[str]], str]]
-    subrules = ...   # type: Optional[Iterable[Rule]]
     transform = ...  # type: Optional[Callable[[str], Any]]
     foreach = ...    # type: Optional[str]
 
     def __init__(
             self,
-            path: Optional[str] = ...,
-            reduce: Optional[Callable[[Sequence[str]], str]] = ...,
-            subrules: Optional[Iterable[Rule]] = ...,
             transform: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]] = ...,
             foreach: Optional[str] = ...
     ) -> None: ...
 
     @staticmethod
     def from_map(item: Mapping[str, Any]) -> Extractor: ...
+
+class Path(Extractor):
+    path = ...    # type: Optional[str]
+    reduce = ...  # type: Optional[Callable[[Sequence[str]], str]]
+
+    def __init__(
+            self,
+            path: Optional[str] = ...,
+            reduce: Optional[Callable[[Sequence[str]], str]] = ...,
+            transform: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]] = ...,
+            foreach: Optional[str] = ...
+    ) -> None: ...
+
+class Rules(Extractor):
+    subrules = ...  # type: Optional[Iterable[Rule]]
+
+    def __init__(
+            self,
+            subrules: Optional[Iterable[Rule]] = ...,
+            transform: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]] = ...,
+            foreach: Optional[str] = ...
+    ) -> None: ...
 
 class Rule:
     key = ...        # type: Union[str, Extractor]
