@@ -23,41 +23,35 @@ def test_default_reducer_should_be_concat():
 
 def test_reduce_by_lambda_should_be_ok():
     items = [{'key': 'title',
-              'value': {'path': '//title/text()',
-                        'reduce': lambda xs: xs[0]}}]
+              'value': {'path': '//title/text()', 'reduce': lambda xs: xs[0]}}]
     data = extract(shining, items)
     assert data == {'title': 'The Shining'}
 
 
 def test_predefined_reducer_should_be_ok():
     items = [{'key': 'title',
-              'value': {'path': '//title/text()',
-                        'reduce': reducers.first}}]
+              'value': {'path': '//title/text()', 'reduce': reducers.first}}]
     data = extract(shining, items)
     assert data == {'title': 'The Shining'}
 
 
 def test_predefined_reducer_by_name_should_be_ok():
     items = [{'key': 'title',
-              'value': {'path': '//title/text()',
-                        'reducer': 'first'}}]
+              'value': {'path': '//title/text()', 'reducer': 'first'}}]
     data = extract(shining, items)
     assert data == {'title': 'The Shining'}
 
 
 def test_callable_reducer_should_take_precedence():
     items = [{'key': 'full_title',
-              'value': {'path': '//h1//text()',
-                        'reducer': 'concat',
-                        'reduce': reducers.first}}]
+              'value': {'path': '//h1//text()', 'reducer': 'concat', 'reduce': reducers.first}}]
     data = extract(shining, items)
     assert data == {'full_title': 'The Shining ('}
 
 
-def test_transforming_should_be_applied_after_reducing():
+def test_reduced_value_should_be_transformable():
     items = [{'key': 'year',
-              'value': {'path': '//span[@class="year"]/text()',
-                        'transform': int}}]
+              'value': {'path': '//span[@class="year"]/text()', 'transform': int}}]
     data = extract(shining, items)
     assert data == {'year': 1980}
 
@@ -66,9 +60,9 @@ def test_multiple_rules_should_generate_multiple_items():
     items = [{'key': 'title',
               'value': {'path': '//title/text()'}},
              {'key': 'year',
-              'value': {'path': '//span[@class="year"]/text()'}}]
+              'value': {'path': '//span[@class="year"]/text()', 'transform': int}}]
     data = extract(shining, items)
-    assert data == {'title': 'The Shining', 'year': '1980'}
+    assert data == {'title': 'The Shining', 'year': 1980}
 
 
 def test_item_with_no_data_should_be_excluded():
@@ -91,8 +85,7 @@ def test_item_with_empty_str_value_should_be_included():
 def test_item_with_zero_value_should_be_included():
     content = '<root><foo val="0"/></root>'
     items = [{'key': 'foo',
-              'value': {'path': '//foo/@val',
-                        'transform': int}}]
+              'value': {'path': '//foo/@val', 'transform': int}}]
     data = extract(build_tree(content), items)
     assert data == {'foo': 0}
 
@@ -100,8 +93,7 @@ def test_item_with_zero_value_should_be_included():
 def test_item_with_false_value_should_be_included():
     content = '<root><foo val=""/></root>'
     items = [{'key': 'foo',
-              'value': {'path': '//foo/@val',
-                        'transform': bool}}]
+              'value': {'path': '//foo/@val', 'transform': bool}}]
     data = extract(build_tree(content), items)
     assert data == {'foo': False}
 
@@ -117,8 +109,7 @@ def test_multivalued_item_should_be_list():
 def test_multivalued_items_should_be_transformable():
     items = [{'key': 'genres',
               'value': {'foreach': '//ul[@class="genres"]/li',
-                        'path': './text()',
-                        'transform': lambda x: x.lower()}}]
+                        'path': './text()', 'transform': lambda x: x.lower()}}]
     data = extract(shining, items)
     assert data == {'genres': ['horror', 'drama']}
 
