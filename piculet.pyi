@@ -43,17 +43,17 @@ def xpath_etree(
 class Extractor:
     path = ...       # type: Optional[str]
     reduce = ...     # type: Optional[Callable[[Iterable[str]], str]]
+    subrules = ...   # type: Optional[Iterable[Rule]]
     transform = ...  # type: Optional[Callable[[str], Any]]
     foreach = ...    # type: Optional[str]
-    subrules = ...   # type: Optional[Iterable[Rule]]
 
     def __init__(
             self,
             path: Optional[str] = ...,
             reduce: Optional[Callable[[Iterable[str]], str]] = ...,
-            transform: Optional[Callable[[str], Any]] = ...,
-            foreach: Optional[str] = ...,
-            subrules: Optional[Iterable[Rule]] = ...
+            subrules: Optional[Iterable[Rule]] = ...,
+            transform: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]] = ...,
+            foreach: Optional[str] = ...
     ) -> None: ...
 
     @staticmethod
