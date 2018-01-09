@@ -25,31 +25,31 @@ def shining():
 def test_preprocess_root_multiple_should_return_empty_result(shining):
     # with raises(ValueError):
     #     extract(shining, [], pre=[{"op": "root", "path": ".//div"}])
-    pre = [{"op": "root", "path": ".//div"}]
-    items = [{"key": "title", "value": {"path": ".//title/text()"}}]
+    pre = [{"op": "root", "path": "//div"}]
+    items = [{"key": "title", "value": {"path": "//title/text()"}}]
     data = extract(preprocess(shining, pre), items)
     assert data == {}
 
 
 def test_preprocess_root_none_should_return_empty_result(shining):
-    pre = [{"op": "root", "path": ".//foo"}]
-    items = [{"key": "title", "value": {"path": ".//title/text()"}}]
+    pre = [{"op": "root", "path": "//foo"}]
+    items = [{"key": "title", "value": {"path": "//title/text()"}}]
     data = extract(preprocess(shining, pre), items)
     assert data == {}
 
 
 def test_preprocess_root_should_exclude_unselected_parts(shining):
-    pre = [{"op": "root", "path": ".//div[@class='director']"}]
-    items = [{"key": "foo", "value": {"path": ".//h3/text()"}}]
+    pre = [{"op": "root", "path": "//div[@class='director']"}]
+    items = [{"key": "foo", "value": {"path": "//h3/text()"}}]
     data = extract(preprocess(shining, pre), items)
     assert data == {'foo': 'Director:'}
 
 
 def test_preprocess_remove_should_remove_selected_node(shining):
-    pre = [{"op": "remove", "path": ".//tr[1]"}]
+    pre = [{"op": "remove", "path": "//tr[1]"}]
     items = [{"key": "cast",
               "value": {
-                  "foreach": ".//table[@class='cast']/tr",
+                  "foreach": "//table[@class='cast']/tr",
                   "items": [
                       {"key": "name", "value": {"path": "./td[1]/a/text()"}}
                   ]
@@ -59,10 +59,10 @@ def test_preprocess_remove_should_remove_selected_node(shining):
 
 
 def test_preprocess_remove_selected_none_should_not_cause_error(shining):
-    pre = [{"op": "remove", "path": ".//tr[50]"}]
+    pre = [{"op": "remove", "path": "//tr[50]"}]
     items = [{"key": "cast",
               "value": {
-                  "foreach": ".//table[@class='cast']/tr",
+                  "foreach": "//table[@class='cast']/tr",
                   "items": [
                       {"key": "name", "value": {"path": "./td[1]/a/text()"}}
                   ]
@@ -72,11 +72,11 @@ def test_preprocess_remove_selected_none_should_not_cause_error(shining):
 
 
 def test_preprocess_set_attr_value_from_str_should_set_attribute_for_selected_nodes(shining):
-    pre = [{"op": "set_attr", "path": ".//ul[@class='genres']/li",
+    pre = [{"op": "set_attr", "path": "//ul[@class='genres']/li",
             "name": "foo", "value": "bar"}]
     items = [{"key": "genres",
               "value": {
-                  "foreach": ".//li[@foo='bar']",
+                  "foreach": "//li[@foo='bar']",
                   "path": "./text()"
               }}]
     data = extract(preprocess(shining, pre), items)
@@ -84,12 +84,12 @@ def test_preprocess_set_attr_value_from_str_should_set_attribute_for_selected_no
 
 
 def test_preprocess_set_attr_value_from_path_should_set_attribute_for_selected_nodes(shining):
-    pre = [{"op": "set_attr", "path": ".//ul[@class='genres']/li",
+    pre = [{"op": "set_attr", "path": "//ul[@class='genres']/li",
             "name": "foo",
             "value": {"path": "./text()"}}]
     items = [{"key": "genres",
               "value": {
-                  "foreach": ".//li[@foo]",
+                  "foreach": "//li[@foo]",
                   "path": "./@foo"
               }}]
     data = extract(preprocess(shining, pre), items)
@@ -97,12 +97,12 @@ def test_preprocess_set_attr_value_from_path_should_set_attribute_for_selected_n
 
 
 def test_preprocess_set_attr_value_from_path_no_value_should_be_ignored(shining):
-    pre = [{"op": "set_attr", "path": ".//ul[@class='genres']/li",
+    pre = [{"op": "set_attr", "path": "//ul[@class='genres']/li",
             "name": "foo",
             "value": {"path": "./@bar"}}]
     items = [{"key": "genres",
               "value": {
-                  "foreach": ".//li[@foo]",
+                  "foreach": "//li[@foo]",
                   "path": "./@foo"
               }}]
     data = extract(preprocess(shining, pre), items)
@@ -110,12 +110,12 @@ def test_preprocess_set_attr_value_from_path_no_value_should_be_ignored(shining)
 
 
 def test_preprocess_set_attr_name_from_path_should_set_attribute_for_selected_nodes(shining):
-    pre = [{"op": "set_attr", "path": ".//ul[@class='genres']/li",
+    pre = [{"op": "set_attr", "path": "//ul[@class='genres']/li",
             "name": {"path": "./text()"},
             "value": "bar"}]
     items = [{"key": "genres",
               "value": {
-                  "foreach": ".//li[@Horror]",
+                  "foreach": "//li[@Horror]",
                   "path": "./@Horror"
               }}]
     data = extract(preprocess(shining, pre), items)
@@ -123,7 +123,7 @@ def test_preprocess_set_attr_name_from_path_should_set_attribute_for_selected_no
 
 
 def test_preprocess_set_attr_name_from_path_no_value_should_be_ignored(shining):
-    pre = [{"op": "set_attr", "path": ".//ul[@class='genres']/li",
+    pre = [{"op": "set_attr", "path": "//ul[@class='genres']/li",
             "name": {"path": "./@bar"},
             "value": "bar"}]
     items = [{"key": "genres",
@@ -136,10 +136,10 @@ def test_preprocess_set_attr_name_from_path_no_value_should_be_ignored(shining):
 
 
 def test_preprocess_set_attr_selected_none_should_not_cause_error(shining):
-    pre = [{"op": "set_attr", "path": ".//foo", "name": "foo", "value": "bar"}]
+    pre = [{"op": "set_attr", "path": "//foo", "name": "foo", "value": "bar"}]
     items = [{"key": "genres",
               "value": {
-                  "foreach": ".//li[@foo='bar']",
+                  "foreach": "//li[@foo='bar']",
                   "path": "./@foo"
               }}]
     data = extract(preprocess(shining, pre), items)
@@ -147,11 +147,11 @@ def test_preprocess_set_attr_selected_none_should_not_cause_error(shining):
 
 
 def test_preprocess_set_text_value_from_str_should_set_text_for_selected_nodes(shining):
-    pre = [{"op": "set_text", "path": ".//ul[@class='genres']/li",
+    pre = [{"op": "set_text", "path": "//ul[@class='genres']/li",
             "text": "Foo"}]
     items = [{"key": "genres",
               "value": {
-                  "foreach": ".//ul[@class='genres']/li",
+                  "foreach": "//ul[@class='genres']/li",
                   "path": "./text()"
               }}]
     data = extract(preprocess(shining, pre), items)
@@ -159,14 +159,14 @@ def test_preprocess_set_text_value_from_str_should_set_text_for_selected_nodes(s
 
 
 def test_preprocess_set_text_value_from_path_should_set_text_for_selected_nodes(shining):
-    pre = [{"op": "set_text", "path": ".//ul[@class='genres']/li",
+    pre = [{"op": "set_text", "path": "//ul[@class='genres']/li",
             "text": {
                 "path": "./text()",
                 "transform": lambda x: x.lower()
             }}]
     items = [{"key": "genres",
               "value": {
-                  "foreach": ".//ul[@class='genres']/li",
+                  "foreach": "//ul[@class='genres']/li",
                   "path": "./text()"
               }}]
     data = extract(preprocess(shining, pre), items)
@@ -174,11 +174,11 @@ def test_preprocess_set_text_value_from_path_should_set_text_for_selected_nodes(
 
 
 def test_preprocess_set_text_no_value_should_be_ignored(shining):
-    pre = [{"op": "set_text", "path": ".//ul[@class='genres']/li",
+    pre = [{"op": "set_text", "path": "//ul[@class='genres']/li",
             "text": {"path": "./@foo"}}]
     items = [{"key": "genres",
               "value": {
-                  "foreach": ".//ul[@class='genres']/li",
+                  "foreach": "//ul[@class='genres']/li",
                   "path": "./text()"
               }}]
     data = extract(preprocess(shining, pre), items)
