@@ -55,6 +55,12 @@ class Extractor:
             element: ElementTree.Element
     ) -> Union[str, Mapping[str, Any]]: ...
 
+    def extract(
+            self,
+            element: ElementTree.Element,
+            transform: Optional[bool] = ...
+    ) -> Any: ...
+
     @staticmethod
     def from_map(item: Mapping[str, Any]) -> Extractor: ...
 
@@ -66,7 +72,7 @@ class Path(Extractor):
             self,
             path: Optional[str] = ...,
             reduce: Optional[Callable[[Sequence[str]], str]] = ...,
-            transform: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]] = ...,
+            transform: Optional[Callable[[str], Any]] = ...,
             foreach: Optional[str] = ...
     ) -> None: ...
 
@@ -78,7 +84,7 @@ class Rules(Extractor):
     def __init__(
             self,
             subrules: Optional[Iterable[Rule]] = ...,
-            transform: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]] = ...,
+            transform: Optional[Callable[[Mapping[str, Any]], Any]] = ...,
             foreach: Optional[str] = ...
     ) -> None: ...
 
@@ -99,10 +105,7 @@ class Rule:
     @staticmethod
     def from_map(item: Mapping[str, Any]) -> Rule: ...
 
-def extract_r(
-        root: ElementTree.Element,
-        rules: Iterable[Rule]
-) -> Mapping[str, Any]: ...
+    def extract(self, root: ElementTree.Element) -> Mapping[str, Any]: ...
 
 def extract(
         root: ElementTree.Element,

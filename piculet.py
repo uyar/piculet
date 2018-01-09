@@ -339,7 +339,7 @@ _EMPTY = {}     # empty result singleton
 
 
 class Extractor:
-    """An extractor for getting data out of a DOM tree."""
+    """An extractor for getting data out of an XML element."""
 
     def __init__(self, transform=None, foreach=None):
         """Initialize this extractor.
@@ -359,16 +359,22 @@ class Extractor:
         """Path to apply for generating a list of values."""
 
     def apply(self, element):
-        """Get the raw value for an element.
+        """Get the raw value for an element using this extractor.
 
         :sig: (ElementTree.Element) -> Union[str, Mapping[str, Any]]
-        :param element: Element to apply the extractor to.
+        :param element: Element to apply this extractor to.
         :return: Extracted value.
         """
         raise NotImplementedError('Extractors must implement this method')
 
-    def __call__(self, element, transform=True):
-        """Get the processed value for an element."""
+    def extract(self, element, transform=True):
+        """Get the processed value for an element.
+
+        :sig: (ElementTree.Element, Optional[bool]) -> Any
+        :param element: Element to extract the data from.
+        :param transform: Whether the transformation will be applied or not.
+        :return: Extracted data.
+        """
         value = self.apply(element)
         if (value is None) or (value is _EMPTY) or (not transform):
             return value
@@ -376,7 +382,7 @@ class Extractor:
 
     @staticmethod
     def from_map(item):
-        """Generate an extractor from a map description.
+        """Generate an extractor from a description map.
 
         :sig: (Mapping[str, Any]) -> Extractor
         :param item: Extractor description.
@@ -396,7 +402,7 @@ class Extractor:
 
 
 class Path(Extractor):
-    """An extractor for getting data out of a DOM tree."""
+    """An extractor for getting text out of an XML element."""
 
     def __init__(self, path=None, reduce=None, transform=None, foreach=None):
         """Initialize this extractor.
@@ -405,7 +411,7 @@ class Path(Extractor):
             (
                 Optional[str],
                 Optional[Callable[[Sequence[str]], str]],
-                Optional[Callable[[Union[str, Mapping[str, Any]]], Any]],
+                Optional[Callable[[str], Any]],
                 Optional[str]
             ) -> None
         :param path: Path to apply to get the data.
@@ -431,7 +437,7 @@ class Path(Extractor):
         """Apply this extractor to an element.
 
         :sig: (ElementTree.Element) -> str
-        :param element: Element to apply the extractor to.
+        :param element: Element to apply this extractor to.
         :return: Extracted text.
         """
         # _logger.debug('applying path "%s" on "%s" element', spec['path'], element.tag)
@@ -447,7 +453,7 @@ class Path(Extractor):
 
 
 class Rules(Extractor):
-    """An extractor for getting data out of a DOM tree."""
+    """An extractor for getting data items out of an XML element."""
 
     def __init__(self, subrules=None, transform=None, foreach=None):
         """Initialize this extractor.
@@ -455,7 +461,7 @@ class Rules(Extractor):
         :sig:
             (
                 Optional[Iterable[Rule]],
-                Optional[Callable[[Union[str, Mapping[str, Any]]], Any]],
+                Optional[Callable[[Mapping[str, Any]], Any]],
                 Optional[str]
             ) -> None
         :param subrules: Rules for generating subitems.
@@ -477,11 +483,18 @@ class Rules(Extractor):
         :param element: Element to apply the extractor to.
         :return: Extracted mapping.
         """
-        return extract_r(element, rules=self.subrules)
+        if element is None:
+            return _EMPTY
+
+        data = {}
+        for rule in self.subrules:
+            extracted = rule.extract(element)
+            data.update(extracted)
+        return data if len(data) > 0 else _EMPTY
 
 
 class Rule:
-    """A rule describing how to get a piece of data out of content."""
+    """A rule describing how to get a piece of data out of an XML element."""
 
     def __init__(self, key, extractor, section=None):
         """Initialize this rule.
@@ -514,19 +527,25 @@ class Rule:
         return Rule(key=key, extractor=value, section=item.get('section'))
 
     def extract(self, root):
+        """Extract data out of an element using this rule.
+
+        :sig: (ElementTree.Element) -> Mapping[str, Any]
+        :param root: Element to extract the data from.
+        :return: Extracted data.
+        """
         data = {}
         subroots = [root] if self.section is None else xpath(root, self.section)
         for subroot in subroots:
             # _logger.debug('setting current root to: "%s"', subroot.tag)
 
-            key = self.key if isinstance(self.key, str) else self.key(subroot)
+            key = self.key if isinstance(self.key, str) else self.key.extract(subroot)
             if key is None:
                 # _logger.debug('no value generated for key name')
                 continue
             # _logger.debug('extracting key: "%s"', key)
 
             if self.extractor.foreach is None:
-                value = self.extractor(subroot)
+                value = self.extractor.extract(subroot)
                 if (value is None) or (value is _EMPTY):
                     # _logger.debug('no value generated for key')
                     continue
@@ -534,7 +553,7 @@ class Rule:
                 # _logger.debug('extracted value for "%s": "%s"', key, data[key])
             else:
                 # don't try to transform list items by default, it might waste a lot of time
-                raw_values = [self.extractor(r, transform=False)
+                raw_values = [self.extractor.extract(r, transform=False)
                               for r in xpath(subroot, self.extractor.foreach)]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
                 if len(values) == 0:
@@ -546,24 +565,6 @@ class Rule:
         return data
 
 
-def extract_r(root, rules):
-    """Extract data from an XML tree.
-
-    :sig: (ElementTree.Element, Iterable[Rule]) -> Mapping[str, Any]
-    :param root: Root of the XML tree to extract the data from.
-    :param rules: Rules that specify how to extract the data items.
-    :return: Extracted data.
-    """
-    if root is None:
-        return _EMPTY
-
-    data = {}
-    for rule in rules:
-        extracted = rule.extract(root)
-        data.update(extracted)
-    return data if len(data) > 0 else _EMPTY
-
-
 def extract(root, items):
     """Extract data from an XML tree.
 
@@ -573,7 +574,7 @@ def extract(root, items):
     :return: Extracted data.
     """
     rules = Rules([Rule.from_map(item) for item in items])
-    return rules(root)
+    return rules.extract(root)
 
 
 def set_root_node(root, path):
@@ -641,12 +642,14 @@ def set_node_attr(root, path, name, value):
     elements = xpath(root, path)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
-        attr_name = name if isinstance(name, str) else Extractor.from_map(name)(element)
+        attr_name = name if isinstance(name, str) else \
+            Extractor.from_map(name).extract(element)
         if attr_name is None:
             _logger.debug('no attribute name generated for "%s" element', element.tag)
             continue
 
-        attr_value = value if isinstance(value, str) else Extractor.from_map(value)(element)
+        attr_value = value if isinstance(value, str) else \
+            Extractor.from_map(value).extract(element)
         if attr_value is None:
             _logger.debug('no attribute value generated for "%s" element', element.tag)
             continue
@@ -674,7 +677,7 @@ def set_node_text(root, path, text):
     elements = xpath(root, path)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
-        node_text = text if isinstance(text, str) else Extractor.from_map(text)(element)
+        node_text = text if isinstance(text, str) else Extractor.from_map(text).extract(element)
         # note that the text can be None in which case the existing text will be cleared
         _logger.debug('setting text to "%s" on "%s" element', node_text, element.tag)
         element.text = node_text
