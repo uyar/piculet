@@ -3,20 +3,20 @@
     {
       "key": "title",
       "value": {
-        "path": ".//title/text()",
+        "path": "//title/text()",
         "reducer": "first"}
     },
     {
       "key": "year",
       "value": {
-        "path": ".//span[@class='year']/text()",
+        "path": "//span[@class='year']/text()",
         "reducer": "first"
       }
     },
     {
       "key": "genres",
       "value": {
-        "foreach": ".//ul[@class='genres']/li",
+        "foreach": "//ul[@class='genres']/li",
         "path": "./text()",
         "reducer": "first"
       }
@@ -28,14 +28,14 @@
           {
             "key": "name",
             "value": {
-              "path": ".//div[@class='director']//a/text()",
+              "path": "//div[@class='director']//a/text()",
               "reducer": "first"
             }
           },
           {
             "key": "link",
             "value": {
-              "path": ".//div[@class='director']//a/@href",
+              "path": "//div[@class='director']//a/@href",
               "reducer": "first"
             }
           }
@@ -45,7 +45,7 @@
     {
       "key": "cast",
       "value": {
-        "foreach": ".//table[@class='cast']/tr",
+        "foreach": "//table[@class='cast']/tr",
         "items": [
           {
             "key": "name",
@@ -74,12 +74,12 @@
     {
       "key": "review",
       "value": {
-        "path": ".//div[@class='review']//text()",
+        "path": "//div[@class='review']//text()",
         "reducer": "clean"
       }
     },
     {
-      "foreach": ".//div[@class='info']",
+      "foreach": "//div[@class='info']",
       "key": {
         "path": "./h3/text()",
         "reducer": "normalize"

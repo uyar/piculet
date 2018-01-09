@@ -3,35 +3,35 @@
     {
       "key": "name",
       "value": {
-        "path": ".//span[@class='fn']/text()",
+        "path": "//span[@class='fn']/text()",
         "reducer": "first"
       }
     },
     {
       "key": "born",
       "value": {
-        "path": ".//span[@class='bday']/text()",
+        "path": "//span[@class='bday']/text()",
         "reducer": "first"
       }
     },
     {
       "key": "birthplace",
       "value": {
-        "path": ".//span[@class='birthplace']//text()",
+        "path": "//span[@class='birthplace']//text()",
         "reducer": "clean"
       }
     },
     {
       "key": "died",
       "value": {
-        "path": ".//span[@class='dday deathdate']/text()",
+        "path": "//span[@class='dday deathdate']/text()",
         "reducer": "first"
       }
     },
     {
       "key": "occupation",
       "value": {
-        "foreach": ".//td[@class='role']//li",
+        "foreach": "//td[@class='role']//li",
         "path": "./text()",
         "reducer": "clean"
       }
