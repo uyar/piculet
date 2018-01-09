@@ -66,7 +66,7 @@ class Extractor:
 
 class Path(Extractor):
     path = ...    # type: str
-    reduce = ...  # type: Optional[Callable[[Sequence[str]], str]]
+    reduce = ...  # type: Callable[[Sequence[str]], str]
 
     def __init__(
             self,

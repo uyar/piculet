@@ -430,7 +430,7 @@ class Path(Extractor):
         if reduce is None:
             reduce = reducers.concat
 
-        self.reduce = reduce        # sig: Optional[Callable[[Sequence[str]], str]]
+        self.reduce = reduce        # sig: Callable[[Sequence[str]], str]
         """Function to reduce selected texts into a single string."""
 
     def apply(self, element):
