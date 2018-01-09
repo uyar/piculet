@@ -502,7 +502,7 @@ class Rule:
         :sig: (Union[str, Extractor], Extractor, Optional[str]) -> None
         :param key: Name to distinguish this piece of data.
         :param extractor: Extractor that will get this piece of data.
-        :param section: Path to select section root in tree.
+        :param section: Path to select section nodes.
         """
         self.key = key              # sig: Union[str, Extractor]
         """Name to distinguish this piece of data."""
@@ -511,7 +511,7 @@ class Rule:
         """Extractor that will get this piece of data."""
 
         self.section = section      # sig: Optional[str]
-        """Path to select section root in tree."""
+        """Path to select section nodes."""
 
     @staticmethod
     def from_map(item):
@@ -526,26 +526,26 @@ class Rule:
         value = Extractor.from_map(item['value'])
         return Rule(key=key, extractor=value, section=item.get('section'))
 
-    def extract(self, root):
+    def extract(self, element):
         """Extract data out of an element using this rule.
 
         :sig: (ElementTree.Element) -> Mapping[str, Any]
-        :param root: Element to extract the data from.
+        :param element: Element to extract the data from.
         :return: Extracted data.
         """
         data = {}
-        subroots = [root] if self.section is None else xpath(root, self.section)
-        for subroot in subroots:
-            # _logger.debug('setting current root to: "%s"', subroot.tag)
+        sections = [element] if self.section is None else xpath(element, self.section)
+        for section in sections:
+            # _logger.debug('setting section node to: "%s"', section.tag)
 
-            key = self.key if isinstance(self.key, str) else self.key.extract(subroot)
+            key = self.key if isinstance(self.key, str) else self.key.extract(section)
             if key is None:
                 # _logger.debug('no value generated for key name')
                 continue
             # _logger.debug('extracting key: "%s"', key)
 
             if self.extractor.foreach is None:
-                value = self.extractor.extract(subroot)
+                value = self.extractor.extract(section)
                 if (value is None) or (value is _EMPTY):
                     # _logger.debug('no value generated for key')
                     continue
@@ -554,7 +554,7 @@ class Rule:
             else:
                 # don't try to transform list items by default, it might waste a lot of time
                 raw_values = [self.extractor.extract(r, transform=False)
-                              for r in xpath(subroot, self.extractor.foreach)]
+                              for r in xpath(section, self.extractor.foreach)]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
                 if len(values) == 0:
                     # _logger.debug('no items found in list')
@@ -565,16 +565,16 @@ class Rule:
         return data
 
 
-def extract(root, items):
-    """Extract data from an XML tree.
+def extract(element, items):
+    """Extract data from an XML element.
 
     :sig: (ElementTree.Element, Iterable[Mapping[str, Any]]) -> Mapping[str, Any]
-    :param root: Root of the XML tree to extract the data from.
+    :param element: Element to extract the data from.
     :param items: Rules that specify how to extract the data items.
     :return: Extracted data.
     """
     rules = Rules([Rule.from_map(item) for item in items])
-    return rules.extract(root)
+    return rules.extract(element)
 
 
 def set_root_node(root, path):
