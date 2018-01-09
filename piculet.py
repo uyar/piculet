@@ -521,6 +521,10 @@ def set_root_node(root, path):
     else:
         root = elements[0]
         _logger.debug('setting root to "%s" element', root.tag)
+
+    if _USE_LXML and (root is not None):
+        root = ElementTree.fromstring(ElementTree.tostring(root))
+
     return root
 
 
