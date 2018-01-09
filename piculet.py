@@ -335,6 +335,9 @@ reducers = SimpleNamespace(**_REDUCERS)
 """Predefined reducers."""
 
 
+_EMPTY = {}     # empty result singleton
+
+
 class Extractor:
     """An extractor for getting data out of a DOM tree."""
 
@@ -354,6 +357,22 @@ class Extractor:
 
         self.foreach = foreach      # sig: Optional[str]
         """Path to apply for generating a list of values."""
+
+    def apply(self, element):
+        """Get the raw value for an element.
+
+        :sig: (ElementTree.Element) -> Union[str, Mapping[str, Any]]
+        :param element: Element to apply the extractor to.
+        :return: Extracted value.
+        """
+        raise NotImplementedError('Extractors must implement this method')
+
+    def __call__(self, element, transform=True):
+        """Get the processed value for an element."""
+        value = self.apply(element)
+        if (value is None) or (value is _EMPTY) or (not transform):
+            return value
+        return value if self.transform is None else self.transform(value)
 
     @staticmethod
     def from_map(item):
@@ -394,7 +413,10 @@ class Path(Extractor):
         :param transform: Function to transform extracted value.
         :param foreach: Path to apply for generating a collection of data.
         """
-        super().__init__(transform=transform, foreach=foreach)
+        if not PY3:
+            Extractor.__init__(self, transform=transform, foreach=foreach)
+        else:
+            super().__init__(transform=transform, foreach=foreach)
 
         self.path = path            # sig: Optional[str]
         """Path to apply to get the data."""
@@ -404,6 +426,24 @@ class Path(Extractor):
 
         self.reduce = reduce        # sig: Optional[Callable[[Sequence[str]], str]]
         """Function to reduce selected texts into a single string."""
+
+    def apply(self, element):
+        """Apply this extractor to an element.
+
+        :sig: (ElementTree.Element) -> str
+        :param element: Element to apply the extractor to.
+        :return: Extracted text.
+        """
+        # _logger.debug('applying path "%s" on "%s" element', spec['path'], element.tag)
+        selected = xpath(element, self.path)
+        if len(selected) == 0:
+            # _logger.debug('no match')
+            value = None
+        else:
+            # _logger.debug('selected nodes: "%s"', selected)
+            value = self.reduce(selected)
+            # _logger.debug('reduced using "%s": "%s"', reduce, value)
+        return value
 
 
 class Rules(Extractor):
@@ -422,10 +462,22 @@ class Rules(Extractor):
         :param transform: Function to transform extracted value.
         :param foreach: Path to apply for generating a collection of data.
         """
-        super().__init__(transform=transform, foreach=foreach)
+        if not PY3:
+            Extractor.__init__(self, transform=transform, foreach=foreach)
+        else:
+            super().__init__(transform=transform, foreach=foreach)
 
         self.subrules = subrules    # sig: Optional[Iterable[Rule]]
-        """Rules for generating subobjects."""
+        """Rules for generating subitems."""
+
+    def apply(self, element):
+        """Apply this extractor to an element.
+
+        :sig: (ElementTree.Element) -> Mapping[str, Any]
+        :param element: Element to apply the extractor to.
+        :return: Extracted mapping.
+        """
+        return extract_r(element, rules=self.subrules)
 
 
 class Rule:
@@ -462,31 +514,6 @@ class Rule:
         return Rule(key=key, extractor=value, section=item.get('section'))
 
 
-_EMPTY = {}     # empty result singleton
-
-
-def _extract(element, extractor, transform=True):
-    if isinstance(extractor, Rules):
-        # apply subrules
-        value = extract_r(element, rules=extractor.subrules)
-    else:
-        # xpath and reduce
-        # _logger.debug('applying path "%s" on "%s" element', spec['path'], element.tag)
-        selected = xpath(element, extractor.path)
-        if len(selected) == 0:
-            # _logger.debug('no match')
-            value = None
-        else:
-            # _logger.debug('selected nodes: "%s"', selected)
-            value = extractor.reduce(selected)
-            # _logger.debug('reduced using "%s": "%s"', reduce, value)
-
-    if (value is None) or (value is _EMPTY) or (not transform):
-        return value
-
-    return value if extractor.transform is None else extractor.transform(value)
-
-
 def extract_r(root, rules):
     """Extract data from an XML tree.
 
@@ -504,14 +531,14 @@ def extract_r(root, rules):
         for subroot in subroots:
             # _logger.debug('setting current root to: "%s"', subroot.tag)
 
-            key = rule.key if isinstance(rule.key, str) else _extract(subroot, rule.key)
+            key = rule.key if isinstance(rule.key, str) else rule.key(subroot)
             if key is None:
                 # _logger.debug('no value generated for key name')
                 continue
             # _logger.debug('extracting key: "%s"', key)
 
             if rule.extractor.foreach is None:
-                value = _extract(subroot, rule.extractor)
+                value = rule.extractor(subroot)
                 if (value is None) or (value is _EMPTY):
                     # _logger.debug('no value generated for key')
                     continue
@@ -519,7 +546,7 @@ def extract_r(root, rules):
                 # _logger.debug('extracted value for "%s": "%s"', key, data[key])
             else:
                 # don't try to transform list items by default, it might waste a lot of time
-                raw_values = [_extract(r, rule.extractor, transform=False)
+                raw_values = [rule.extractor(r, transform=False)
                               for r in xpath(subroot, rule.extractor.foreach)]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
                 if len(values) == 0:
@@ -607,14 +634,12 @@ def set_node_attr(root, path, name, value):
     elements = xpath(root, path)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
-        attr_name = name if isinstance(name, str) else \
-            _extract(element, Extractor.from_map(name))
+        attr_name = name if isinstance(name, str) else Extractor.from_map(name)(element)
         if attr_name is None:
             _logger.debug('no attribute name generated for "%s" element', element.tag)
             continue
 
-        attr_value = value if isinstance(value, str) else \
-            _extract(element, Extractor.from_map(value))
+        attr_value = value if isinstance(value, str) else Extractor.from_map(value)(element)
         if attr_value is None:
             _logger.debug('no attribute value generated for "%s" element', element.tag)
             continue
@@ -642,8 +667,7 @@ def set_node_text(root, path, text):
     elements = xpath(root, path)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
-        node_text = text if isinstance(text, str) else \
-            _extract(element, Extractor.from_map(text))
+        node_text = text if isinstance(text, str) else Extractor.from_map(text)(element)
         # note that the text can be None in which case the existing text will be cleared
         _logger.debug('setting text to "%s" on "%s" element', node_text, element.tag)
         element.text = node_text
