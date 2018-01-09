@@ -350,30 +350,30 @@ class Extractor:
                 Optional[str]
             ) -> None
         :param transform: Function to transform extracted value.
-        :param foreach: Path to apply for generating a collection of data.
+        :param foreach: Path to apply for generating a collection of values.
         """
         self.transform = transform  # sig: Optional[Callable[[str], Any]]
         """Function to transform extracted value."""
 
         self.foreach = foreach      # sig: Optional[str]
-        """Path to apply for generating a list of values."""
+        """Path to apply for generating a collection of values."""
 
     def apply(self, element):
-        """Get the raw value for an element using this extractor.
+        """Get the raw data from an element using this extractor.
 
         :sig: (ElementTree.Element) -> Union[str, Mapping[str, Any]]
         :param element: Element to apply this extractor to.
-        :return: Extracted value.
+        :return: Extracted raw data.
         """
         raise NotImplementedError('Extractors must implement this method')
 
     def extract(self, element, transform=True):
-        """Get the processed value for an element.
+        """Get the processed data from an element using this extractor.
 
         :sig: (ElementTree.Element, Optional[bool]) -> Any
         :param element: Element to extract the data from.
         :param transform: Whether the transformation will be applied or not.
-        :return: Extracted data.
+        :return: Extracted and optionally transformed data.
         """
         value = self.apply(element)
         if (value is None) or (value is _EMPTY) or (not transform):
@@ -388,14 +388,15 @@ class Extractor:
         :param item: Extractor description.
         :return: Extractor object.
         """
-        items = item.get('items')
-        if items is not None:
-            subrules = [Rule.from_map(i) for i in items]
-            extractor = Rules(subrules)
-        else:
-            path = item.get('path')
+        path = item.get('path')
+        if path is not None:
             reduce = item.get('reduce', _REDUCERS.get(item.get('reducer')))
             extractor = Path(path, reduce)
+        else:
+            items = item.get('items')
+            # TDDO: check for None
+            subrules = [Rule.from_map(i) for i in items]
+            extractor = Rules(subrules)
         extractor.transform = item.get('transform')
         extractor.foreach = item.get('foreach')
         return extractor
