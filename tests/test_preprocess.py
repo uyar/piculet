@@ -162,7 +162,7 @@ def test_preprocess_set_text_value_from_path_should_set_text_for_selected_nodes(
     pre = [{"op": "set_text", "path": ".//ul[@class='genres']/li",
             "text": {
                 "path": "./text()",
-                "transform": lambda x: '#' + x
+                "transform": lambda x: x.lower()
             }}]
     items = [{"key": "genres",
               "value": {
@@ -170,7 +170,7 @@ def test_preprocess_set_text_value_from_path_should_set_text_for_selected_nodes(
                   "path": "./text()"
               }}]
     data = extract(preprocess(shining, pre), items)
-    assert data == {'genres': ['#Horror', '#Drama']}
+    assert data == {'genres': ['horror', 'drama']}
 
 
 def test_preprocess_set_text_no_value_should_be_ignored(shining):
