@@ -141,16 +141,14 @@ def test_multivalued_subrules_should_generate_list_of_subitems():
                   'items': [
                       {'key': 'name',
                        'value': {'path': './td[1]/a/text()'}},
-                      {'key': 'link',
-                       'value': {'path': './td[1]/a/@href'}},
                       {'key': 'character',
                        'value': {'path': './td[2]/text()'}}
                   ]
               }}]
     data = extract(shining, items)
     assert data == {'cast': [
-        {'character': 'Jack Torrance', 'link': '/people/2', 'name': 'Jack Nicholson'},
-        {'character': 'Wendy Torrance', 'link': '/people/3', 'name': 'Shelley Duvall'}
+        {'character': 'Jack Torrance', 'name': 'Jack Nicholson'},
+        {'character': 'Wendy Torrance', 'name': 'Shelley Duvall'}
     ]}
 
 
@@ -162,7 +160,7 @@ def test_subitems_should_be_transformable():
                       {'key': 'name', 'value': {'path': './td[1]/a/text()'}},
                       {'key': 'character', 'value': {'path': './td[2]/text()'}}
                   ],
-                  'transform': lambda x: x.get('name') + ' as ' + x.get('character')
+                  'transform': lambda x: '%(name)s as %(character)s' % x
               }}]
     data = extract(shining, items)
     assert data == {'cast': ['Jack Nicholson as Jack Torrance',
