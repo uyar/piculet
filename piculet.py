@@ -404,12 +404,12 @@ class Extractor:
 class Path(Extractor):
     """An extractor for getting text out of an XML element."""
 
-    def __init__(self, path=None, reduce=None, transform=None, foreach=None):
+    def __init__(self, path, reduce=None, transform=None, foreach=None):
         """Initialize this extractor.
 
         :sig:
             (
-                Optional[str],
+                str,
                 Optional[Callable[[Sequence[str]], str]],
                 Optional[Callable[[str], Any]],
                 Optional[str]
@@ -424,7 +424,7 @@ class Path(Extractor):
         else:
             super().__init__(transform=transform, foreach=foreach)
 
-        self.path = path            # sig: Optional[str]
+        self.path = path            # sig: str
         """Path to apply to get the data."""
 
         if reduce is None:
@@ -455,12 +455,12 @@ class Path(Extractor):
 class Rules(Extractor):
     """An extractor for getting data items out of an XML element."""
 
-    def __init__(self, subrules=None, transform=None, foreach=None):
+    def __init__(self, subrules, transform=None, foreach=None):
         """Initialize this extractor.
 
         :sig:
             (
-                Optional[Iterable[Rule]],
+                Iterable[Rule],
                 Optional[Callable[[Mapping[str, Any]], Any]],
                 Optional[str]
             ) -> None
@@ -473,7 +473,7 @@ class Rules(Extractor):
         else:
             super().__init__(transform=transform, foreach=foreach)
 
-        self.subrules = subrules    # sig: Optional[Iterable[Rule]]
+        self.subrules = subrules    # sig: Iterable[Rule]
         """Rules for generating subitems."""
 
     def apply(self, element):
@@ -515,7 +515,7 @@ class Rule:
 
     @staticmethod
     def from_map(item):
-        """Generate a rule from a map description.
+        """Generate a rule from a description map.
 
         :sig: (Mapping[str, Any]) -> Rule
         :param item: Rule description.

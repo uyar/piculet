@@ -65,12 +65,12 @@ class Extractor:
     def from_map(item: Mapping[str, Any]) -> Extractor: ...
 
 class Path(Extractor):
-    path = ...    # type: Optional[str]
+    path = ...    # type: str
     reduce = ...  # type: Optional[Callable[[Sequence[str]], str]]
 
     def __init__(
             self,
-            path: Optional[str] = ...,
+            path: str,
             reduce: Optional[Callable[[Sequence[str]], str]] = ...,
             transform: Optional[Callable[[str], Any]] = ...,
             foreach: Optional[str] = ...
@@ -79,11 +79,11 @@ class Path(Extractor):
     def apply(self, element: ElementTree.Element) -> str: ...
 
 class Rules(Extractor):
-    subrules = ...  # type: Optional[Iterable[Rule]]
+    subrules = ...  # type: Iterable[Rule]
 
     def __init__(
             self,
-            subrules: Optional[Iterable[Rule]] = ...,
+            subrules: Iterable[Rule],
             transform: Optional[Callable[[Mapping[str, Any]], Any]] = ...,
             foreach: Optional[str] = ...
     ) -> None: ...
