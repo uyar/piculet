@@ -39,4 +39,4 @@ rule would allow you to write the XPath queries relative to that node:
 
 .. code-block:: python
 
-   {"op": "root", "path": ".//div[@id='content']"}
+   {"op": "root", "path": "//div[@id='content']"}
