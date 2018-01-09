@@ -299,6 +299,11 @@ def xpath_etree(element, path):
     :param path: XPath expression to apply.
     :return: Elements or strings resulting from the query.
     """
+    if path[0] == '/':
+        # ElementTree doesn't support absolute paths
+        # TODO: handle this properly, find root of tree
+        path = '.' + path
+
     if path.endswith('//text()'):
         return [t for e in element.findall(path[:-8]) for t in e.itertext() if t]
 
