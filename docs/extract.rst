@@ -39,7 +39,7 @@ we can write:
 ...         {
 ...             "key": "title",
 ...             "value": {
-...                 "path": ".//title/text()",
+...                 "path": "//title/text()",
 ...                 "reduce": lambda xs: xs[0]
 ...             }
 ...         }
@@ -78,14 +78,14 @@ Multiple items can be collected in a single invocation:
 ...         {
 ...             "key": "title",
 ...             "value": {
-...                 "path": ".//title/text()",
+...                 "path": "//title/text()",
 ...                 "reduce": lambda xs: xs[0]
 ...             }
 ...         },
 ...         {
 ...             "key": "year",
 ...             "value": {
-...                 "path": ".//span[@class='year']/text()",
+...                 "path": "//span[@class='year']/text()",
 ...                 "reduce": lambda xs: xs[0]
 ...             }
 ...         }
@@ -103,14 +103,14 @@ example, the "foo" key doesn't get included:
 ...         {
 ...             "key": "title",
 ...             "value": {
-...                 "path": ".//title/text()",
+...                 "path": "//title/text()",
 ...                 "reduce": lambda xs: xs[0]
 ...              }
 ...         },
 ...         {
 ...             "key": "foo",
 ...             "value": {
-...                 "path": ".//foo/text()",
+...                 "path": "//foo/text()",
 ...                 "reduce": lambda xs: xs[0]
 ...             }
 ...         }
@@ -133,7 +133,7 @@ The reducing function that returns the first element of a list
 .. code-block:: python
 
    {
-       "path": ".//title/text()",
+       "path": "//title/text()",
        "reduce": reducers.first
    }
 
@@ -145,7 +145,7 @@ cleaning. The ``concat`` reducer concatenates all selected strings into one:
 ...         {
 ...             "key": "full_title",
 ...             "value": {
-...                 "path": ".//h1//text()",
+...                 "path": "//h1//text()",
 ...                 "reduce": reducers.concat
 ...             }
 ...         }
@@ -163,7 +163,7 @@ whitespace and replace multiple whitespace with a single space:
 ...         {
 ...             "key": "review",
 ...             "value": {
-...                 "path": ".//div[@class='review']//text()",
+...                 "path": "//div[@class='review']//text()",
 ...                 "reduce": reducers.clean
 ...             }
 ...         }
@@ -182,7 +182,7 @@ be written as:
 .. code-block:: python
 
    {
-       "path": ".//title/text()",
+       "path": "//title/text()",
        "reducer": "first"
    }
 
@@ -210,7 +210,7 @@ to get the year of the movie as an integer:
 ...         {
 ...             "key": "year",
 ...             "value": {
-...                 "path": ".//span[@class='year']/text()",
+...                 "path": "//span[@class='year']/text()",
 ...                 "reduce": reducers.first,
 ...                 "transform": int
 ...             }
@@ -235,7 +235,7 @@ we can write:
 ...         {
 ...             "key": "genres",
 ...             "value": {
-...                 "foreach": ".//ul[@class='genres']/li",
+...                 "foreach": "//ul[@class='genres']/li",
 ...                 "path": "./text()",
 ...                 "reduce": reducers.first
 ...             }
@@ -253,7 +253,7 @@ from the result:
 ...         {
 ...             "key": "foos",
 ...             "value": {
-...                 "foreach": ".//ul[@class='foos']/li",
+...                 "foreach": "//ul[@class='foos']/li",
 ...                 "path": "./text()",
 ...                 "reduce": reducers.first
 ...             }
@@ -271,7 +271,7 @@ in the list:
 ...         {
 ...             "key": "genres",
 ...             "value": {
-...                 "foreach": ".//ul[@class='genres']/li",
+...                 "foreach": "//ul[@class='genres']/li",
 ...                 "path": "./text()",
 ...                 "reduce": reducers.first,
 ...                 "transform": lambda x: x.lower()
@@ -299,14 +299,14 @@ will be the value for the key.
 ...                     {
 ...                         "key": "name",
 ...                         "value": {
-...                             "path": ".//div[@class='director']//a/text()",
+...                             "path": "//div[@class='director']//a/text()",
 ...                             "reduce": reducers.first
 ...                         }
 ...                     },
 ...                     {
 ...                         "key": "link",
 ...                         "value": {
-...                             "path": ".//div[@class='director']//a/@href",
+...                             "path": "//div[@class='director']//a/@href",
 ...                             "reduce": reducers.first
 ...                         }
 ...                     }
@@ -325,7 +325,7 @@ Subrules can be combined with lists:
 ...         {
 ...             "key": "cast",
 ...             "value": {
-...                 "foreach": ".//table[@class='cast']/tr",
+...                 "foreach": "//table[@class='cast']/tr",
 ...                 "items": [
 ...                     {
 ...                         "key": "name",
@@ -370,7 +370,7 @@ transformers for subitems take mappings (as opposed to strings) as parameter.
 ...         {
 ...             "key": "cast",
 ...             "value": {
-...                 "foreach": ".//table[@class='cast']/tr",
+...                 "foreach": "//table[@class='cast']/tr",
 ...                 "items": [
 ...                     {
 ...                         "key": "name",
@@ -412,7 +412,7 @@ to the selected section element:
 >>> rules = {
 ...     "items": [
 ...         {
-...             "section": ".//div[@class='info']",
+...             "section": "//div[@class='info']",
 ...             "key": {
 ...                 "path": "./h3/text()",
 ...                 "reduce": reducers.first
@@ -434,7 +434,7 @@ non-alphanumeric characters:
 >>> rules = {
 ...     "items": [
 ...         {
-...             "section": ".//div[@class='info']",
+...             "section": "//div[@class='info']",
 ...             "key": {
 ...                 "path": "./h3/text()",
 ...                 "reduce": reducers.normalize
@@ -469,7 +469,7 @@ calling the :func:`extract <piculet.extract>` function with the rule items:
 ...     {
 ...         "key": "title",
 ...         "value": {
-...             "path": ".//title/text()",
+...             "path": "//title/text()",
 ...             "reduce": reducers.first
 ...         }
 ...     }
