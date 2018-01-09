@@ -513,6 +513,38 @@ class Rule:
         value = Extractor.from_map(item['value'])
         return Rule(key=key, extractor=value, section=item.get('section'))
 
+    def extract(self, root):
+        data = {}
+        subroots = [root] if self.section is None else xpath(root, self.section)
+        for subroot in subroots:
+            # _logger.debug('setting current root to: "%s"', subroot.tag)
+
+            key = self.key if isinstance(self.key, str) else self.key(subroot)
+            if key is None:
+                # _logger.debug('no value generated for key name')
+                continue
+            # _logger.debug('extracting key: "%s"', key)
+
+            if self.extractor.foreach is None:
+                value = self.extractor(subroot)
+                if (value is None) or (value is _EMPTY):
+                    # _logger.debug('no value generated for key')
+                    continue
+                data[key] = value
+                # _logger.debug('extracted value for "%s": "%s"', key, data[key])
+            else:
+                # don't try to transform list items by default, it might waste a lot of time
+                raw_values = [self.extractor(r, transform=False)
+                              for r in xpath(subroot, self.extractor.foreach)]
+                values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
+                if len(values) == 0:
+                    # _logger.debug('no items found in list')
+                    continue
+                data[key] = values if self.extractor.transform is None else \
+                    list(map(self.extractor.transform, values))
+                # _logger.debug('extracted value for "%s": "%s"', key, data[key])
+        return data
+
 
 def extract_r(root, rules):
     """Extract data from an XML tree.
@@ -527,34 +559,8 @@ def extract_r(root, rules):
 
     data = {}
     for rule in rules:
-        subroots = [root] if rule.section is None else xpath(root, rule.section)
-        for subroot in subroots:
-            # _logger.debug('setting current root to: "%s"', subroot.tag)
-
-            key = rule.key if isinstance(rule.key, str) else rule.key(subroot)
-            if key is None:
-                # _logger.debug('no value generated for key name')
-                continue
-            # _logger.debug('extracting key: "%s"', key)
-
-            if rule.extractor.foreach is None:
-                value = rule.extractor(subroot)
-                if (value is None) or (value is _EMPTY):
-                    # _logger.debug('no value generated for key')
-                    continue
-                data[key] = value
-                # _logger.debug('extracted value for "%s": "%s"', key, data[key])
-            else:
-                # don't try to transform list items by default, it might waste a lot of time
-                raw_values = [rule.extractor(r, transform=False)
-                              for r in xpath(subroot, rule.extractor.foreach)]
-                values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
-                if len(values) == 0:
-                    # _logger.debug('no items found in list')
-                    continue
-                data[key] = values if rule.extractor.transform is None else \
-                    list(map(rule.extractor.transform, values))
-                # _logger.debug('extracted value for "%s": "%s"', key, data[key])
+        extracted = rule.extract(root)
+        data.update(extracted)
     return data if len(data) > 0 else _EMPTY
 
 
@@ -566,7 +572,8 @@ def extract(root, items):
     :param items: Rules that specify how to extract the data items.
     :return: Extracted data.
     """
-    return extract_r(root, [Rule.from_map(item) for item in items])
+    rules = Rules([Rule.from_map(item) for item in items])
+    return rules(root)
 
 
 def set_root_node(root, path):
