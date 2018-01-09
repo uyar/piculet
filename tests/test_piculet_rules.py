@@ -133,16 +133,14 @@ def test_multivalued_subrules_should_generate_list_of_subitems():
                  subrules=[
                      Rule(key='name',
                           extractor=Path('./td[1]/a/text()')),
-                     Rule(key='link',
-                          extractor=Path('./td[1]/a/@href')),
                      Rule(key='character',
                           extractor=Path('./td[2]/text()'))
                  ]))
     ]
     data = Rules(rules).extract(shining)
     assert data == {'cast': [
-        {'character': 'Jack Torrance', 'link': '/people/2', 'name': 'Jack Nicholson'},
-        {'character': 'Wendy Torrance', 'link': '/people/3', 'name': 'Shelley Duvall'}
+        {'character': 'Jack Torrance', 'name': 'Jack Nicholson'},
+        {'character': 'Wendy Torrance', 'name': 'Shelley Duvall'}
     ]}
 
 
@@ -154,12 +152,10 @@ def test_subitems_should_be_transformable():
                  subrules=[
                      Rule(key='name',
                           extractor=Path('./td[1]/a/text()')),
-                     Rule(key='link',
-                          extractor=Path('./td[1]/a/@href')),
                      Rule(key='character',
                           extractor=Path('./td[2]/text()'))
                  ],
-                 transform=lambda x: x.get('name') + ' as ' + x.get('character')
+                 transform=lambda x: '%(name)s as %(character)s' % x
              ))
     ]
     data = Rules(rules).extract(shining)
