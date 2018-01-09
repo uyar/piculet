@@ -294,7 +294,7 @@ def xpath_etree(element, path):
     This function is mainly needed to compensate for the lack of ``text()``
     and ``@attr`` axis queries in ElementTree XPath support.
 
-    :sig: (ElementTree.Element, str) -> Union[List[str], List[ElementTree.Element]]
+    :sig: (ElementTree.Element, str) -> Union[Sequence[str], Sequence[ElementTree.Element]]
     :param element: Element to apply the expression to.
     :param path: XPath expression to apply.
     :return: Elements or strings resulting from the query.
@@ -339,7 +339,7 @@ class Extractor:
         :sig:
             (
                 Optional[str],
-                Optional[Callable[[Iterable[str]], str]],
+                Optional[Callable[[Sequence[str]], str]],
                 Optional[Iterable[Rule]],
                 Optional[Callable[[Union[str, Mapping[str, Any]]], Any]],
                 Optional[str]
@@ -356,7 +356,7 @@ class Extractor:
         if reduce is None:
             reduce = reducers.concat
 
-        self.reduce = reduce        # sig: Optional[Callable[[Iterable[str]], str]]
+        self.reduce = reduce        # sig: Optional[Callable[[Sequence[str]], str]]
         """Function to reduce selected texts into a single string."""
 
         self.subrules = subrules    # sig: Optional[Iterable[Rule]]
