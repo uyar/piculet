@@ -441,7 +441,7 @@ class Path(Extractor):
         :param element: Element to apply this extractor to.
         :return: Extracted text.
         """
-        # _logger.debug('applying path "%s" on "%s" element', spec['path'], element.tag)
+        # _logger.debug('applying path "%s" on "%s" element', self.path, element.tag)
         selected = xpath(element, self.path)
         if len(selected) == 0:
             # _logger.debug('no match')
@@ -449,7 +449,7 @@ class Path(Extractor):
         else:
             # _logger.debug('selected nodes: "%s"', selected)
             value = self.reduce(selected)
-            # _logger.debug('reduced using "%s": "%s"', reduce, value)
+            # _logger.debug('reduced using "%s": "%s"', self.reduce, value)
         return value
 
 
@@ -501,8 +501,8 @@ class Rule:
         """Initialize this rule.
 
         :sig: (Union[str, Extractor], Extractor, Optional[str]) -> None
-        :param key: Name to distinguish this piece of data.
-        :param extractor: Extractor that will get this piece of data.
+        :param key: Name to distinguish the extracted data.
+        :param extractor: Extractor that will get the data.
         :param section: Path to select section nodes.
         """
         self.key = key              # sig: Union[str, Extractor]
@@ -588,14 +588,15 @@ def set_root_node(root, path):
     """
     _logger.debug('selecting new root using path: "%s"', path)
     elements = xpath(root, path)
+
     if len(elements) != 1:
         _logger.debug('%s elements match for new root', len(elements))
-        root = None
-    else:
-        root = elements[0]
-        _logger.debug('setting root to "%s" element', root.tag)
+        return None
 
-    if _USE_LXML and (root is not None):
+    root = elements[0]
+    _logger.debug('setting root to "%s" element', root.tag)
+
+    if _USE_LXML:
         root = ElementTree.fromstring(ElementTree.tostring(root))
 
     return root
