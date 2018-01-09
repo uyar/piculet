@@ -561,12 +561,14 @@ def set_node_attr(root, path, name, value):
     elements = xpath(root, path)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
-        attr_name = name if isinstance(name, str) else _extract(element, name)
+        attr_name = name if isinstance(name, str) else \
+            _extract(element, Extractor.from_map(name))
         if attr_name is None:
             _logger.debug('no attribute name generated for "%s" element', element.tag)
             continue
 
-        attr_value = value if isinstance(value, str) else _extract(element, value)
+        attr_value = value if isinstance(value, str) else \
+            _extract(element, Extractor.from_map(value))
         if attr_value is None:
             _logger.debug('no attribute value generated for "%s" element', element.tag)
             continue
@@ -594,7 +596,8 @@ def set_node_text(root, path, text):
     elements = xpath(root, path)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
-        node_text = text if isinstance(text, str) else _extract(element, text)
+        node_text = text if isinstance(text, str) else \
+            _extract(element, Extractor.from_map(text))
         # note that the text can be None in which case the existing text will be cleared
         _logger.debug('setting text to "%s" on "%s" element', node_text, element.tag)
         element.text = node_text
@@ -618,11 +621,11 @@ def preprocess(root, pre):
     :return: Root of preprocessed tree.
     """
     for step in pre:
-        if root is None:
-            break
         op = step['op']
         func = _PREPROCESSORS.get(op)
         root = func(root, **{k: v for k, v in step.items() if k != 'op'})
+        if root is None:
+            break
     return root
 
 
