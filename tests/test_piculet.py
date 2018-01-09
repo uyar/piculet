@@ -20,12 +20,6 @@ def test_extract_no_rules_should_return_empty_result():
 #         extract(shining, items)
 
 
-# def test_extract_path_value_generator_with_missing_reducer_should_raise_error():
-#     items = [{"key": "title", "value": {"path": ".//title/text()"}}]
-#     with raises(ValueError):
-#         extract(shining, items)
-
-
 def test_extract_reducer_by_lambda_should_be_ok():
     items = [{"key": "title", "value": {"path": ".//title/text()", "reduce": lambda xs: xs[0]}}]
     data = extract(shining, items)
@@ -71,7 +65,7 @@ def test_extract_callable_reducer_should_take_precedence():
     assert data == {'full_title': 'The Shining ('}
 
 
-def test_extract_predefined_default_reducer_should_be_concat():
+def test_extract_default_reducer_should_be_concat():
     items = [{"key": "full_title", "value": {"path": ".//h1//text()"}}]
     data = extract(shining, items)
     assert data == {'full_title': 'The Shining (1980)'}
@@ -179,19 +173,6 @@ def test_extract_subitems_should_be_transformable():
     data = extract(shining, items)
     assert data == {'cast': ['Jack Nicholson as Jack Torrance',
                              'Shelley Duvall as Wendy Torrance']}
-
-
-# def test_extract_generated_key_path_with_missing_reducer_should_raise_error():
-#     items = [
-#         {
-#             "foreach": ".//div[@class='info']",
-#             "key": {"path": "./h3/text()"},
-#             "value": {"path": "./p/text()",
-#                       "reduce": reducers.first}
-#         }
-#     ]
-#     with raises(ValueError):
-#         extract(shining, items)
 
 
 def test_extract_generated_key_none_should_be_excluded():
