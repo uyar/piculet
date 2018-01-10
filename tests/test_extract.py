@@ -1,41 +1,35 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os
-
 from piculet import Path, Rule, Rules, build_tree, reducers
 
 
-shining_file = os.path.join(os.path.dirname(__file__), '..', 'examples', 'shining.html')
-shining = build_tree(open(shining_file).read())
-
-
-def test_no_rules_should_return_empty_result():
+def test_no_rules_should_return_empty_result(shining):
     data = Rules([]).extract(shining)
     assert data == {}
 
 
-def test_default_reducer_should_be_concat():
+def test_default_reducer_should_be_concat(shining):
     rules = [Rule(key='full_title',
                   extractor=Path('//h1//text()'))]
     data = Rules(rules).extract(shining)
     assert data == {'full_title': 'The Shining (1980)'}
 
 
-def test_reduce_by_lambda_should_be_ok():
+def test_reduce_by_lambda_should_be_ok(shining):
     rules = [Rule(key='title',
                   extractor=Path('//title/text()', reduce=lambda xs: xs[0]))]
     data = Rules(rules).extract(shining)
     assert data == {'title': 'The Shining'}
 
 
-def test_predefined_reducer_should_be_ok():
+def test_predefined_reducer_should_be_ok(shining):
     rules = [Rule(key='title',
                   extractor=Path('//title/text()', reduce=reducers.first))]
     data = Rules(rules).extract(shining)
     assert data == {'title': 'The Shining'}
 
 
-def test_reduced_value_should_be_transformable():
+def test_reduced_value_should_be_transformable(shining):
     rules = [Rule(key='year',
                   extractor=Path('//span[@class="year"]/text()',
                                  transform=int))]
@@ -43,7 +37,7 @@ def test_reduced_value_should_be_transformable():
     assert data == {'year': 1980}
 
 
-def test_multiple_rules_should_generate_multiple_items():
+def test_multiple_rules_should_generate_multiple_items(shining):
     rules = [Rule(key='title',
                   extractor=Path('//title/text()')),
              Rule('year',
@@ -53,7 +47,7 @@ def test_multiple_rules_should_generate_multiple_items():
     assert data == {'title': 'The Shining', 'year': 1980}
 
 
-def test_item_with_no_data_should_be_excluded():
+def test_item_with_no_data_should_be_excluded(shining):
     rules = [Rule(key='title',
                   extractor=Path('//title/text()')),
              Rule(key='foo',
@@ -86,7 +80,7 @@ def test_item_with_false_value_should_be_included():
     assert data == {'foo': False}
 
 
-def test_multivalued_item_should_be_list():
+def test_multivalued_item_should_be_list(shining):
     rules = [Rule(key='genres',
                   extractor=Path(foreach='//ul[@class="genres"]/li',
                                  path='./text()'))]
@@ -94,7 +88,7 @@ def test_multivalued_item_should_be_list():
     assert data == {'genres': ['Horror', 'Drama']}
 
 
-def test_multivalued_items_should_be_transformable():
+def test_multivalued_items_should_be_transformable(shining):
     rules = [Rule(key='genres',
                   extractor=Path(foreach='//ul[@class="genres"]/li',
                                  path='./text()', transform=lambda x: x.lower()))]
@@ -102,7 +96,7 @@ def test_multivalued_items_should_be_transformable():
     assert data == {'genres': ['horror', 'drama']}
 
 
-def test_empty_values_should_be_excluded_from_multivalued_item_list():
+def test_empty_values_should_be_excluded_from_multivalued_item_list(shining):
     rules = [Rule(key='foos',
                   extractor=Path(foreach='//ul[@class="foos"]/li',
                                  path='./text()'))]
@@ -110,7 +104,7 @@ def test_empty_values_should_be_excluded_from_multivalued_item_list():
     assert data == {}
 
 
-def test_subrules_should_generate_subitems():
+def test_subrules_should_generate_subitems(shining):
     rules = [
         Rule(key='director',
              extractor=Rules(
@@ -125,7 +119,7 @@ def test_subrules_should_generate_subitems():
     assert data == {'director': {'link': '/people/1', 'name': 'Stanley Kubrick'}}
 
 
-def test_multivalued_subrules_should_generate_list_of_subitems():
+def test_multivalued_subrules_should_generate_list_of_subitems(shining):
     rules = [
         Rule(key='cast',
              extractor=Rules(
@@ -144,7 +138,7 @@ def test_multivalued_subrules_should_generate_list_of_subitems():
     ]}
 
 
-def test_subitems_should_be_transformable():
+def test_subitems_should_be_transformable(shining):
     rules = [
         Rule(key='cast',
              extractor=Rules(
@@ -163,7 +157,7 @@ def test_subitems_should_be_transformable():
                              'Shelley Duvall as Wendy Torrance']}
 
 
-def test_key_should_be_generatable_using_path():
+def test_key_should_be_generatable_using_path(shining):
     rules = [Rule(section='//div[@class="info"]',
                   key=Path('./h3/text()'),
                   extractor=Path('./p/text()'))]
@@ -171,7 +165,7 @@ def test_key_should_be_generatable_using_path():
     assert data == {'Language:': 'English', 'Runtime:': '144 minutes'}
 
 
-def test_generated_key_should_be_normalizable():
+def test_generated_key_should_be_normalizable(shining):
     rules = [Rule(section='//div[@class="info"]',
                   key=Path('./h3/text()', reduce=reducers.normalize),
                   extractor=Path('./p/text()'))]
@@ -179,7 +173,7 @@ def test_generated_key_should_be_normalizable():
     assert data == {'language': 'English', 'runtime': '144 minutes'}
 
 
-def test_generated_key_should_be_transformable():
+def test_generated_key_should_be_transformable(shining):
     rules = [Rule(section='//div[@class="info"]',
                   key=Path('./h3/text()', reduce=reducers.normalize,
                            transform=lambda x: x.upper()),
@@ -188,7 +182,7 @@ def test_generated_key_should_be_transformable():
     assert data == {'LANGUAGE': 'English', 'RUNTIME': '144 minutes'}
 
 
-def test_generated_key_none_should_be_excluded():
+def test_generated_key_none_should_be_excluded(shining):
     rules = [Rule(section='//div[@class="info"]',
                   key=Path('./foo/text()'),
                   extractor=Path('./p/text()'))]

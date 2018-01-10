@@ -1,62 +1,56 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os
-
 from piculet import build_tree, extract, reducers
 
 
-shining_file = os.path.join(os.path.dirname(__file__), '..', 'examples', 'shining.html')
-shining = build_tree(open(shining_file).read())
-
-
-def test_no_rules_should_return_empty_result():
+def test_no_rules_should_return_empty_result(shining):
     data = extract(shining, [])
     assert data == {}
 
 
-def test_default_reducer_should_be_concat():
+def test_default_reducer_should_be_concat(shining):
     items = [{'key': 'full_title',
               'value': {'path': '//h1//text()'}}]
     data = extract(shining, items)
     assert data == {'full_title': 'The Shining (1980)'}
 
 
-def test_reduce_by_lambda_should_be_ok():
+def test_reduce_by_lambda_should_be_ok(shining):
     items = [{'key': 'title',
               'value': {'path': '//title/text()', 'reduce': lambda xs: xs[0]}}]
     data = extract(shining, items)
     assert data == {'title': 'The Shining'}
 
 
-def test_predefined_reducer_should_be_ok():
+def test_predefined_reducer_should_be_ok(shining):
     items = [{'key': 'title',
               'value': {'path': '//title/text()', 'reduce': reducers.first}}]
     data = extract(shining, items)
     assert data == {'title': 'The Shining'}
 
 
-def test_predefined_reducer_by_name_should_be_ok():
+def test_predefined_reducer_by_name_should_be_ok(shining):
     items = [{'key': 'title',
               'value': {'path': '//title/text()', 'reducer': 'first'}}]
     data = extract(shining, items)
     assert data == {'title': 'The Shining'}
 
 
-def test_callable_reducer_should_take_precedence():
+def test_callable_reducer_should_take_precedence(shining):
     items = [{'key': 'full_title',
               'value': {'path': '//h1//text()', 'reducer': 'concat', 'reduce': reducers.first}}]
     data = extract(shining, items)
     assert data == {'full_title': 'The Shining ('}
 
 
-def test_reduced_value_should_be_transformable():
+def test_reduced_value_should_be_transformable(shining):
     items = [{'key': 'year',
               'value': {'path': '//span[@class="year"]/text()', 'transform': int}}]
     data = extract(shining, items)
     assert data == {'year': 1980}
 
 
-def test_multiple_rules_should_generate_multiple_items():
+def test_multiple_rules_should_generate_multiple_items(shining):
     items = [{'key': 'title',
               'value': {'path': '//title/text()'}},
              {'key': 'year',
@@ -65,7 +59,7 @@ def test_multiple_rules_should_generate_multiple_items():
     assert data == {'title': 'The Shining', 'year': 1980}
 
 
-def test_item_with_no_data_should_be_excluded():
+def test_item_with_no_data_should_be_excluded(shining):
     items = [{'key': 'title',
               'value': {'path': '//title/text()'}},
              {'key': 'foo',
@@ -98,7 +92,7 @@ def test_item_with_false_value_should_be_included():
     assert data == {'foo': False}
 
 
-def test_multivalued_item_should_be_list():
+def test_multivalued_item_should_be_list(shining):
     items = [{'key': 'genres',
               'value': {'foreach': '//ul[@class="genres"]/li',
                         'path': './text()'}}]
@@ -106,7 +100,7 @@ def test_multivalued_item_should_be_list():
     assert data == {'genres': ['Horror', 'Drama']}
 
 
-def test_multivalued_items_should_be_transformable():
+def test_multivalued_items_should_be_transformable(shining):
     items = [{'key': 'genres',
               'value': {'foreach': '//ul[@class="genres"]/li',
                         'path': './text()', 'transform': lambda x: x.lower()}}]
@@ -114,7 +108,7 @@ def test_multivalued_items_should_be_transformable():
     assert data == {'genres': ['horror', 'drama']}
 
 
-def test_empty_values_should_be_excluded_from_multivalued_item_list():
+def test_empty_values_should_be_excluded_from_multivalued_item_list(shining):
     items = [{'key': 'foos',
               'value': {'foreach': '//ul[@class="foos"]/li',
                         'path': './text()'}}]
@@ -122,7 +116,7 @@ def test_empty_values_should_be_excluded_from_multivalued_item_list():
     assert data == {}
 
 
-def test_subrules_should_generate_subitems():
+def test_subrules_should_generate_subitems(shining):
     items = [{'key': 'director',
               'value': {
                   'items': [{'key': 'name',
@@ -134,7 +128,7 @@ def test_subrules_should_generate_subitems():
     assert data == {'director': {'link': '/people/1', 'name': 'Stanley Kubrick'}}
 
 
-def test_multivalued_subrules_should_generate_list_of_subitems():
+def test_multivalued_subrules_should_generate_list_of_subitems(shining):
     items = [{'key': 'cast',
               'value': {
                   'foreach': '//table[@class="cast"]/tr',
@@ -152,7 +146,7 @@ def test_multivalued_subrules_should_generate_list_of_subitems():
     ]}
 
 
-def test_subitems_should_be_transformable():
+def test_subitems_should_be_transformable(shining):
     items = [{'key': 'cast',
               'value': {
                   'foreach': '//table[@class="cast"]/tr',
@@ -167,7 +161,7 @@ def test_subitems_should_be_transformable():
                              'Shelley Duvall as Wendy Torrance']}
 
 
-def test_key_should_be_generatable_using_path():
+def test_key_should_be_generatable_using_path(shining):
     items = [
         {
             'section': '//div[@class="info"]',
@@ -179,7 +173,7 @@ def test_key_should_be_generatable_using_path():
     assert data == {'Language:': 'English', 'Runtime:': '144 minutes'}
 
 
-def test_generated_key_should_be_normalizable():
+def test_generated_key_should_be_normalizable(shining):
     items = [
         {
             'section': '//div[@class="info"]',
@@ -192,7 +186,7 @@ def test_generated_key_should_be_normalizable():
     assert data == {'language': 'English', 'runtime': '144 minutes'}
 
 
-def test_generated_key_should_be_transformable():
+def test_generated_key_should_be_transformable(shining):
     items = [
         {
             'section': '//div[@class="info"]',
@@ -206,7 +200,7 @@ def test_generated_key_should_be_transformable():
     assert data == {'LANGUAGE': 'English', 'RUNTIME': '144 minutes'}
 
 
-def test_generated_key_none_should_be_excluded():
+def test_generated_key_none_should_be_excluded(shining):
     items = [
         {
             'section': '//div[@class="info"]',
