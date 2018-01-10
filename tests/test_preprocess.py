@@ -1,20 +1,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from pytest import fixture
-
-import os
-
-from piculet import build_tree, extract, preprocess
-
-
-shining_file = os.path.join(os.path.dirname(__file__), '..', 'examples', 'shining.html')
-shining_content = open(shining_file).read()
-
-
-@fixture
-def shining():
-    """Root node of the XML tree for the movie document "The Shining"."""
-    return build_tree(shining_content)
+from piculet import extract, preprocess
 
 
 def test_root_none_should_return_empty_result(shining):

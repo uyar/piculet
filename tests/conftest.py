@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from pytest import fixture
+
 import logging
 import os
 from hashlib import md5
@@ -41,3 +43,18 @@ def mock_urlopen(url):
 
 
 piculet.urlopen = mock.Mock(wraps=mock_urlopen)
+
+
+@fixture(scope='session')
+def shining_content():
+    """Contents of the shining.html file."""
+    file_path = os.path.join(os.path.dirname(__file__), '..', 'examples', 'shining.html')
+    with open(file_path) as f:
+        content = f.read()
+    return content
+
+
+@fixture
+def shining(shining_content):
+    """Root node of the XML tree for the movie document "The Shining"."""
+    return piculet.build_tree(shining_content)
