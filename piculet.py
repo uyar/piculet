@@ -711,12 +711,19 @@ def preprocess(root, pre):
     return root
 
 
-def scrape(document, rules, content_format='xml'):
+def scrape(document, items, pre=None, content_format='xml'):
     """Extract data from a document according to given rules.
 
-    :sig: (str, Mapping[str, Any], Optional[str]) -> Mapping[str, Any]
+    :sig:
+        (
+            str,
+            Mapping[str, Any],
+            Optional[Mapping[str, Any]],
+            Optional[str]
+        ) -> Mapping[str, Any]
     :param document: Document to scrape.
-    :param rules: Rules to use for scraping.
+    :param items: Rules to use for scraping.
+    :param pre: Preprocessing operations.
     :param content_format: Format of the content, XML or HTML.
     :return: Extracted data.
     """
@@ -726,8 +733,12 @@ def scrape(document, rules, content_format='xml'):
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
 
     root = build_tree(document)
-    root = preprocess(root, rules.get('pre', []))
-    data = extract(root, rules.get('items', []))
+
+    if pre is None:
+        pre = []
+    root = preprocess(root, pre)
+
+    data = extract(root, items)
     return data
 
 
@@ -774,7 +785,8 @@ def scrape_document(address, spec, content_format='xml'):
             content = f.read()
     document = decode_html(content)
 
-    data = scrape(document, rules, content_format=content_format)
+    data = scrape(document, rules.get('items'), pre=rules.get('pre'),
+                  content_format=content_format)
     print(json.dumps(data, indent=2, sort_keys=True))
 
 

@@ -142,7 +142,8 @@ def preprocess(
 
 def scrape(
         document: str,
-        rules: Mapping[str, Any],
+        items: Mapping[str, Any],
+        pre: Optional[Mapping[str, Any]] = ...,
         content_format: Optional[str] = ...
 ) -> Mapping[str, Any]: ...
 
