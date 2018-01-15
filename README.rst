@@ -1,4 +1,4 @@
-Copyright (C) 2014-2017 H. Turgut Uyar <uyar@tekir.org>
+Copyright (C) 2014-2018 H. Turgut Uyar <uyar@tekir.org>
 
 Piculet is a module and a utility for extracting data from XML documents
 using XPath queries. It can also scrape web pages by first converting
@@ -12,8 +12,8 @@ to integrate into applications.
 :Repository: https://bitbucket.org/uyar/piculet
 :Documentation: https://piculet.readthedocs.io/
 
-Piculet has been tested with Python 2.7, Python 3.3+, PyPy2 5.7, and PyPy3 5.7.
-You can install the latest version from PyPI::
+Piculet has been tested with Python 2.7, Python 3.3+, PyPy2 5.7+,
+and PyPy3 5.7+. You can install the latest version from PyPI::
 
    pip install piculet
 
@@ -101,6 +101,26 @@ the converted content, as in ``piculet h2x foo.html``. If the input file name
 is given as ``-`` it will read the content from the standard input
 and therefore can be used as part of a pipe:
 ``cat foo.html | piculet h2x -``
+
+Using in programs
+-----------------
+
+The highest level function for scraping a file or a URL is
+:func:`scrape_document <piculet.scrape_document>`:
+
+.. code-block:: python
+
+   from piculet import scrape_document
+
+   url = 'https://en.wikipedia.org/wiki/David_Bowie'
+   spec = 'wikipedia.json'
+   data = scrape_document(url, spec, content_format='html')
+
+If the ``content_format`` parameter is given as ``html``, the document
+will be converted into XHTML before scraping.
+
+Subsequent chapters contain a detailed explanation about how Piculet works
+and how to use it within programs.
 
 .. _shining.html: https://bitbucket.org/uyar/piculet/src/tip/examples/shining.html
 .. _movie.json: https://bitbucket.org/uyar/piculet/src/tip/examples/movie.json
