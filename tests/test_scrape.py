@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from piculet import reducers, scrape
+from piculet import scrape
 
 
 def test_no_rules_should_return_empty_result(shining_content):
@@ -8,39 +8,18 @@ def test_no_rules_should_return_empty_result(shining_content):
     assert data == {}
 
 
+def test_extracted_value_should_be_reduced(shining_content):
+    items = [{'key': 'title',
+              'value': {'path': '//title/text()', 'reduce': 'first'}}]
+    data = scrape(shining_content, items)
+    assert data == {'title': 'The Shining'}
+
+
 def test_default_reducer_should_be_concat(shining_content):
     items = [{'key': 'full_title',
               'value': {'path': '//h1//text()'}}]
     data = scrape(shining_content, items)
     assert data == {'full_title': 'The Shining (1980)'}
-
-
-def test_reduce_by_lambda_should_be_ok(shining_content):
-    items = [{'key': 'title',
-              'value': {'path': '//title/text()', 'reduce': lambda xs: xs[0]}}]
-    data = scrape(shining_content, items)
-    assert data == {'title': 'The Shining'}
-
-
-def test_predefined_reducer_should_be_ok(shining_content):
-    items = [{'key': 'title',
-              'value': {'path': '//title/text()', 'reduce': reducers.first}}]
-    data = scrape(shining_content, items)
-    assert data == {'title': 'The Shining'}
-
-
-def test_predefined_reducer_by_name_should_be_ok(shining_content):
-    items = [{'key': 'title',
-              'value': {'path': '//title/text()', 'reducer': 'first'}}]
-    data = scrape(shining_content, items)
-    assert data == {'title': 'The Shining'}
-
-
-def test_callable_reducer_should_take_precedence(shining_content):
-    items = [{'key': 'full_title',
-              'value': {'path': '//h1//text()', 'reducer': 'concat', 'reduce': reducers.first}}]
-    data = scrape(shining_content, items)
-    assert data == {'full_title': 'The Shining ('}
 
 
 def test_reduced_value_should_be_transformable(shining_content):
@@ -178,7 +157,7 @@ def test_generated_key_should_be_normalizable(shining_content):
         {
             'section': '//div[@class="info"]',
             'key': {'path': './h3/text()',
-                    'reduce': reducers.normalize},
+                    'reduce': 'normalize'},
             'value': {'path': './p/text()'}
         }
     ]
@@ -191,7 +170,7 @@ def test_generated_key_should_be_transformable(shining_content):
         {
             'section': '//div[@class="info"]',
             'key': {'path': './h3/text()',
-                    'reduce': reducers.normalize,
+                    'reduce': 'normalize',
                     'transform': lambda x: x.upper()},
             'value': {'path': './p/text()'}
         }
