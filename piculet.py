@@ -570,7 +570,7 @@ class Rule:
 def extract(element, items):
     """Extract data from an XML element.
 
-    :sig: (ElementTree.Element, Iterable[Mapping[str, Any]]) -> Mapping[str, Any]
+    :sig: (ElementTree.Element, Sequence[Mapping[str, Any]]) -> Mapping[str, Any]
     :param element: Element to extract the data from.
     :param items: Rules that specify how to extract the data items.
     :return: Extracted data.
@@ -698,7 +698,7 @@ _PREPROCESSORS = {
 def preprocess(root, pre):
     """Process a tree before starting extraction.
 
-    :sig: (ElementTree.Element, Iterable[Mapping[str, Any]]) -> ElementTree.Element
+    :sig: (ElementTree.Element, Sequence[Mapping[str, Any]]) -> ElementTree.Element
     :param root: Root of tree to process.
     :param pre: Preprocessing operations.
     :return: Root of preprocessed tree.
@@ -713,11 +713,16 @@ def preprocess(root, pre):
 
 
 def scrape(document, items, pre=None):
-    """Extract data from a document according to given rules.
+    """Extract data from a document after optionally preprocessing it.
 
-    :sig: (str, Mapping[str, Any], Optional[Mapping[str, Any]]) -> Mapping[str, Any]
+    :sig:
+        (
+            str,
+            Sequence[Mapping[str, Any]],
+            Optional[Sequence[Mapping[str, Any]]]
+        ) -> Mapping[str, Any]
     :param document: Document to scrape.
-    :param items: Rules to use for scraping.
+    :param items: Descriptions for extracting items.
     :param pre: Preprocessing operations.
     :return: Extracted data.
     """
