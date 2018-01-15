@@ -7,6 +7,7 @@ History
 ------------------
 
 - Added rule and extractor classes for better type checking.
+- Refactored XPath evaluation method in order to parse path expressions once.
 - Preprocessing will be done only once when the tree is built.
 - Concatenation is now the default reducing operation.
 

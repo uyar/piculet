@@ -268,8 +268,51 @@ _USE_LXML = find_loader('lxml') is not None
 if _USE_LXML:
     _logger.info('using lxml')
     from lxml import etree as ElementTree
+    XPath = ElementTree.XPath
 else:
     from xml.etree import ElementTree
+
+    class XPath:
+        """An XPath expression evaluator.
+
+        This class is mainly needed to compensate for the lack of ``text()``
+        and ``@attr`` axis queries in ElementTree XPath support.
+        """
+        def __init__(self, path):
+            """Initialize this evaluator.
+
+            :sig: (str) -> None
+            :param path: XPath expression to evaluate.
+            """
+            if path[0] == '/':
+                # ElementTree doesn't support absolute paths
+                # TODO: handle this properly, find root of tree
+                path = '.' + path
+
+            self.path = path    # sig: str
+
+        def __call__(self, element):
+            """Apply an XPath expression to an element.
+
+            :sig: (ElementTree.Element) -> Union[Sequence[str], Sequence[ElementTree.Element]]
+            :param element: Element to apply the expression to.
+            :return: Elements or strings resulting from the query.
+            """
+            if self.path.endswith('//text()'):
+                return [t for e in element.findall(self.path[:-8]) for t in e.itertext() if t]
+
+            if self.path.endswith('/text()'):
+                return [t for e in element.findall(self.path[:-7])
+                        for t in ([e.text] + [c.tail if c.tail else '' for c in e]) if t]
+
+            path_tokens = self.path.split('/')
+            epath, last_step = path_tokens[:-1], path_tokens[-1]
+            # PY3: *epath, last_step = path.split('/')
+            if last_step.startswith('@'):
+                result = [e.attrib.get(last_step[1:]) for e in element.findall('/'.join(epath))]
+                return [r for r in result if r is not None]
+
+            return element.findall(self.path)
 
 
 def build_tree(document, force_html=False):
@@ -288,7 +331,7 @@ def build_tree(document, force_html=False):
     return ElementTree.fromstring(content)
 
 
-def xpath_etree(element, path):
+def xpath(element, path):
     """Apply an XPath expression to an element.
 
     This function is mainly needed to compensate for the lack of ``text()``
@@ -299,29 +342,7 @@ def xpath_etree(element, path):
     :param path: XPath expression to apply.
     :return: Elements or strings resulting from the query.
     """
-    if path[0] == '/':
-        # ElementTree doesn't support absolute paths
-        # TODO: handle this properly, find root of tree
-        path = '.' + path
-
-    if path.endswith('//text()'):
-        return [t for e in element.findall(path[:-8]) for t in e.itertext() if t]
-
-    if path.endswith('/text()'):
-        return [t for e in element.findall(path[:-7])
-                for t in ([e.text] + [c.tail if c.tail else '' for c in e]) if t]
-
-    path_tokens = path.split('/')
-    epath, last_step = path_tokens[:-1], path_tokens[-1]
-    # PY3: *epath, last_step = path.split('/')
-    if last_step.startswith('@'):
-        result = [e.attrib.get(last_step[1:]) for e in element.findall('/'.join(epath))]
-        return [r for r in result if r is not None]
-
-    return element.findall(path)
-
-
-xpath = xpath_etree if not _USE_LXML else ElementTree._Element.xpath
+    return XPath(path)(element)
 
 
 _REDUCERS = {
@@ -355,7 +376,7 @@ class Extractor:
         self.transform = transform  # sig: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]]
         """Function to transform the extracted value."""
 
-        self.foreach = foreach      # sig: Optional[str]
+        self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPath]
         """Path to apply for generating a collection of values."""
 
     def apply(self, element):
@@ -365,7 +386,7 @@ class Extractor:
         :param element: Element to apply this extractor to.
         :return: Extracted raw data.
         """
-        raise NotImplementedError('Extractors must implement this method')
+        raise NotImplementedError('Concrete extractors must implement this method')
 
     def extract(self, element, transform=True):
         """Get the processed data from an element using this extractor.
@@ -388,18 +409,19 @@ class Extractor:
         :param item: Extractor description.
         :return: Extractor object.
         """
+        transform = item.get('transform')
+        foreach = item.get('foreach')
+
         path = item.get('path')
         if path is not None:
             reduce = item.get('reduce', _REDUCERS.get(item.get('reducer')))
-            extractor = Path(path, reduce)
+            extractor = Path(path, reduce, transform=transform, foreach=foreach)
         else:
             items = item.get('items')
             # TODO: check for None
             rules = [Rule.from_map(i) for i in items]
-            extractor = Rules(rules)
+            extractor = Rules(rules, transform=transform, foreach=foreach)
 
-        extractor.transform = item.get('transform')
-        extractor.foreach = item.get('foreach')
         return extractor
 
 
@@ -426,8 +448,8 @@ class Path(Extractor):
         else:
             super().__init__(transform=transform, foreach=foreach)
 
-        self.path = path            # sig: str
-        """Path to apply to get the data."""
+        self.path = XPath(path)     # sig: XPath
+        """XPath evaluator to apply to get the data."""
 
         if reduce is None:
             reduce = reducers.concat
@@ -443,7 +465,7 @@ class Path(Extractor):
         :return: Extracted text.
         """
         # _logger.debug('applying path "%s" on "%s" element', self.path, element.tag)
-        selected = xpath(element, self.path)
+        selected = self.path(element)
         if len(selected) == 0:
             # _logger.debug('no match')
             value = None
@@ -512,8 +534,8 @@ class Rule:
         self.extractor = extractor  # sig: Extractor
         """Extractor that will generate this data item."""
 
-        self.section = section      # sig: Optional[str]
-        """Path to select section elements."""
+        self.section = XPath(section) if section is not None else None  # sig: Optional[XPath]
+        """XPath evaluator for selecting section elements."""
 
     @staticmethod
     def from_map(item):
@@ -536,7 +558,7 @@ class Rule:
         :return: Extracted data.
         """
         data = {}
-        sections = [element] if self.section is None else xpath(element, self.section)
+        sections = [element] if self.section is None else self.section(element)
         for section in sections:
             # _logger.debug('setting section node to: "%s"', section.tag)
 
@@ -556,7 +578,7 @@ class Rule:
             else:
                 # don't try to transform list items by default, it might waste a lot of time
                 raw_values = [self.extractor.extract(r, transform=False)
-                              for r in xpath(section, self.extractor.foreach)]
+                              for r in self.extractor.foreach(section)]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
                 if len(values) == 0:
                     # _logger.debug('no items found in list')

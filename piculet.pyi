@@ -30,19 +30,29 @@ def html_to_xhtml(
         omit_attrs: Optional[Iterable[str]] = ...
 ) -> str: ...
 
+class XPath:
+    path = ...  # type: str
+
+    def __init__(self, path: str) -> None: ...
+
+    def __call__(
+            self,
+            element: ElementTree.Element
+    ) -> Union[Sequence[str], Sequence[ElementTree.Element]]: ...
+
 def build_tree(
         document: str,
         force_html: Optional[bool] = ...
 ) -> ElementTree.Element: ...
 
-def xpath_etree(
+def xpath(
         element: ElementTree.Element,
         path: str
 ) -> Union[Sequence[str], Sequence[ElementTree.Element]]: ...
 
 class Extractor:
     transform = ...  # type: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]]
-    foreach = ...    # type: Optional[str]
+    foreach = ...    # type: Optional[XPath]
 
     def __init__(
             self,
@@ -65,7 +75,7 @@ class Extractor:
     def from_map(item: Mapping[str, Any]) -> Extractor: ...
 
 class Path(Extractor):
-    path = ...    # type: str
+    path = ...    # type: XPath
     reduce = ...  # type: Callable[[Sequence[str]], str]
 
     def __init__(
@@ -93,7 +103,7 @@ class Rules(Extractor):
 class Rule:
     key = ...        # type: Union[str, Extractor]
     extractor = ...  # type: Extractor
-    section = ...    # type: Optional[str]
+    section = ...    # type: Optional[XPath]
 
     def __init__(
             self,
