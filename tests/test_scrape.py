@@ -47,30 +47,6 @@ def test_item_with_no_data_should_be_excluded(shining_content):
     assert data == {'title': 'The Shining'}
 
 
-def test_item_with_empty_str_value_should_be_included():
-    content = '<root><foo val=""/></root>'
-    items = [{'key': 'foo',
-              'value': {'path': '//foo/@val'}}]
-    data = scrape(content, items)
-    assert data == {'foo': ''}
-
-
-def test_item_with_zero_value_should_be_included():
-    content = '<root><foo val="0"/></root>'
-    items = [{'key': 'foo',
-              'value': {'path': '//foo/@val', 'transform': int}}]
-    data = scrape(content, items)
-    assert data == {'foo': 0}
-
-
-def test_item_with_false_value_should_be_included():
-    content = '<root><foo val=""/></root>'
-    items = [{'key': 'foo',
-              'value': {'path': '//foo/@val', 'transform': bool}}]
-    data = scrape(content, items)
-    assert data == {'foo': False}
-
-
 def test_multivalued_item_should_be_list(shining_content):
     items = [{'key': 'genres',
               'value': {'foreach': '//ul[@class="genres"]/li',
@@ -192,8 +168,7 @@ def test_generated_key_none_should_be_excluded(shining_content):
 
 
 def test_tree_should_be_preprocessable(shining_content):
-    pre = [{'op': 'set_text', 'path': '//ul[@class="genres"]/li',
-            "text": 'Foo'}]
+    pre = [{'op': 'set_text', 'path': '//ul[@class="genres"]/li', "text": 'Foo'}]
     items = [{'key': 'genres',
               'value': {
                   'foreach': '//ul[@class="genres"]/li',
