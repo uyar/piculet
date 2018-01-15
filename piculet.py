@@ -688,8 +688,8 @@ def preprocess(root, pre):
 
     :sig: (ElementTree.Element, Sequence[Mapping[str, Any]]) -> ElementTree.Element
     :param root: Root of tree to process.
-    :param pre: Preprocessing operations.
-    :return: Root of preprocessed tree.
+    :param pre: Descriptions for processing operations.
+    :return: Root of processed tree.
     """
     for step in pre:
         op = step['op']
