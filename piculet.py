@@ -576,7 +576,7 @@ class Rule:
         return data
 
 
-def set_root_node(root, path):
+def set_root_node(root, path, **kwargs):
     """Change the root node of the tree.
 
     :sig: (Element, str) -> Element
@@ -600,22 +600,17 @@ def set_root_node(root, path):
     return root
 
 
-def remove_nodes(root, path):
+def remove_nodes(root, path, get_parent, **kwargs):
     """Remove selected nodes from the tree.
 
-    :sig: (Element, str) -> Element
+    :sig: (Element, str, Callable[[Element], Element]) -> Element
     :param root: Root node of the tree.
     :param path: XPath to select the nodes to remove.
     :return: Root node of the tree.
     """
     elements = XPath(path)(root)
     _logger.debug('removing %s elements using path: "%s"', len(elements), path)
-
     if len(elements) > 0:
-        # ElementTree doesn't support parent queries, so we'll build a map for it
-        get_parent = ElementTree._Element.getparent if _USE_LXML else \
-            {e: p for p in root.iter() for e in p}.get
-
         for element in elements:
             _logger.debug('removing element: "%s"', element.tag)
             # XXX: could this be hazardous? parent removed in earlier iteration?
@@ -623,7 +618,7 @@ def remove_nodes(root, path):
     return root
 
 
-def set_node_attr(root, path, name, value):
+def set_node_attr(root, path, name, value, **kwargs):
     """Set an attribute for selected nodes.
 
     :sig:
@@ -660,7 +655,7 @@ def set_node_attr(root, path, name, value):
     return root
 
 
-def set_node_text(root, path, text):
+def set_node_text(root, path, text, **kwargs):
     """Set the text for selected nodes.
 
     :sig:
@@ -716,10 +711,19 @@ def preprocess(root, pre):
     :param pre: Descriptions for processing operations.
     :return: Root of processed tree.
     """
+    get_parent = None
+
     for step in pre:
         op = step['op']
+
+        if (op == 'remove') and (get_parent is None):
+            # ElementTree doesn't support parent queries, so we'll build a map for it
+            get_parent = ElementTree._Element.getparent if _USE_LXML else \
+                {e: p for p in root.iter() for e in p}.get
+            step['get_parent'] = get_parent
+
         func = _PREPROCESSORS.get(op)
-        root = func(root, **{k: v for k, v in step.items() if k != 'op'})
+        root = func(root, **step)
         if root is None:
             break
     return root
