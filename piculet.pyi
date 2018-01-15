@@ -38,11 +38,6 @@ class XPath:
             element: ElementTree.Element
     ) -> Union[Sequence[str], Sequence[ElementTree.Element]]: ...
 
-def build_tree(
-        document: str,
-        force_html: Optional[bool] = ...
-) -> ElementTree.Element: ...
-
 def xpath_etree(
         element: ElementTree.Element,
         path: str
@@ -136,6 +131,11 @@ def set_node_text(
         root: ElementTree.Element,
         path: str,
         text: Union[str, Mapping[str, Any]]
+) -> ElementTree.Element: ...
+
+def build_tree(
+        document: str,
+        force_html: Optional[bool] = ...
 ) -> ElementTree.Element: ...
 
 def preprocess(
