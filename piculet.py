@@ -435,7 +435,7 @@ class Path(Extractor):
         else:
             super().__init__(transform=transform, foreach=foreach)
 
-        self.path = XPath(path)   # sig: XPath
+        self.path = XPath(path)     # sig: XPath
         """XPath evaluator to apply to get the data."""
 
         if reduce is None:
@@ -585,7 +585,7 @@ def set_root_node(root, path):
     :return: New root node of the tree.
     """
     _logger.debug('selecting new root using path: "%s"', path)
-    elements = xpath(root, path)
+    elements = XPath(path)(root)
 
     if len(elements) != 1:
         _logger.debug('%s elements match for new root', len(elements))
@@ -608,7 +608,7 @@ def remove_nodes(root, path):
     :param path: XPath to select the nodes to remove.
     :return: Root node of the tree.
     """
-    elements = xpath(root, path)
+    elements = XPath(path)(root)
     _logger.debug('removing %s elements using path: "%s"', len(elements), path)
 
     if len(elements) > 0:
@@ -639,7 +639,7 @@ def set_node_attr(root, path, name, value):
     :param value: Description for value generation.
     :return: Root node of the tree.
     """
-    elements = xpath(root, path)
+    elements = XPath(path)(root)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
         attr_name = name if isinstance(name, str) else \
@@ -674,7 +674,7 @@ def set_node_text(root, path, text):
     :param text: Description for text generation.
     :return: Root node of the tree.
     """
-    elements = xpath(root, path)
+    elements = XPath(path)(root)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
         node_text = text if isinstance(text, str) else Extractor.from_map(text).extract(element)
