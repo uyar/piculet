@@ -271,6 +271,7 @@ if _USE_LXML:
     from lxml.etree import Element
 
     XPath = ElementTree.XPath
+    xpath = ElementTree._Element.xpath
 else:
     from xml.etree import ElementTree
     from xml.etree.ElementTree import Element
@@ -328,19 +329,7 @@ else:
             """
             return self.__evaluate(element)
 
-
-def xpath_etree(element, path):
-    """Apply an XPath expression to an element.
-
-    :sig: (Element, str) -> Union[Sequence[str], Sequence[Element]]
-    :param element: Element to apply the expression to.
-    :param path: XPath expression to apply.
-    :return: Elements or strings resulting from the query.
-    """
-    return XPath(path)(element)
-
-
-xpath = xpath_etree if not _USE_LXML else ElementTree._Element.xpath
+    xpath = lambda e, p: XPath(p)(e)
 
 
 _REDUCERS = {
