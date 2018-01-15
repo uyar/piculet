@@ -394,9 +394,10 @@ class Extractor:
             extractor = Path(path, reduce)
         else:
             items = item.get('items')
-            # TDDO: check for None
+            # TODO: check for None
             subrules = [Rule.from_map(i) for i in items]
             extractor = Rules(subrules)
+
         extractor.transform = item.get('transform')
         extractor.foreach = item.get('foreach')
         return extractor
