@@ -750,7 +750,7 @@ def h2x(source):
 
 
 def scrape_document(address, spec, content_format='xml'):
-    """Scrape data from a URL and print.
+    """Scrape data from a file path or a URL and print.
 
     :sig: (str, str, Optional[str]) -> None
     :param address: File path or URL of document to scrape.
@@ -759,7 +759,7 @@ def scrape_document(address, spec, content_format='xml'):
     """
     _logger.debug('loading spec from file: "%s"', os.path.abspath(spec))
     with open(spec) as f:
-        rules = json.loads(f.read())
+        spec_map = json.loads(f.read())
 
     if address.startswith(('http://', 'https://')):
         _logger.debug('loading url: "%s"', address)
@@ -776,7 +776,7 @@ def scrape_document(address, spec, content_format='xml'):
         document = html_to_xhtml(document)
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
 
-    data = scrape(document, rules.get('items'), pre=rules.get('pre'))
+    data = scrape(document, spec_map.get('items'), pre=spec_map.get('pre'))
     print(json.dumps(data, indent=2, sort_keys=True))
 
 
