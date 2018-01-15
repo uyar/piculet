@@ -189,3 +189,15 @@ def test_generated_key_none_should_be_excluded(shining_content):
     ]
     data = scrape(shining_content, items)
     assert data == {}
+
+
+def test_tree_should_be_preprocessable(shining_content):
+    pre = [{'op': 'set_text', 'path': '//ul[@class="genres"]/li',
+            "text": 'Foo'}]
+    items = [{'key': 'genres',
+              'value': {
+                  'foreach': '//ul[@class="genres"]/li',
+                  'path': './text()'
+              }}]
+    data = scrape(shining_content, items, pre=pre)
+    assert data == {'genres': ['Foo', 'Foo']}
