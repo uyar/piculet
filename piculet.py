@@ -567,18 +567,6 @@ class Rule:
         return data
 
 
-def extract(element, items):
-    """Extract data from an XML element.
-
-    :sig: (ElementTree.Element, Sequence[Mapping[str, Any]]) -> Mapping[str, Any]
-    :param element: Element to extract the data from.
-    :param items: Rules that specify how to extract the data items.
-    :return: Extracted data.
-    """
-    rules = Rules([Rule.from_map(item) for item in items])
-    return rules.extract(element)
-
-
 def set_root_node(root, path):
     """Change the root node of the tree.
 
@@ -710,6 +698,18 @@ def preprocess(root, pre):
         if root is None:
             break
     return root
+
+
+def extract(element, items):
+    """Extract data from an XML element.
+
+    :sig: (ElementTree.Element, Sequence[Mapping[str, Any]]) -> Mapping[str, Any]
+    :param element: Element to extract the data from.
+    :param items: Descriptions for extracting items.
+    :return: Extracted data.
+    """
+    rules = Rules([Rule.from_map(item) for item in items])
+    return rules.extract(element)
 
 
 def scrape(document, items, pre=None):

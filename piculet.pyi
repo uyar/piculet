@@ -107,11 +107,6 @@ class Rule:
 
     def extract(self, element: ElementTree.Element) -> Mapping[str, Any]: ...
 
-def extract(
-        element: ElementTree.Element,
-        items: Sequence[Mapping[str, Any]]
-) -> Mapping[str, Any]: ...
-
 def set_root_node(
         root: ElementTree.Element,
         path: str
@@ -139,6 +134,11 @@ def preprocess(
         root: ElementTree.Element,
         pre: Sequence[Mapping[str, Any]]
 ) -> ElementTree.Element: ...
+
+def extract(
+        element: ElementTree.Element,
+        items: Sequence[Mapping[str, Any]]
+) -> Mapping[str, Any]: ...
 
 def scrape(
         document: str,
