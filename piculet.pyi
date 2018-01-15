@@ -41,7 +41,7 @@ def xpath_etree(
 ) -> Union[Sequence[str], Sequence[ElementTree.Element]]: ...
 
 class Extractor:
-    transform = ...  # type: Optional[Callable[[str], Any]]
+    transform = ...  # type: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]]
     foreach = ...    # type: Optional[str]
 
     def __init__(

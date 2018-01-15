@@ -352,7 +352,7 @@ class Extractor:
         :param transform: Function to transform extracted value.
         :param foreach: Path to apply for generating a collection of values.
         """
-        self.transform = transform  # sig: Optional[Callable[[str], Any]]
+        self.transform = transform  # sig: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]]
         """Function to transform extracted value."""
 
         self.foreach = foreach      # sig: Optional[str]
