@@ -722,11 +722,8 @@ def scrape(document, items, pre=None):
     :return: Extracted data.
     """
     root = build_tree(document)
-
-    if pre is None:
-        pre = []
-    root = preprocess(root, pre)
-
+    if pre is not None:
+        root = preprocess(root, pre)
     data = extract(root, items)
     return data
 
