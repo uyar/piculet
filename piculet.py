@@ -339,7 +339,7 @@ _EMPTY = {}     # empty result singleton
 
 
 class Extractor:
-    """An extractor for getting data out of an XML element."""
+    """Abstract base extractor for getting data out of an XML element."""
 
     def __init__(self, transform=None, foreach=None):
         """Initialize this extractor.
@@ -349,11 +349,11 @@ class Extractor:
                 Optional[Callable[[Union[str, Mapping[str, Any]]], Any]],
                 Optional[str]
             ) -> None
-        :param transform: Function to transform extracted value.
+        :param transform: Function to transform the extracted value.
         :param foreach: Path to apply for generating a collection of values.
         """
         self.transform = transform  # sig: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]]
-        """Function to transform extracted value."""
+        """Function to transform the extracted value."""
 
         self.foreach = foreach      # sig: Optional[str]
         """Path to apply for generating a collection of values."""
@@ -395,8 +395,8 @@ class Extractor:
         else:
             items = item.get('items')
             # TODO: check for None
-            subrules = [Rule.from_map(i) for i in items]
-            extractor = Rules(subrules)
+            rules = [Rule.from_map(i) for i in items]
+            extractor = Rules(rules)
 
         extractor.transform = item.get('transform')
         extractor.foreach = item.get('foreach')
@@ -448,7 +448,7 @@ class Path(Extractor):
             # _logger.debug('no match')
             value = None
         else:
-            # _logger.debug('selected nodes: "%s"', selected)
+            # _logger.debug('selected elements: "%s"', selected)
             value = self.reduce(selected)
             # _logger.debug('reduced using "%s": "%s"', self.reduce, value)
         return value
@@ -457,26 +457,26 @@ class Path(Extractor):
 class Rules(Extractor):
     """An extractor for getting data items out of an XML element."""
 
-    def __init__(self, subrules, transform=None, foreach=None):
+    def __init__(self, rules, transform=None, foreach=None):
         """Initialize this extractor.
 
         :sig:
             (
-                Iterable[Rule],
+                Sequence[Rule],
                 Optional[Callable[[Mapping[str, Any]], Any]],
                 Optional[str]
             ) -> None
-        :param subrules: Rules for generating subitems.
+        :param rules: Rules for generating the data items.
         :param transform: Function to transform extracted value.
-        :param foreach: Path to apply for generating a collection of data.
+        :param foreach: Path to apply for generating a collection of data items.
         """
         if not PY3:
             Extractor.__init__(self, transform=transform, foreach=foreach)
         else:
             super().__init__(transform=transform, foreach=foreach)
 
-        self.subrules = subrules    # sig: Iterable[Rule]
-        """Rules for generating subitems."""
+        self.rules = rules  # sig: Sequence[Rule]
+        """Rules for generating the data items."""
 
     def apply(self, element):
         """Apply this extractor to an element.
@@ -489,38 +489,38 @@ class Rules(Extractor):
             return _EMPTY
 
         data = {}
-        for rule in self.subrules:
+        for rule in self.rules:
             extracted = rule.extract(element)
             data.update(extracted)
         return data if len(data) > 0 else _EMPTY
 
 
 class Rule:
-    """A rule describing how to get a piece of data out of an XML element."""
+    """A rule describing how to get a data item out of an XML element."""
 
     def __init__(self, key, extractor, section=None):
         """Initialize this rule.
 
         :sig: (Union[str, Extractor], Extractor, Optional[str]) -> None
-        :param key: Name to distinguish the extracted data.
-        :param extractor: Extractor that will get the data.
-        :param section: Path to select section nodes.
+        :param key: Name to distinguish this data item.
+        :param extractor: Extractor that will generate this data item.
+        :param section: Path to select section elements.
         """
         self.key = key              # sig: Union[str, Extractor]
-        """Name to distinguish this piece of data."""
+        """Name to distinguish this data item."""
 
         self.extractor = extractor  # sig: Extractor
-        """Extractor that will get this piece of data."""
+        """Extractor that will generate this data item."""
 
         self.section = section      # sig: Optional[str]
-        """Path to select section nodes."""
+        """Path to select section elements."""
 
     @staticmethod
     def from_map(item):
         """Generate a rule from a description map.
 
         :sig: (Mapping[str, Any]) -> Rule
-        :param item: Rule description.
+        :param item: Item description.
         :return: Rule object.
         """
         item_key = item['key']

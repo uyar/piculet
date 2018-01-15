@@ -108,7 +108,7 @@ def test_subrules_should_generate_subitems(shining):
     rules = [
         Rule(key='director',
              extractor=Rules(
-                 subrules=[
+                 rules=[
                      Rule(key='name',
                           extractor=Path('//div[@class="director"]//a/text()')),
                      Rule(key='link',
@@ -124,7 +124,7 @@ def test_multivalued_subrules_should_generate_list_of_subitems(shining):
         Rule(key='cast',
              extractor=Rules(
                  foreach='//table[@class="cast"]/tr',
-                 subrules=[
+                 rules=[
                      Rule(key='name',
                           extractor=Path('./td[1]/a/text()')),
                      Rule(key='character',
@@ -143,7 +143,7 @@ def test_subitems_should_be_transformable(shining):
         Rule(key='cast',
              extractor=Rules(
                  foreach='//table[@class="cast"]/tr',
-                 subrules=[
+                 rules=[
                      Rule(key='name',
                           extractor=Path('./td[1]/a/text()')),
                      Rule(key='character',

@@ -79,11 +79,11 @@ class Path(Extractor):
     def apply(self, element: ElementTree.Element) -> str: ...
 
 class Rules(Extractor):
-    subrules = ...  # type: Iterable[Rule]
+    rules = ...  # type: Sequence[Rule]
 
     def __init__(
             self,
-            subrules: Iterable[Rule],
+            rules: Sequence[Rule],
             transform: Optional[Callable[[Mapping[str, Any]], Any]] = ...,
             foreach: Optional[str] = ...
     ) -> None: ...
