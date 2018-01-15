@@ -268,10 +268,12 @@ _USE_LXML = find_loader('lxml') is not None
 if _USE_LXML:
     _logger.info('using lxml')
     from lxml import etree as ElementTree
+    from lxml.etree import Element
 
     XPath = ElementTree.XPath
 else:
     from xml.etree import ElementTree
+    from xml.etree.ElementTree import Element
 
     class XPath:
         """An XPath expression evaluator.
@@ -315,12 +317,12 @@ else:
                 if last.startswith('@'):
                     self.__evaluate = partial(attribute, subpath='/'.join(front), attr=last[1:])
                 else:
-                    self.__evaluate = lambda e: e.findall(path)
+                    self.__evaluate = partial(Element.findall, path=path)
 
         def __call__(self, element):
             """Apply this evaluator to an element.
 
-            :sig: (ElementTree.Element) -> Union[Sequence[str], Sequence[ElementTree.Element]]
+            :sig: (Element) -> Union[Sequence[str], Sequence[Element]]
             :param element: Element to apply this expression to.
             :return: Elements or strings resulting from the query.
             """
@@ -330,10 +332,7 @@ else:
 def xpath_etree(element, path):
     """Apply an XPath expression to an element.
 
-    This function is mainly needed to compensate for the lack of ``text()``
-    and ``@attr`` axis queries in ElementTree XPath support.
-
-    :sig: (ElementTree.Element, str) -> Union[Sequence[str], Sequence[ElementTree.Element]]
+    :sig: (Element, str) -> Union[Sequence[str], Sequence[Element]]
     :param element: Element to apply the expression to.
     :param path: XPath expression to apply.
     :return: Elements or strings resulting from the query.
@@ -381,7 +380,7 @@ class Extractor:
     def apply(self, element):
         """Get the raw data from an element using this extractor.
 
-        :sig: (ElementTree.Element) -> Union[str, Mapping[str, Any]]
+        :sig: (Element) -> Union[str, Mapping[str, Any]]
         :param element: Element to apply this extractor to.
         :return: Extracted raw data.
         """
@@ -390,7 +389,7 @@ class Extractor:
     def extract(self, element, transform=True):
         """Get the processed data from an element using this extractor.
 
-        :sig: (ElementTree.Element, Optional[bool]) -> Any
+        :sig: (Element, Optional[bool]) -> Any
         :param element: Element to extract the data from.
         :param transform: Whether the transformation will be applied or not.
         :return: Extracted and optionally transformed data.
@@ -459,7 +458,7 @@ class Path(Extractor):
     def apply(self, element):
         """Apply this extractor to an element.
 
-        :sig: (ElementTree.Element) -> str
+        :sig: (Element) -> str
         :param element: Element to apply this extractor to.
         :return: Extracted text.
         """
@@ -502,7 +501,7 @@ class Rules(Extractor):
     def apply(self, element):
         """Apply this extractor to an element.
 
-        :sig: (ElementTree.Element) -> Mapping[str, Any]
+        :sig: (Element) -> Mapping[str, Any]
         :param element: Element to apply the extractor to.
         :return: Extracted mapping.
         """
@@ -552,7 +551,7 @@ class Rule:
     def extract(self, element):
         """Extract data out of an element using this rule.
 
-        :sig: (ElementTree.Element) -> Mapping[str, Any]
+        :sig: (Element) -> Mapping[str, Any]
         :param element: Element to extract the data from.
         :return: Extracted data.
         """
@@ -591,7 +590,7 @@ class Rule:
 def set_root_node(root, path):
     """Change the root node of the tree.
 
-    :sig: (ElementTree.Element, str) -> ElementTree.Element
+    :sig: (Element, str) -> Element
     :param root: Current root of the tree.
     :param path: XPath to select the new root.
     :return: New root node of the tree.
@@ -615,7 +614,7 @@ def set_root_node(root, path):
 def remove_nodes(root, path):
     """Remove selected nodes from the tree.
 
-    :sig: (ElementTree.Element, str) -> ElementTree.Element
+    :sig: (Element, str) -> Element
     :param root: Root node of the tree.
     :param path: XPath to select the nodes to remove.
     :return: Root node of the tree.
@@ -640,11 +639,11 @@ def set_node_attr(root, path, name, value):
 
     :sig:
         (
-            ElementTree.Element,
+            Element,
             str,
             Union[str, Mapping[str, Any]],
             Union[str, Mapping[str, Any]]
-        ) -> ElementTree.Element
+        ) -> Element
     :param root: Root node of the tree.
     :param path: XPath to select the nodes to set attributes for.
     :param name: Description for name generation.
@@ -677,10 +676,10 @@ def set_node_text(root, path, text):
 
     :sig:
         (
-            ElementTree.Element,
+            Element,
             str,
             Union[str, Mapping[str, Any]]
-        ) -> ElementTree.Element
+        ) -> Element
     :param root: Root node of the tree.
     :param path: XPath to select the nodes to set attributes for.
     :param text: Description for text generation.
@@ -707,7 +706,7 @@ _PREPROCESSORS = {
 def build_tree(document, force_html=False):
     """Build a tree from an XML document.
 
-    :sig: (str, Optional[bool]) -> ElementTree.Element
+    :sig: (str, Optional[bool]) -> Element
     :param document: XML document to build the tree from.
     :param force_html: Force to parse from HTML without converting.
     :return: Root node of the XML tree.
@@ -723,7 +722,7 @@ def build_tree(document, force_html=False):
 def preprocess(root, pre):
     """Process a tree before starting extraction.
 
-    :sig: (ElementTree.Element, Sequence[Mapping[str, Any]]) -> ElementTree.Element
+    :sig: (Element, Sequence[Mapping[str, Any]]) -> Element
     :param root: Root of tree to process.
     :param pre: Descriptions for processing operations.
     :return: Root of processed tree.
@@ -740,7 +739,7 @@ def preprocess(root, pre):
 def extract(element, items):
     """Extract data from an XML element.
 
-    :sig: (ElementTree.Element, Sequence[Mapping[str, Any]]) -> Mapping[str, Any]
+    :sig: (Element, Sequence[Mapping[str, Any]]) -> Mapping[str, Any]
     :param element: Element to extract the data from.
     :param items: Descriptions for extracting items.
     :return: Extracted data.
