@@ -327,22 +327,6 @@ else:
             return self.__evaluate(element)
 
 
-def build_tree(document, force_html=False):
-    """Build a tree from an XML document.
-
-    :sig: (str, Optional[bool]) -> ElementTree.Element
-    :param document: XML document to build the tree from.
-    :param force_html: Force to parse from HTML without converting.
-    :return: Root node of the XML tree.
-    """
-    content = document if PY3 else document.encode('utf-8')
-    if _USE_LXML and force_html:
-        _logger.info('using lxml html builder')
-        import lxml.html
-        return lxml.html.fromstring(content)
-    return ElementTree.fromstring(content)
-
-
 def xpath_etree(element, path):
     """Apply an XPath expression to an element.
 
@@ -718,6 +702,22 @@ _PREPROCESSORS = {
     'set_attr': set_node_attr,
     'set_text': set_node_text
 }
+
+
+def build_tree(document, force_html=False):
+    """Build a tree from an XML document.
+
+    :sig: (str, Optional[bool]) -> ElementTree.Element
+    :param document: XML document to build the tree from.
+    :param force_html: Force to parse from HTML without converting.
+    :return: Root node of the XML tree.
+    """
+    content = document if PY3 else document.encode('utf-8')
+    if _USE_LXML and force_html:
+        _logger.info('using lxml html builder')
+        import lxml.html
+        return lxml.html.fromstring(content)
+    return ElementTree.fromstring(content)
 
 
 def preprocess(root, pre):
