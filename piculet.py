@@ -737,24 +737,19 @@ def extract(element, items):
     return rules.extract(element)
 
 
-def scrape(document, items, pre=None):
+def scrape(document, spec):
     """Extract data from a document after optionally preprocessing it.
 
-    :sig:
-        (
-            str,
-            Sequence[Mapping[str, Any]],
-            Optional[Sequence[Mapping[str, Any]]]
-        ) -> Mapping[str, Any]
+    :sig: (str, Mapping[str, Any]) -> Mapping[str, Any]
     :param document: Document to scrape.
-    :param items: Descriptions for extracting items.
-    :param pre: Preprocessing operations.
+    :param spec: Extraction specification.
     :return: Extracted data.
     """
     root = build_tree(document)
+    pre = spec.get('pre')
     if pre is not None:
         root = preprocess(root, pre)
-    data = extract(root, items)
+    data = extract(root, spec.get('items'))
     return data
 
 
@@ -806,7 +801,7 @@ def scrape_document(address, spec, content_format='xml'):
         document = html_to_xhtml(document)
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
 
-    data = scrape(document, spec_map.get('items'), pre=spec_map.get('pre'))
+    data = scrape(document, spec_map)
     print(json.dumps(data, indent=2, sort_keys=True))
 
 
