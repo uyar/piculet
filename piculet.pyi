@@ -38,11 +38,6 @@ class XPath:
             element: Element
     ) -> Union[Sequence[str], Sequence[Element]]: ...
 
-def xpath_etree(
-        element: Element,
-        path: str
-) -> Union[Sequence[str], Sequence[Element]]: ...
-
 class Extractor:
     transform = ...  # type: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]]
     foreach = ...    # type: Optional[XPath]
