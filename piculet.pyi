@@ -109,7 +109,7 @@ class Rule:
 
 def extract(
         element: ElementTree.Element,
-        items: Iterable[Mapping[str, Any]]
+        items: Sequence[Mapping[str, Any]]
 ) -> Mapping[str, Any]: ...
 
 def set_root_node(
@@ -137,13 +137,13 @@ def set_node_text(
 
 def preprocess(
         root: ElementTree.Element,
-        pre: Iterable[Mapping[str, Any]]
+        pre: Sequence[Mapping[str, Any]]
 ) -> ElementTree.Element: ...
 
 def scrape(
         document: str,
-        items: Mapping[str, Any],
-        pre: Optional[Mapping[str, Any]] = ...
+        items: Sequence[Mapping[str, Any]],
+        pre: Optional[Sequence[Mapping[str, Any]]] = ...
 ) -> Mapping[str, Any]: ...
 
 def h2x(source: str) -> None: ...
