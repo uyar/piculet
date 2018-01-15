@@ -8,6 +8,13 @@ def test_no_rules_should_return_empty_result(shining):
     assert data == {}
 
 
+def test_extracted_value_should_be_reduced(shining):
+    rules = [Rule(key='title',
+                  extractor=Path('//title/text()', reduce=reducers.first))]
+    data = Rules(rules).extract(shining)
+    assert data == {'title': 'The Shining'}
+
+
 def test_default_reducer_should_be_concat(shining):
     rules = [Rule(key='full_title',
                   extractor=Path('//h1//text()'))]
@@ -18,13 +25,6 @@ def test_default_reducer_should_be_concat(shining):
 def test_reduce_by_lambda_should_be_ok(shining):
     rules = [Rule(key='title',
                   extractor=Path('//title/text()', reduce=lambda xs: xs[0]))]
-    data = Rules(rules).extract(shining)
-    assert data == {'title': 'The Shining'}
-
-
-def test_predefined_reducer_should_be_ok(shining):
-    rules = [Rule(key='title',
-                  extractor=Path('//title/text()', reduce=reducers.first))]
     data = Rules(rules).extract(shining)
     assert data == {'title': 'The Shining'}
 

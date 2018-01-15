@@ -401,7 +401,7 @@ class Extractor:
 
         path = item.get('path')
         if path is not None:
-            reduce = item.get('reduce', _REDUCERS.get(item.get('reducer')))
+            reduce = _REDUCERS.get(item.get('reduce'))
             extractor = Path(path, reduce, transform=transform, foreach=foreach)
         else:
             items = item.get('items')
