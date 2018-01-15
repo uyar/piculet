@@ -712,27 +712,15 @@ def preprocess(root, pre):
     return root
 
 
-def scrape(document, items, pre=None, content_format='xml'):
+def scrape(document, items, pre=None):
     """Extract data from a document according to given rules.
 
-    :sig:
-        (
-            str,
-            Mapping[str, Any],
-            Optional[Mapping[str, Any]],
-            Optional[str]
-        ) -> Mapping[str, Any]
+    :sig: (str, Mapping[str, Any], Optional[Mapping[str, Any]]) -> Mapping[str, Any]
     :param document: Document to scrape.
     :param items: Rules to use for scraping.
     :param pre: Preprocessing operations.
-    :param content_format: Format of the content, XML or HTML.
     :return: Extracted data.
     """
-    if content_format == 'html':
-        _logger.debug('converting html document to xhtml')
-        document = html_to_xhtml(document)
-        # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
-
     root = build_tree(document)
 
     if pre is None:
@@ -786,8 +774,12 @@ def scrape_document(address, spec, content_format='xml'):
             content = f.read()
     document = decode_html(content)
 
-    data = scrape(document, rules.get('items'), pre=rules.get('pre'),
-                  content_format=content_format)
+    if content_format == 'html':
+        _logger.debug('converting html document to xhtml')
+        document = html_to_xhtml(document)
+        # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
+
+    data = scrape(document, rules.get('items'), pre=rules.get('pre'))
     print(json.dumps(data, indent=2, sort_keys=True))
 
 
