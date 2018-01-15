@@ -272,47 +272,44 @@ if _USE_LXML:
 else:
     from xml.etree import ElementTree
 
-    class XPath:
+    def XPath(path):
         """An XPath expression evaluator.
 
-        This class is mainly needed to compensate for the lack of ``text()``
+        This function is mainly needed to compensate for the lack of ``text()``
         and ``@attr`` axis queries in ElementTree XPath support.
+
+        :sig: (str) -> Callable[[ElementTree.Element], Union[Sequence[str], Sequence[ElementTree.Element]]]
+        :param path: XPath expression to evaluate.
         """
-        def __init__(self, path):
-            """Initialize this evaluator.
+        def _descendant(element, p):
+            return [t for e in element.findall(p) for t in e.itertext() if t]
 
-            :sig: (str) -> None
-            :param path: XPath expression to evaluate.
-            """
-            if path[0] == '/':
-                # ElementTree doesn't support absolute paths
-                # TODO: handle this properly, find root of tree
-                path = '.' + path
+        def _child(element, p):
+            return [t for e in element.findall(p)
+                    for t in ([e.text] + [c.tail if c.tail else '' for c in e]) if t]
 
-            self.path = path    # sig: str
+        def _attribute(element, p, attr):
+            result = [e.attrib.get(attr) for e in element.findall(p)]
+            return [r for r in result if r is not None]
 
-        def __call__(self, element):
-            """Apply an XPath expression to an element.
+        if path[0] == '/':
+            # ElementTree doesn't support absolute paths
+            # TODO: handle this properly, find root of tree
+            path = '.' + path
 
-            :sig: (ElementTree.Element) -> Union[Sequence[str], Sequence[ElementTree.Element]]
-            :param element: Element to apply the expression to.
-            :return: Elements or strings resulting from the query.
-            """
-            if self.path.endswith('//text()'):
-                return [t for e in element.findall(self.path[:-8]) for t in e.itertext() if t]
+        if path.endswith('//text()'):
+            return partial(_descendant, p=path[:-8])
 
-            if self.path.endswith('/text()'):
-                return [t for e in element.findall(self.path[:-7])
-                        for t in ([e.text] + [c.tail if c.tail else '' for c in e]) if t]
+        if path.endswith('/text()'):
+            return partial(_child, p=path[:-7])
 
-            path_tokens = self.path.split('/')
-            epath, last_step = path_tokens[:-1], path_tokens[-1]
-            # PY3: *epath, last_step = path.split('/')
-            if last_step.startswith('@'):
-                result = [e.attrib.get(last_step[1:]) for e in element.findall('/'.join(epath))]
-                return [r for r in result if r is not None]
+        path_tokens = path.split('/')
+        epath, last_step = path_tokens[:-1], path_tokens[-1]
+        # PY3: *epath, last_step = path.split('/')
+        if last_step.startswith('@'):
+            return partial(_attribute, p='/'.join(epath), attr=last_step[1:])
 
-            return element.findall(self.path)
+        return lambda e: e.findall(path)
 
 
 def build_tree(document, force_html=False):
@@ -376,7 +373,7 @@ class Extractor:
         self.transform = transform  # sig: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]]
         """Function to transform the extracted value."""
 
-        self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPath]
+        self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[Callable[[ElementTree.Element], Union[Sequence[str], Sequence[ElementTree.Element]]]]
         """Path to apply for generating a collection of values."""
 
     def apply(self, element):
@@ -448,7 +445,7 @@ class Path(Extractor):
         else:
             super().__init__(transform=transform, foreach=foreach)
 
-        self.path = XPath(path)     # sig: XPath
+        self.path = XPath(path)     # sig: Callable[[ElementTree.Element], Union[Sequence[str], Sequence[ElementTree.Element]]]
         """XPath evaluator to apply to get the data."""
 
         if reduce is None:
@@ -534,7 +531,7 @@ class Rule:
         self.extractor = extractor  # sig: Extractor
         """Extractor that will generate this data item."""
 
-        self.section = XPath(section) if section is not None else None  # sig: Optional[XPath]
+        self.section = XPath(section) if section is not None else None  # sig: Optional[Callable[[ElementTree.Element], Union[Sequence[str], Sequence[ElementTree.Element]]]]
         """XPath evaluator for selecting section elements."""
 
     @staticmethod

@@ -30,15 +30,9 @@ def html_to_xhtml(
         omit_attrs: Optional[Iterable[str]] = ...
 ) -> str: ...
 
-class XPath:
-    path = ...  # type: str
-
-    def __init__(self, path: str) -> None: ...
-
-    def __call__(
-            self,
-            element: ElementTree.Element
-    ) -> Union[Sequence[str], Sequence[ElementTree.Element]]: ...
+def XPath(
+        path: str
+) -> Callable[[ElementTree.Element], Union[Sequence[str], Sequence[ElementTree.Element]]]: ...
 
 def build_tree(
         document: str,
@@ -52,7 +46,7 @@ def xpath(
 
 class Extractor:
     transform = ...  # type: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]]
-    foreach = ...    # type: Optional[XPath]
+    foreach = ...    # type: Optional[Callable[[ElementTree.Element], Union[Sequence[str], Sequence[ElementTree.Element]]]]
 
     def __init__(
             self,
@@ -75,7 +69,7 @@ class Extractor:
     def from_map(item: Mapping[str, Any]) -> Extractor: ...
 
 class Path(Extractor):
-    path = ...    # type: XPath
+    path = ...    # type: Callable[[ElementTree.Element], Union[Sequence[str], Sequence[ElementTree.Element]]]
     reduce = ...  # type: Callable[[Sequence[str]], str]
 
     def __init__(
@@ -103,7 +97,7 @@ class Rules(Extractor):
 class Rule:
     key = ...        # type: Union[str, Extractor]
     extractor = ...  # type: Extractor
-    section = ...    # type: Optional[XPath]
+    section = ...    # type: Optional[Callable[[ElementTree.Element], Union[Sequence[str], Sequence[ElementTree.Element]]]]
 
     def __init__(
             self,
