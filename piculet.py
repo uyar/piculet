@@ -606,6 +606,7 @@ def remove_nodes(root, path, get_parent, **kwargs):
     :sig: (Element, str, Callable[[Element], Element]) -> Element
     :param root: Root node of the tree.
     :param path: XPath to select the nodes to remove.
+    :param get_parent: Function to get the parent of an element.
     :return: Root node of the tree.
     """
     elements = XPath(path)(root)
@@ -658,12 +659,7 @@ def set_node_attr(root, path, name, value, **kwargs):
 def set_node_text(root, path, text, **kwargs):
     """Set the text for selected nodes.
 
-    :sig:
-        (
-            Element,
-            str,
-            Union[str, Mapping[str, Any]]
-        ) -> Element
+    :sig: (Element, str, Union[str, Mapping[str, Any]]) -> Element
     :param root: Root node of the tree.
     :param path: XPath to select the nodes to set attributes for.
     :param text: Description for text generation.
