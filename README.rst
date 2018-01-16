@@ -1,8 +1,7 @@
 Copyright (C) 2014-2018 H. Turgut Uyar <uyar@tekir.org>
 
-Piculet is a module and a utility for extracting data from XML documents
-using XPath queries. It can also scrape web pages by first converting
-the HTML source into XHTML. Piculet consists of a `single source file`_
+Piculet is a utility for extracting data from XML or HTML documents
+using XPath queries. It consists of a `single source file`_
 with no dependencies other than the standard library, which makes it very easy
 to integrate into applications.
 
@@ -17,8 +16,31 @@ and PyPy3 5.7+. You can install the latest version from PyPI::
 
    pip install piculet
 
+Overview
+--------
+
+Scraping a document consists of three stages:
+
+#. Building a DOM tree out of the document. This is a straightforward
+   operation for an XML document. For an HTML document, Piculet will first
+   try to convert it into XHTML and then build the tree from that.
+
+#. Preprocessing the tree. This is an optional stage. In some cases
+   it might be helpful to do some changes on the tree to simplify
+   the extraction process.
+
+#. Extracting data out of the tree.
+
+The preprocessing and extraction stages are expressed as part of a scraping
+specification. The specification is a mapping which can be stored
+in a file format that can represent a mapping, such as JSON or YAML.
+Details about the specification are given in later chapters.
+
+Command Line Interface
+----------------------
+
 Installing Piculet creates a script named ``piculet`` which can be used
-to invoke the command-line interface::
+to invoke the command line interface::
 
    $ piculet -h
    usage: piculet [-h] [--debug] command ...
@@ -30,12 +52,11 @@ a specification file::
    usage: piculet scrape [-h] -s SPEC [--html] document
 
 The location of the document can be given as a file path or a URL.
-The specification file is in JSON format and contains the rules that define
-how to extract the data. For example, say you want to extract some data
-from the file `shining.html`_. An example specification file is given
-in `movie.json`_. Download both these files and run the command::
+For example, say you want to extract some data from the file `shining.html`_.
+An example specification is given in `movie.json`_. Download both these files
+and run the command::
 
-   piculet scrape -s movie.json shining.html
+   $ piculet scrape -s movie.json shining.html
 
 This should print the following output::
 
@@ -67,12 +88,10 @@ This should print the following output::
      "year": "1980"
    }
 
-If the document is in HTML format but it is not well-formed XML,
-the ``--html`` option has to be used. If the document address
-starts with ``http://`` or ``https://``, the given URL is downloaded
-and the rules are applied to the content. For example, to extract some data
-from the Wikipedia page for `David Bowie`_, download the `wikipedia.json`_ file
-and run the command::
+For HTML documents, the ``--html`` option has to be used. If the document
+address starts with ``http://`` or ``https://``, the content will be taken
+from the given URL. For example, to extract some data from the Wikipedia page
+for `David Bowie`_, download the `wikipedia.json`_ file and run the command::
 
    piculet scrape -s wikipedia.json --html "https://en.wikipedia.org/wiki/David_Bowie"
 
@@ -93,7 +112,7 @@ This should print the following output::
 In the same command, change the name part of the URL to ``Merlene_Ottey`` and
 you will get similar data for `Merlene Ottey`_. Note that since the markup
 used in Wikipedia pages for persons varies, the kinds of data you get
-with this specification file will also vary.
+with this specification will also vary.
 
 Piculet can be used as an HTML to XHTML convertor by invoking it with
 the ``h2x`` command. This command takes the file name as input and prints
@@ -105,8 +124,10 @@ and therefore can be used as part of a pipe:
 Using in programs
 -----------------
 
-The highest level function for scraping a file or a URL is
-:func:`scrape_document <piculet.scrape_document>`:
+The commands that are provided in the command line interface can be invoked
+programmatically. The :func:`html_to_xhtml <piculet.html_to_xhtml>` function
+handles the conversion from HTML to XHTML, and
+the :func:`scrape_document <piculet.scrape_document>` handles scraping:
 
 .. code-block:: python
 
@@ -115,12 +136,6 @@ The highest level function for scraping a file or a URL is
    url = 'https://en.wikipedia.org/wiki/David_Bowie'
    spec = 'wikipedia.json'
    data = scrape_document(url, spec, content_format='html')
-
-If the ``content_format`` parameter is given as ``html``, the document
-will be converted into XHTML before scraping.
-
-Subsequent chapters contain a detailed explanation about how Piculet works
-and how to use it within programs.
 
 .. _shining.html: https://bitbucket.org/uyar/piculet/src/tip/examples/shining.html
 .. _movie.json: https://bitbucket.org/uyar/piculet/src/tip/examples/movie.json
