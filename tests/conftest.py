@@ -56,5 +56,5 @@ def shining_content():
 
 @fixture
 def shining(shining_content):
-    """Root node of the XML tree for the movie document "The Shining"."""
+    """Root element of the XML tree for the movie document "The Shining"."""
     return piculet.build_tree(shining_content)

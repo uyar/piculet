@@ -603,7 +603,7 @@ class Rule:
         data = {}
         subroots = [element] if self.foreach is None else self.foreach(element)
         for subroot in subroots:
-            # _logger.debug('setting section node to: "%s"', section.tag)
+            # _logger.debug('setting section element to: "%s"', section.tag)
 
             key = self.key if isinstance(self.key, str) else self.key.extract(subroot)
             if key is None:
@@ -632,12 +632,12 @@ class Rule:
         return data
 
 
-def remove_nodes(root, path, get_parent):
-    """Remove selected nodes from the tree.
+def remove_elements(root, path, get_parent):
+    """Remove selected elements from the tree.
 
     :sig: (Element, str, Callable[[Element], Element]) -> None
-    :param root: Root node of the tree.
-    :param path: XPath to select the nodes to remove.
+    :param root: Root element of the tree.
+    :param path: XPath to select the elements to remove.
     :param get_parent: Function to get the parent of an element.
     """
     elements = XPath(path)(root)
@@ -649,8 +649,8 @@ def remove_nodes(root, path, get_parent):
             get_parent(element).remove(element)
 
 
-def set_node_attr(root, path, name, value):
-    """Set an attribute for selected nodes.
+def set_element_attr(root, path, name, value):
+    """Set an attribute for selected elements.
 
     :sig:
         (
@@ -659,8 +659,8 @@ def set_node_attr(root, path, name, value):
             Union[str, Mapping[str, Any]],
             Union[str, Mapping[str, Any]]
         ) -> None
-    :param root: Root node of the tree.
-    :param path: XPath to select the nodes to set attributes for.
+    :param root: Root element of the tree.
+    :param path: XPath to select the elements to set attributes for.
     :param name: Description for name generation.
     :param value: Description for value generation.
     """
@@ -684,21 +684,22 @@ def set_node_attr(root, path, name, value):
         element.attrib[attr_name] = attr_value
 
 
-def set_node_text(root, path, text):
-    """Set the text for selected nodes.
+def set_element_text(root, path, text):
+    """Set the text for selected elements.
 
     :sig: (Element, str, Union[str, Mapping[str, Any]]) -> None
-    :param root: Root node of the tree.
-    :param path: XPath to select the nodes to set attributes for.
+    :param root: Root element of the tree.
+    :param path: XPath to select the elements to set attributes for.
     :param text: Description for text generation.
     """
     elements = XPath(path)(root)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
-        node_text = text if isinstance(text, str) else Extractor.from_map(text).extract(element)
+        element_text = text if isinstance(text, str) else \
+            Extractor.from_map(text).extract(element)
         # note that the text can be None in which case the existing text will be cleared
-        _logger.debug('setting text to "%s" on "%s" element', node_text, element.tag)
-        element.text = node_text
+        _logger.debug('setting text to "%s" on "%s" element', element_text, element.tag)
+        element.text = element_text
 
 
 def build_tree(document, force_html=False):
@@ -707,7 +708,7 @@ def build_tree(document, force_html=False):
     :sig: (str, Optional[bool]) -> Element
     :param document: XML document to build the tree from.
     :param force_html: Force to parse from HTML without converting.
-    :return: Root node of the XML tree.
+    :return: Root element of the XML tree.
     """
     content = document if PY3 else document.encode('utf-8')
     if _USE_LXML and force_html:
@@ -733,11 +734,11 @@ def preprocess(root, pre):
                 # ElementTree doesn't support parent queries, so we'll build a map for it
                 get_parent = ElementTree._Element.getparent if _USE_LXML else \
                     {e: p for p in root.iter() for e in p}.get
-            remove_nodes(root, step['path'], get_parent=get_parent)
+            remove_elements(root, step['path'], get_parent=get_parent)
         elif op == 'set_attr':
-            set_node_attr(root, step['path'], name=step['name'], value=step['value'])
+            set_element_attr(root, step['path'], name=step['name'], value=step['value'])
         elif op == 'set_text':
-            set_node_text(root, step['path'], text=step['text'])
+            set_element_text(root, step['path'], text=step['text'])
         else:
             raise ValueError('Unknown preprocessing operation')
 

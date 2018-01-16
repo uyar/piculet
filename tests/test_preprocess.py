@@ -11,7 +11,7 @@ def test_unknown_preprocessor_should_raise_error(shining):
         preprocess(shining, pre)
 
 
-def test_remove_should_remove_selected_node(shining):
+def test_remove_should_remove_selected_element(shining):
     pre = [{'op': 'remove', 'path': '//tr[1]'}]
     items = [{'key': 'cast',
               'value': {
@@ -39,7 +39,7 @@ def test_remove_selected_none_should_not_cause_error(shining):
     assert data == {'cast': [{'name': 'Jack Nicholson'}, {'name': 'Shelley Duvall'}]}
 
 
-def test_set_attr_value_from_str_should_set_attribute_for_selected_nodes(shining):
+def test_set_attr_value_from_str_should_set_attribute_for_selected_elements(shining):
     pre = [{'op': 'set_attr', 'path': "//ul[@class='genres']/li",
             'name': 'foo', 'value': "bar"}]
     items = [{'key': 'genres',
@@ -52,7 +52,7 @@ def test_set_attr_value_from_str_should_set_attribute_for_selected_nodes(shining
     assert data == {'genres': ['Horror', 'Drama']}
 
 
-def test_set_attr_value_from_path_should_set_attribute_for_selected_nodes(shining):
+def test_set_attr_value_from_path_should_set_attribute_for_selected_elements(shining):
     pre = [{'op': 'set_attr', 'path': '//ul[@class="genres"]/li',
             'name': 'foo',
             'value': {'path': './text()'}}]
@@ -80,7 +80,7 @@ def test_set_attr_value_from_path_no_value_should_be_ignored(shining):
     assert data == {}
 
 
-def test_set_attr_name_from_path_should_set_attribute_for_selected_nodes(shining):
+def test_set_attr_name_from_path_should_set_attribute_for_selected_elements(shining):
     pre = [{'op': 'set_attr', 'path': '//ul[@class="genres"]/li',
             'name': {'path': './text()'},
             'value': 'bar'}]
@@ -120,7 +120,7 @@ def test_set_attr_selected_none_should_not_cause_error(shining):
     assert data == {}
 
 
-def test_set_text_value_from_str_should_set_text_for_selected_nodes(shining):
+def test_set_text_value_from_str_should_set_text_for_selected_elements(shining):
     pre = [{'op': 'set_text', 'path': '//ul[@class="genres"]/li',
             "text": 'Foo'}]
     items = [{'key': 'genres',
@@ -133,7 +133,7 @@ def test_set_text_value_from_str_should_set_text_for_selected_nodes(shining):
     assert data == {'genres': ['Foo', 'Foo']}
 
 
-def test_set_text_value_from_path_should_set_text_for_selected_nodes(shining):
+def test_set_text_value_from_path_should_set_text_for_selected_elements(shining):
     pre = [{'op': 'set_text', 'path': '//ul[@class="genres"]/li',
             "text": {
                 'path': './text()',
