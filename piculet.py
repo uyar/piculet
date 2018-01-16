@@ -448,7 +448,8 @@ class Extractor:
             items = item.get('items')
             # TODO: check for None
             rules = [Rule.from_map(i) for i in items]
-            extractor = Rules(rules, transform=transform, foreach=foreach)
+            extractor = Rules(rules, section=item.get('section'),
+                              transform=transform, foreach=foreach)
 
         return extractor
 
@@ -507,16 +508,18 @@ class Path(Extractor):
 class Rules(Extractor):
     """An extractor for getting data items out of an XML element."""
 
-    def __init__(self, rules, transform=None, foreach=None):
+    def __init__(self, rules, section=None, transform=None, foreach=None):
         """Initialize this extractor.
 
         :sig:
             (
                 Sequence[Rule],
+                str,
                 Optional[Callable[[Mapping[str, Any]], Any]],
                 Optional[str]
             ) -> None
         :param rules: Rules for generating the data items.
+        :param section: Path for setting the root of this section.
         :param transform: Function to transform extracted value.
         :param foreach: Path to apply for generating a collection of data items.
         """
@@ -528,6 +531,9 @@ class Rules(Extractor):
         self.rules = rules  # sig: Sequence[Rule]
         """Rules for generating the data items."""
 
+        self.section = XPath(section) if section is not None else None  # sig: Optional[XPath]
+        """XPath expression for selecting a subroot for this section."""
+
     def apply(self, element):
         """Apply this extractor to an element.
 
@@ -538,9 +544,11 @@ class Rules(Extractor):
         if element is None:
             return _EMPTY
 
+        subroot = element if self.section is None else self.section(element)[0]
+
         data = {}
         for rule in self.rules:
-            extracted = rule.extract(element)
+            extracted = rule.extract(subroot)
             data.update(extracted)
         return data if len(data) > 0 else _EMPTY
 
@@ -766,15 +774,16 @@ def preprocess(root, pre):
     return root
 
 
-def extract(element, items):
+def extract(element, items, section=None):
     """Extract data from an XML element.
 
-    :sig: (Element, Sequence[Mapping[str, Any]]) -> Mapping[str, Any]
+    :sig: (Element, Sequence[Mapping[str, Any]], Optional[str]) -> Mapping[str, Any]
     :param element: Element to extract the data from.
     :param items: Descriptions for extracting items.
+    :param section: Path to select the root element for these items.
     :return: Extracted data.
     """
-    rules = Rules([Rule.from_map(item) for item in items])
+    rules = Rules([Rule.from_map(item) for item in items], section=section)
     return rules.extract(element)
 
 
@@ -790,7 +799,7 @@ def scrape(document, spec):
     pre = spec.get('pre')
     if pre is not None:
         root = preprocess(root, pre)
-    data = extract(root, spec.get('items'))
+    data = extract(root, spec.get('items'), section=spec.get('section'))
     return data
 
 

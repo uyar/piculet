@@ -209,3 +209,16 @@ def test_tree_should_be_preprocessable(shining_content):
               }}]
     data = scrape(shining_content, {'items': items, 'pre': pre})
     assert data == {'genres': ['Foo', 'Foo']}
+
+
+def test_sections_should_set_root_for_queries(shining_content):
+    items = [{'key': 'director',
+              'value': {
+                  'section': '//div[@class="director"]//a',
+                  'items': [{'key': 'name',
+                             'value': {'path': './text()'}},
+                            {'key': 'link',
+                             'value': {'path': './@href'}}]
+              }}]
+    data = scrape(shining_content, {'items': items})
+    assert data == {'director': {'link': '/people/1', 'name': 'Stanley Kubrick'}}
