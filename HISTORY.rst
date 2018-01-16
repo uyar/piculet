@@ -3,7 +3,7 @@
 History
 =======
 
-1.0b5 (unreleased)
+1.0b5 (2018-01-16)
 ------------------
 
 - Added a class-based API for writing specifications.
@@ -15,7 +15,7 @@ History
 - Preprocessing will be done only once when the tree is built.
 - Concatenation is now the default reducing operation.
 
-1.0b4 (2018-02-01)
+1.0b4 (2018-01-02)
 ------------------
 
 - Added "--version" option to command line arguments.
