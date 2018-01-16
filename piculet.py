@@ -55,21 +55,6 @@ else:
     from urllib.request import urlopen
 
 
-if not PY3:
-    class SimpleNamespace:
-        """A simple, attribute-based namespace."""
-
-        def __init__(self, **kwargs):
-            """Construct a new namespace."""
-            self.__dict__.update(kwargs)
-
-        def __eq__(self, other):
-            """Check whether this namespace is equal to another namespace."""
-            return self.__dict__ == other.__dict__
-else:
-    from types import SimpleNamespace
-
-
 if not PY34:
     from contextlib import contextmanager
 
@@ -331,6 +316,35 @@ else:
     xpath = lambda e, p: XPath(p)(e)
 
 
+class Registry:
+    """A simple, attribute-based namespace."""
+
+    def __init__(self, entries):
+        """Initialize this registry.
+
+        :sig: (Mapping[str, Any]) -> None
+        """
+        self.__dict__.update(entries)
+
+    def get(self, item):
+        """Get the value of an entry from this registry.
+
+        :sig: (str) -> Any
+        :param item: Entry to get the value for.
+        :return: Value of entry.
+        """
+        return self.__dict__.get(item)
+
+    def register(self, key, value):
+        """Register a new entry in this registry.
+
+        :sig: (str, Any) -> None
+        :param key: Key to search the entry in this registry.
+        :param value: Value to store for the entry.
+        """
+        self.__dict__[key] = value
+
+
 _REDUCERS = {
     'first': itemgetter(0),
     'concat': partial(str.join, ''),
@@ -338,7 +352,7 @@ _REDUCERS = {
     'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
 }
 
-reducers = SimpleNamespace(**_REDUCERS)
+reducers = Registry(_REDUCERS)          # sig: Registry
 """Predefined reducers."""
 
 
@@ -346,12 +360,13 @@ _TRANSFORMERS = {
     'int': int,
     'float': float,
     'bool': bool,
+    'len': len,
     'lower': str.lower,
     'upper': str.upper,
     'capitalize': str.capitalize
 }
 
-transformers = SimpleNamespace(**_TRANSFORMERS)
+transformers = Registry(_TRANSFORMERS)  # sig: Registry
 """Predefined transformers."""
 
 
@@ -407,13 +422,27 @@ class Extractor:
         :sig: (Mapping[str, Any]) -> Extractor
         :param item: Extractor description.
         :return: Extractor object.
+        :raise ValueError: When reducer or transformer names are unknown.
         """
-        transform = _TRANSFORMERS.get(item.get('transform'))
+        transformer = item.get('transform')
+        if transformer is None:
+            transform = None
+        else:
+            transform = transformers.get(transformer)
+            if transform is None:
+                raise ValueError('Unknown transformer')
+
         foreach = item.get('foreach')
 
         path = item.get('path')
         if path is not None:
-            reduce = _REDUCERS.get(item.get('reduce'))
+            reducer = item.get('reduce')
+            if reducer is None:
+                reduce = None
+            else:
+                reduce = reducers.get(reducer)
+                if reduce is None:
+                    raise ValueError('Unknown reducer')
             extractor = Path(path, reduce, transform=transform, foreach=foreach)
         else:
             items = item.get('items')

@@ -1,6 +1,8 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from piculet import scrape
+from pytest import raises
+
+from piculet import reducers, scrape, transformers
 
 
 def test_no_rules_should_return_empty_result(shining_content):
@@ -22,11 +24,41 @@ def test_default_reducer_should_be_concat(shining_content):
     assert data == {'full_title': 'The Shining (1980)'}
 
 
+def test_added_reducer_should_be_usable(shining_content):
+    reducers.register('second', lambda x: x[1])
+    items = [{'key': 'year',
+              'value': {'path': '//h1//text()', 'reduce': 'second'}}]
+    data = scrape(shining_content, {'items': items})
+    assert data == {'year': '1980'}
+
+
+def test_unknown_reducer_should_raise_error(shining_content):
+    with raises(ValueError):
+        items = [{'key': 'year',
+                  'value': {'path': '//h1//text()', 'reduce': 'foo'}}]
+        scrape(shining_content, {'items': items})
+
+
 def test_reduced_value_should_be_transformable(shining_content):
     items = [{'key': 'year',
               'value': {'path': '//span[@class="year"]/text()', 'transform': 'int'}}]
     data = scrape(shining_content, {'items': items})
     assert data == {'year': 1980}
+
+
+def test_added_transformer_should_be_usable(shining_content):
+    transformers.register('25th_year', lambda x: int(x) + 25)
+    items = [{'key': 'year',
+              'value': {'path': '//span[@class="year"]/text()', 'transform': '25th_year'}}]
+    data = scrape(shining_content, {'items': items})
+    assert data == {'year': 2005}
+
+
+def test_unknown_transformer_should_raise_error(shining_content):
+    with raises(ValueError):
+        items = [{'key': 'year',
+                  'value': {'path': '//span[@class="year"]/text()', 'transform': '42nd_year'}}]
+        scrape(shining_content, {'items': items})
 
 
 def test_multiple_rules_should_generate_multiple_items(shining_content):
@@ -102,6 +134,7 @@ def test_multivalued_subrules_should_generate_list_of_subitems(shining_content):
 
 
 def test_subitems_should_be_transformable(shining_content):
+    transformers.register('stars', lambda x: '%(name)s as %(character)s' % x)
     items = [{'key': 'cast',
               'value': {
                   'foreach': '//table[@class="cast"]/tr',
@@ -109,7 +142,7 @@ def test_subitems_should_be_transformable(shining_content):
                       {'key': 'name', 'value': {'path': './td[1]/a/text()'}},
                       {'key': 'character', 'value': {'path': './td[2]/text()'}}
                   ],
-                  'transform': lambda x: '%(name)s as %(character)s' % x
+                  'transform': 'stars'
               }}]
     data = scrape(shining_content, {'items': items})
     assert data == {'cast': ['Jack Nicholson as Jack Torrance',
