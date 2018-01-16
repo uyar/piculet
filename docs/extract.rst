@@ -493,6 +493,49 @@ In this case, the elements would still be traversed; only the last one would
 set the final value for the item. This could be OK if you are sure
 that there is only one element that matches the ``foreach`` path of the key.
 
+Sections
+--------
+
+The specification also provides the ability to define sections within
+the document. An element can be selected as the root of a section such that
+the XPath queries in that section will be relative to that root. This can be
+used to make XPath expressions shorter and also constrain the search
+in the tree. For example, the "director" example above can also be written
+using sections:
+
+.. code-block:: python
+
+   >>> spec = {
+   ...     'section': '//div[@class="director"]//a',
+   ...     'items': [
+   ...         {
+   ...             'key': 'director',
+   ...             'value': {
+   ...                 'items': [
+   ...                     {
+   ...                         'key': 'name',
+   ...                         'value': {
+   ...                             'path': './text()',
+   ...                             'reduce': 'first'
+   ...                         }
+   ...                     },
+   ...                     {
+   ...                         'key': 'link',
+   ...                         'value': {
+   ...                             'path': './@href',
+   ...                             'reduce': 'first'
+   ...                         }
+   ...                     }
+   ...                 ]
+   ...             }
+   ...         }
+   ...     ]
+   ... }
+   >>> scrape(document, spec)
+   {'director': {'link': '/people/1', 'name': 'Stanley Kubrick'}}
+
+
+
 Lower-level functions
 ---------------------
 
