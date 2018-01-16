@@ -112,20 +112,20 @@ class Rule:
 
     def extract(self, element: Element) -> Mapping[str, Any]: ...
 
-def remove_nodes(
+def remove_elements(
         root: Element,
         path: str,
         get_parent: Callable[[Element], Element]
 ) -> None: ...
 
-def set_node_attr(
+def set_element_attr(
         root: Element,
         path: str,
         name: Union[str, Mapping[str, Any]],
         value: Union[str, Mapping[str, Any]]
 ) -> None: ...
 
-def set_node_text(
+def set_element_text(
         root: Element,
         path: str,
         text: Union[str, Mapping[str, Any]]
