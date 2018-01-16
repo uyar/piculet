@@ -158,7 +158,7 @@ def test_subitems_should_be_transformable(shining):
 
 
 def test_key_should_be_generatable_using_path(shining):
-    rules = [Rule(section='//div[@class="info"]',
+    rules = [Rule(foreach='//div[@class="info"]',
                   key=Path('./h3/text()'),
                   extractor=Path('./p/text()'))]
     data = Rules(rules).extract(shining)
@@ -166,7 +166,7 @@ def test_key_should_be_generatable_using_path(shining):
 
 
 def test_generated_key_should_be_normalizable(shining):
-    rules = [Rule(section='//div[@class="info"]',
+    rules = [Rule(foreach='//div[@class="info"]',
                   key=Path('./h3/text()', reduce=reducers.normalize),
                   extractor=Path('./p/text()'))]
     data = Rules(rules).extract(shining)
@@ -174,7 +174,7 @@ def test_generated_key_should_be_normalizable(shining):
 
 
 def test_generated_key_should_be_transformable(shining):
-    rules = [Rule(section='//div[@class="info"]',
+    rules = [Rule(foreach='//div[@class="info"]',
                   key=Path('./h3/text()', reduce=reducers.normalize,
                            transform=lambda x: x.upper()),
                   extractor=Path('./p/text()'))]
@@ -183,7 +183,7 @@ def test_generated_key_should_be_transformable(shining):
 
 
 def test_generated_key_none_should_be_excluded(shining):
-    rules = [Rule(section='//div[@class="info"]',
+    rules = [Rule(foreach='//div[@class="info"]',
                   key=Path('./foo/text()'),
                   extractor=Path('./p/text()'))]
     data = Rules(rules).extract(shining)

@@ -440,19 +440,19 @@ Generating keys from content
 ----------------------------
 
 You can generate items where the key value also comes from the content.
-Consider for example how you would get the runtime and the language
+For example, consider how you would get the runtime and the language
 of the movie. Instead of writing multiple items for each ``h3`` element
 under an "info" class ``div``, we can write only one item that will select
-these divs and use the h3 text as the key. Section elements like these divs
-can be selected using ``section`` specifications in the items. This will cause
-a new item to be generated for each selected element. To get the key value,
+these divs and use the h3 text as the key. These elements can be selected using
+``foreach`` specifications in the items. This will cause a new item
+to be generated for each selected element. To get the key value,
 we can use paths, reducers -and also transformers- that will be applied
-to the selected section element:
+to the selected element:
 
 >>> spec = {
 ...     'items': [
 ...         {
-...             'section': '//div[@class="info"]',
+...             'foreach': '//div[@class="info"]',
 ...             'key': {
 ...                 'path': './h3/text()',
 ...                 'reduce': 'first'
@@ -473,7 +473,7 @@ replaces spaces with underscores and strips other non-alphanumeric characters:
 >>> spec = {
 ...     'items': [
 ...         {
-...             'section': '//div[@class="info"]',
+...             'foreach': '//div[@class="info"]',
 ...             'key': {
 ...                 'path': './h3/text()',
 ...                 'reduce': 'normalize'

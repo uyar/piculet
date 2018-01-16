@@ -152,7 +152,7 @@ def test_subitems_should_be_transformable(shining_content):
 def test_key_should_be_generatable_using_path(shining_content):
     items = [
         {
-            'section': '//div[@class="info"]',
+            'foreach': '//div[@class="info"]',
             'key': {'path': './h3/text()'},
             'value': {'path': './p/text()'}
         }
@@ -164,7 +164,7 @@ def test_key_should_be_generatable_using_path(shining_content):
 def test_generated_key_should_be_normalizable(shining_content):
     items = [
         {
-            'section': '//div[@class="info"]',
+            'foreach': '//div[@class="info"]',
             'key': {'path': './h3/text()',
                     'reduce': 'normalize'},
             'value': {'path': './p/text()'}
@@ -177,7 +177,7 @@ def test_generated_key_should_be_normalizable(shining_content):
 def test_generated_key_should_be_transformable(shining_content):
     items = [
         {
-            'section': '//div[@class="info"]',
+            'foreach': '//div[@class="info"]',
             'key': {'path': './h3/text()',
                     'reduce': 'normalize',
                     'transform': 'upper'},
@@ -191,7 +191,7 @@ def test_generated_key_should_be_transformable(shining_content):
 def test_generated_key_none_should_be_excluded(shining_content):
     items = [
         {
-            'section': '//div[@class="info"]',
+            'foreach': '//div[@class="info"]',
             'key': {'path': './foo/text()'},
             'value': {'path': './p/text()'}
         }

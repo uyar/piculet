@@ -80,7 +80,7 @@
       }
     },
     {
-      "section": "//div[@class='info']",
+      "foreach": "//div[@class='info']",
       "key": {
         "path": "./h3/text()",
         "reduce": "normalize"

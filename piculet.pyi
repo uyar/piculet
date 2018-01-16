@@ -96,13 +96,13 @@ class Rules(Extractor):
 class Rule:
     key = ...        # type: Union[str, Extractor]
     extractor = ...  # type: Extractor
-    section = ...    # type: Optional[XPath]
+    foreach = ...    # type: Optional[XPath]
 
     def __init__(
             self,
             key: Union[str, Extractor],
             extractor: Extractor,
-            section: Optional[str] = ...
+            foreach: Optional[str] = ...
     ) -> None: ...
 
     @staticmethod

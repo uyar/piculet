@@ -548,13 +548,13 @@ class Rules(Extractor):
 class Rule:
     """A rule describing how to get a data item out of an XML element."""
 
-    def __init__(self, key, extractor, section=None):
+    def __init__(self, key, extractor, foreach=None):
         """Initialize this rule.
 
         :sig: (Union[str, Extractor], Extractor, Optional[str]) -> None
         :param key: Name to distinguish this data item.
         :param extractor: Extractor that will generate this data item.
-        :param section: Path to select section elements.
+        :param foreach: Path for generating multiple items.
         """
         self.key = key              # sig: Union[str, Extractor]
         """Name to distinguish this data item."""
@@ -562,8 +562,8 @@ class Rule:
         self.extractor = extractor  # sig: Extractor
         """Extractor that will generate this data item."""
 
-        self.section = XPath(section) if section is not None else None  # sig: Optional[XPath]
-        """XPath evaluator for selecting section elements."""
+        self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPath]
+        """XPath evaluator for generating multiple items."""
 
     @staticmethod
     def from_map(item):
@@ -576,7 +576,7 @@ class Rule:
         item_key = item['key']
         key = item_key if isinstance(item_key, str) else Extractor.from_map(item_key)
         value = Extractor.from_map(item['value'])
-        return Rule(key=key, extractor=value, section=item.get('section'))
+        return Rule(key=key, extractor=value, foreach=item.get('foreach'))
 
     def extract(self, element):
         """Extract data out of an element using this rule.
@@ -586,18 +586,18 @@ class Rule:
         :return: Extracted data.
         """
         data = {}
-        sections = [element] if self.section is None else self.section(element)
-        for section in sections:
+        subroots = [element] if self.foreach is None else self.foreach(element)
+        for subroot in subroots:
             # _logger.debug('setting section node to: "%s"', section.tag)
 
-            key = self.key if isinstance(self.key, str) else self.key.extract(section)
+            key = self.key if isinstance(self.key, str) else self.key.extract(subroot)
             if key is None:
                 # _logger.debug('no value generated for key name')
                 continue
             # _logger.debug('extracting key: "%s"', key)
 
             if self.extractor.foreach is None:
-                value = self.extractor.extract(section)
+                value = self.extractor.extract(subroot)
                 if (value is None) or (value is _EMPTY):
                     # _logger.debug('no value generated for key')
                     continue
@@ -606,7 +606,7 @@ class Rule:
             else:
                 # don't try to transform list items by default, it might waste a lot of time
                 raw_values = [self.extractor.extract(r, transform=False)
-                              for r in self.extractor.foreach(section)]
+                              for r in self.extractor.foreach(subroot)]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
                 if len(values) == 0:
                     # _logger.debug('no items found in list')
