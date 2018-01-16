@@ -1,6 +1,8 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from piculet import Path, Rule, Rules, build_tree, reducers
+from pytest import raises
+
+from piculet import Path, Rule, Rules, build_tree, reducers, transformers
 
 
 def test_no_rules_should_return_empty_result(shining):
@@ -22,6 +24,14 @@ def test_default_reducer_should_be_concat(shining):
     assert data == {'full_title': 'The Shining (1980)'}
 
 
+def test_added_reducer_should_be_usable(shining):
+    reducers.register('second', lambda x: x[1])
+    rules = [Rule(key='year',
+                  extractor=Path('//h1//text()', reduce=reducers.second))]
+    data = Rules(rules).extract(shining)
+    assert data == {'year': '1980'}
+
+
 def test_reduce_by_lambda_should_be_ok(shining):
     rules = [Rule(key='title',
                   extractor=Path('//title/text()', reduce=lambda xs: xs[0]))]
@@ -31,18 +41,24 @@ def test_reduce_by_lambda_should_be_ok(shining):
 
 def test_reduced_value_should_be_transformable(shining):
     rules = [Rule(key='year',
-                  extractor=Path('//span[@class="year"]/text()',
-                                 transform=int))]
+                  extractor=Path('//span[@class="year"]/text()', transform=int))]
     data = Rules(rules).extract(shining)
     assert data == {'year': 1980}
+
+
+def test_added_transformer_should_be_usable(shining):
+    transformers.register('year25', lambda x: int(x) + 25)
+    rules = [Rule(key='year',
+                  extractor=Path('//span[@class="year"]/text()', transform=transformers.year25))]
+    data = Rules(rules).extract(shining)
+    assert data == {'year': 2005}
 
 
 def test_multiple_rules_should_generate_multiple_items(shining):
     rules = [Rule(key='title',
                   extractor=Path('//title/text()')),
              Rule('year',
-                  extractor=Path('//span[@class="year"]/text()',
-                                 transform=int))]
+                  extractor=Path('//span[@class="year"]/text()', transform=int))]
     data = Rules(rules).extract(shining)
     assert data == {'title': 'The Shining', 'year': 1980}
 
@@ -91,7 +107,7 @@ def test_multivalued_item_should_be_list(shining):
 def test_multivalued_items_should_be_transformable(shining):
     rules = [Rule(key='genres',
                   extractor=Path(foreach='//ul[@class="genres"]/li',
-                                 path='./text()', transform=lambda x: x.lower()))]
+                                 path='./text()', transform=transformers.lower))]
     data = Rules(rules).extract(shining)
     assert data == {'genres': ['horror', 'drama']}
 
@@ -188,3 +204,47 @@ def test_generated_key_none_should_be_excluded(shining):
                   extractor=Path('./p/text()'))]
     data = Rules(rules).extract(shining)
     assert data == {}
+
+
+def test_section_should_set_root_for_queries(shining):
+    rules = [
+        Rule(key='director',
+             extractor=Rules(
+                 section='//div[@class="director"]//a',
+                 rules=[
+                     Rule(key='name',
+                          extractor=Path('./text()')),
+                     Rule(key='link',
+                          extractor=Path('./@href'))
+                 ]))
+    ]
+    data = Rules(rules).extract(shining)
+    assert data == {'director': {'link': '/people/1', 'name': 'Stanley Kubrick'}}
+
+
+def test_section_no_roots_should_return_empty_result(shining):
+    rules = [
+        Rule(key='director',
+             extractor=Rules(
+                 section='//foo',
+                 rules=[
+                     Rule(key='name',
+                          extractor=Path('./text()'))
+                 ]))
+    ]
+    data = Rules(rules).extract(shining)
+    assert data == {}
+
+
+def test_section_multiple_roots_should_raise_error(shining):
+    with raises(ValueError):
+        rules = [
+            Rule(key='director',
+                 extractor=Rules(
+                     section='//div',
+                     rules=[
+                         Rule(key='name',
+                              extractor=Path('./text()'))
+                     ]))
+        ]
+        Rules(rules).extract(shining)
