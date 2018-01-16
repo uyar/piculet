@@ -47,9 +47,9 @@ def test_reduced_value_should_be_transformable(shining_content):
 
 
 def test_added_transformer_should_be_usable(shining_content):
-    transformers.register('25th_year', lambda x: int(x) + 25)
+    transformers.register('year25', lambda x: int(x) + 25)
     items = [{'key': 'year',
-              'value': {'path': '//span[@class="year"]/text()', 'transform': '25th_year'}}]
+              'value': {'path': '//span[@class="year"]/text()', 'transform': 'year25'}}]
     data = scrape(shining_content, {'items': items})
     assert data == {'year': 2005}
 
@@ -57,7 +57,7 @@ def test_added_transformer_should_be_usable(shining_content):
 def test_unknown_transformer_should_raise_error(shining_content):
     with raises(ValueError):
         items = [{'key': 'year',
-                  'value': {'path': '//span[@class="year"]/text()', 'transform': '42nd_year'}}]
+                  'value': {'path': '//span[@class="year"]/text()', 'transform': 'year42'}}]
         scrape(shining_content, {'items': items})
 
 
