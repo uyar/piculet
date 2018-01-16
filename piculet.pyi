@@ -2,6 +2,7 @@
 
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Sequence, Set, Union
 
+from argparse import ArgumentParser
 from html.parser import HTMLParser
 from xml.etree.ElementTree import Element
 
@@ -153,5 +154,7 @@ def scrape_document(
         spec: str,
         content_format: Optional[str] = ...
 ) -> None: ...
+
+def make_parser(prog: str) -> ArgumentParser: ...
 
 def main(argv: Optional[List[str]] = ...) -> None: ...
