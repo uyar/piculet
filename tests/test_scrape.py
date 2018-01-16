@@ -24,7 +24,7 @@ def test_default_reducer_should_be_concat(shining_content):
 
 def test_reduced_value_should_be_transformable(shining_content):
     items = [{'key': 'year',
-              'value': {'path': '//span[@class="year"]/text()', 'transform': int}}]
+              'value': {'path': '//span[@class="year"]/text()', 'transform': 'int'}}]
     data = scrape(shining_content, {'items': items})
     assert data == {'year': 1980}
 
@@ -33,7 +33,7 @@ def test_multiple_rules_should_generate_multiple_items(shining_content):
     items = [{'key': 'title',
               'value': {'path': '//title/text()'}},
              {'key': 'year',
-              'value': {'path': '//span[@class="year"]/text()', 'transform': int}}]
+              'value': {'path': '//span[@class="year"]/text()', 'transform': 'int'}}]
     data = scrape(shining_content, {'items': items})
     assert data == {'title': 'The Shining', 'year': 1980}
 
@@ -58,7 +58,7 @@ def test_multivalued_item_should_be_list(shining_content):
 def test_multivalued_items_should_be_transformable(shining_content):
     items = [{'key': 'genres',
               'value': {'foreach': '//ul[@class="genres"]/li',
-                        'path': './text()', 'transform': lambda x: x.lower()}}]
+                        'path': './text()', 'transform': 'lower'}}]
     data = scrape(shining_content, {'items': items})
     assert data == {'genres': ['horror', 'drama']}
 
@@ -147,7 +147,7 @@ def test_generated_key_should_be_transformable(shining_content):
             'section': '//div[@class="info"]',
             'key': {'path': './h3/text()',
                     'reduce': 'normalize',
-                    'transform': lambda x: x.upper()},
+                    'transform': 'upper'},
             'value': {'path': './p/text()'}
         }
     ]

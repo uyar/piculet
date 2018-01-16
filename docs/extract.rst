@@ -196,10 +196,11 @@ a non-empty list.
 Transforming
 ------------
 
-After the reduction operation, you can also apply a transformation
+After the reduction operation, you can apply a transformation
 to the resulting string. A transformation function must take a string
-as parameter and can return any value of any type. For example,
-to get the year of the movie as an integer:
+as parameter and can return any value of any type. Piculet contains several
+predefined transformers: ``int``, ``float``, ``bool``, ``lower``, ``upper``,
+``capitalize``. For example, to get the year of the movie as an integer:
 
 >>> spec = {
 ...     'items': [
@@ -208,7 +209,7 @@ to get the year of the movie as an integer:
 ...             'value': {
 ...                 'path': '//span[@class="year"]/text()',
 ...                 'reduce': 'first',
-...                 'transform': int
+...                 'transform': 'int'
 ...             }
 ...         }
 ...     ]
@@ -270,7 +271,7 @@ in the resulting list:
 ...                 'foreach': '//ul[@class="genres"]/li',
 ...                 'path': './text()',
 ...                 'reduce': 'first',
-...                 'transform': lambda x: x.lower()
+...                 'transform': 'lower'
 ...             }
 ...         }
 ...     ]

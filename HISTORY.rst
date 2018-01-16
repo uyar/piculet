@@ -6,7 +6,9 @@ History
 1.0b5 (unreleased)
 ------------------
 
-- Added rule and extractor classes for better type checking.
+- Added classes for better control when writing specifications.
+- Added predefined transformation functions.
+- Removed all callables from specification maps.
 - Refactored XPath evaluation method in order to parse path expressions once.
 - Preprocessing will be done only once when the tree is built.
 - Concatenation is now the default reducing operation.

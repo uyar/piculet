@@ -85,7 +85,7 @@ This should print the following output::
      "review": "Fantastic movie. Definitely recommended.",
      "runtime": "144 minutes",
      "title": "The Shining",
-     "year": "1980"
+     "year": 1980
    }
 
 For HTML documents, the ``--html`` option has to be used. If the document
