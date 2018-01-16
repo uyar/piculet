@@ -1,4 +1,4 @@
-Data Extraction
+Data extraction
 ===============
 
 This section explains how to write the specification for extracting data
@@ -534,37 +534,6 @@ using sections:
    ... }
    >>> scrape(document, spec)
    {'director': {'link': '/people/1', 'name': 'Stanley Kubrick'}}
-
-
-
-Lower-level functions
----------------------
-
-If the same document will be scraped multiple times with different rules,
-calling the ``scrape`` function repeatedly will cause the document to be parsed
-repeatedly. A more efficient way would be to convert the document into a tree
-once using the :func:`build_tree <piculet.build_tree>` function and then
-calling the :func:`extract <piculet.extract>` function with the rule items:
-
->>> from piculet import build_tree, extract
->>> root = build_tree(document)
->>> items = [
-...     {
-...         'key': 'title',
-...         'value': {
-...             'path': '//title/text()',
-...             'reduce': reducers.first
-...         }
-...     }
-... ]
->>> extract(root, items)
-
-If the document needs to be converted from HTML to XML, you can use
-the :func:`html_to_xhtml <piculet.html_to_xhtml>` function:
-
->>> from piculet import html_to_xhtml
->>> converted = html_to_xhtml(document)
->>> root = build_tree(converted)
 
 .. [#xhtml]
 
