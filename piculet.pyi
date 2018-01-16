@@ -82,11 +82,13 @@ class Path(Extractor):
     def apply(self, element: Element) -> str: ...
 
 class Rules(Extractor):
-    rules = ...  # type: Sequence[Rule]
+    rules = ...    # type: Sequence[Rule]
+    section = ...  # type: Optional[XPath]
 
     def __init__(
             self,
             rules: Sequence[Rule],
+            section: str = ...,
             transform: Optional[Callable[[Mapping[str, Any]], Any]] = ...,
             foreach: Optional[str] = ...
     ) -> None: ...
@@ -146,7 +148,8 @@ def preprocess(
 
 def extract(
         element: Element,
-        items: Sequence[Mapping[str, Any]]
+        items: Sequence[Mapping[str, Any]],
+        section: Optional[str] = ...
 ) -> Mapping[str, Any]: ...
 
 def scrape(document: str, spec: Mapping[str, Any]) -> Mapping[str, Any]: ...
