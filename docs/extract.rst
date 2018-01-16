@@ -193,7 +193,8 @@ the reducing function on the result of the path query if it's an empty list.
 Therefore, reducing functions can safely assume that the path result is
 a non-empty list.
 
-If you want to use a custom reducer, you have to register it first:
+If you want to use a custom reducer, you have to register it first. The name
+for the specifier (the first parameter) has to be a valid Python identifier.
 
 .. code-block:: python
 
@@ -243,7 +244,7 @@ If you want to use a custom transformer, you have to register it first:
 .. code-block:: python
 
    >>> from piculet import transformers
-   >>> transformers.register('25th_year', lambda x: int(x) + 25)
+   >>> transformers.register('year25', lambda x: int(x) + 25)
    >>> spec = {
    ...     'items': [
    ...         {
@@ -251,7 +252,7 @@ If you want to use a custom transformer, you have to register it first:
    ...             'value': {
    ...                 'path': '//span[@class="year"]/text()',
    ...                 'reduce': 'first',
-   ...                 'transform': '25th_year'
+   ...                 'transform': 'year25'
    ...             }
    ...         }
    ...     ]
