@@ -211,7 +211,7 @@ def test_tree_should_be_preprocessable(shining_content):
     assert data == {'genres': ['Foo', 'Foo']}
 
 
-def test_sections_should_set_root_for_queries(shining_content):
+def test_section_should_set_root_for_queries(shining_content):
     items = [{'key': 'director',
               'value': {
                   'section': '//div[@class="director"]//a',
@@ -222,3 +222,25 @@ def test_sections_should_set_root_for_queries(shining_content):
               }}]
     data = scrape(shining_content, {'items': items})
     assert data == {'director': {'link': '/people/1', 'name': 'Stanley Kubrick'}}
+
+
+def test_section_no_roots_should_return_empty_result(shining_content):
+    items = [{'key': 'director',
+              'value': {
+                  'section': '//foo',
+                  'items': [{'key': 'name',
+                             'value': {'path': './text()'}}]
+              }}]
+    data = scrape(shining_content, {'items': items})
+    assert data == {}
+
+
+def test_section_multiple_roots_should_raise_error(shining_content):
+    with raises(ValueError):
+        items = [{'key': 'director',
+                  'value': {
+                      'section': '//div',
+                      'items': [{'key': 'name',
+                                 'value': {'path': './text()'}}]
+                  }}]
+        scrape(shining_content, {'items': items})
