@@ -124,10 +124,8 @@ and therefore can be used as part of a pipe:
 Using in programs
 -----------------
 
-The commands that are provided in the command line interface can be invoked
-programmatically. The :func:`html_to_xhtml <piculet.html_to_xhtml>` function
-handles the conversion from HTML to XHTML, and
-the :func:`scrape_document <piculet.scrape_document>` handles scraping:
+The scraping operation can also be invoked programmatically using
+the :func:`scrape_document <piculet.scrape_document>` function:
 
 .. code-block:: python
 
