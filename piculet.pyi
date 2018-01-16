@@ -112,39 +112,31 @@ class Rule:
 
     def extract(self, element: Element) -> Mapping[str, Any]: ...
 
-def set_root_node(root: Element, path: str, **kwargs) -> Element: ...
-
 def remove_nodes(
         root: Element,
         path: str,
-        get_parent: Callable[[Element], Element],
-        **kwargs
-) -> Element: ...
+        get_parent: Callable[[Element], Element]
+) -> None: ...
 
 def set_node_attr(
         root: Element,
         path: str,
         name: Union[str, Mapping[str, Any]],
-        value: Union[str, Mapping[str, Any]],
-        **kwargs
-) -> Element: ...
+        value: Union[str, Mapping[str, Any]]
+) -> None: ...
 
 def set_node_text(
         root: Element,
         path: str,
-        text: Union[str, Mapping[str, Any]],
-        **kwargs
-) -> Element: ...
+        text: Union[str, Mapping[str, Any]]
+) -> None: ...
 
 def build_tree(
         document: str,
         force_html: Optional[bool] = ...
 ) -> Element: ...
 
-def preprocess(
-        root: Element,
-        pre: Sequence[Mapping[str, Any]]
-) -> Element: ...
+def preprocess(root: Element, pre: Sequence[Mapping[str, Any]]) -> None: ...
 
 def extract(
         element: Element,
