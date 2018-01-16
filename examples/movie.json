@@ -4,13 +4,14 @@
       "key": "title",
       "value": {
         "path": "//title/text()",
-        "reducer": "first"}
+        "reduce": "first"}
     },
     {
       "key": "year",
       "value": {
         "path": "//span[@class='year']/text()",
-        "reducer": "first"
+        "reduce": "first",
+        "transform": "int"
       }
     },
     {
@@ -18,7 +19,7 @@
       "value": {
         "foreach": "//ul[@class='genres']/li",
         "path": "./text()",
-        "reducer": "first"
+        "reduce": "first"
       }
     },
     {
@@ -29,14 +30,14 @@
             "key": "name",
             "value": {
               "path": "//div[@class='director']//a/text()",
-              "reducer": "first"
+              "reduce": "first"
             }
           },
           {
             "key": "link",
             "value": {
               "path": "//div[@class='director']//a/@href",
-              "reducer": "first"
+              "reduce": "first"
             }
           }
         ]
@@ -51,21 +52,21 @@
             "key": "name",
             "value": {
               "path": "./td[1]/a/text()",
-              "reducer": "first"
+              "reduce": "first"
             }
           },
           {
             "key": "link",
             "value": {
               "path": "./td[1]/a/@href",
-              "reducer": "first"
+              "reduce": "first"
             }
           },
           {
             "key": "character",
             "value": {
               "path": "./td[2]/text()",
-              "reducer": "first"
+              "reduce": "first"
             }
           }
         ]
@@ -75,18 +76,18 @@
       "key": "review",
       "value": {
         "path": "//div[@class='review']//text()",
-        "reducer": "clean"
+        "reduce": "clean"
       }
     },
     {
-      "foreach": "//div[@class='info']",
+      "section": "//div[@class='info']",
       "key": {
         "path": "./h3/text()",
-        "reducer": "normalize"
+        "reduce": "normalize"
       },
       "value": {
         "path": "./p/text()",
-        "reducer": "first"
+        "reduce": "first"
       }
     }
   ]

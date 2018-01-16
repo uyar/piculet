@@ -141,7 +141,7 @@ def test_set_text_value_from_path_should_set_text_for_selected_nodes(shining):
     pre = [{'op': 'set_text', 'path': '//ul[@class="genres"]/li',
             "text": {
                 'path': './text()',
-                'transform': lambda x: x.lower()
+                'transform': 'lower'
             }}]
     items = [{'key': 'genres',
               'value': {

@@ -342,6 +342,19 @@ reducers = SimpleNamespace(**_REDUCERS)
 """Predefined reducers."""
 
 
+_TRANSFORMERS = {
+    'int': int,
+    'float': float,
+    'bool': bool,
+    'lower': str.lower,
+    'upper': str.upper,
+    'capitalize': str.capitalize
+}
+
+transformers = SimpleNamespace(**_TRANSFORMERS)
+"""Predefined transformers."""
+
+
 _EMPTY = {}     # empty result singleton
 
 
@@ -395,7 +408,7 @@ class Extractor:
         :param item: Extractor description.
         :return: Extractor object.
         """
-        transform = item.get('transform')
+        transform = _TRANSFORMERS.get(item.get('transform'))
         foreach = item.get('foreach')
 
         path = item.get('path')
