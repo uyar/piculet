@@ -6,7 +6,8 @@ from html.parser import HTMLParser
 from xml.etree.ElementTree import Element
 
 
-class SimpleNamespace: ...
+reducers = ...      # type: Registry
+transformers = ...  # type: Registry
 
 def decode_html(
         content: bytes,
@@ -37,6 +38,13 @@ class XPath:
             self,
             element: Element
     ) -> Union[Sequence[str], Sequence[Element]]: ...
+
+class Registry:
+    def __init__(self, entries: Mapping[str, Any]) -> None: ...
+
+    def get(self, item: str) -> Any: ...
+
+    def register(self, key: str, value: Any) -> None: ...
 
 class Extractor:
     transform = ...  # type: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]]
