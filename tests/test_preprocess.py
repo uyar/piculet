@@ -1,6 +1,14 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from pytest import raises
+
 from piculet import extract, preprocess
+
+
+def test_unknown_preprocessor_should_raise_error(shining):
+    with raises(ValueError):
+        pre = [{'op': 'foo', 'path': '//tr[1]'}]
+        preprocess(shining, pre)
 
 
 def test_remove_should_remove_selected_node(shining):
