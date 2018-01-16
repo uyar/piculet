@@ -541,9 +541,18 @@ class Rules(Extractor):
         :param element: Element to apply the extractor to.
         :return: Extracted mapping.
         """
-        if element is None:
-            return _EMPTY
-        subroot = element if self.section is None else self.section(element)[0]
+        if self.section is None:
+            subroot = element
+        else:
+            subroots = self.section(element)
+            if len(subroots) == 0:
+                _logger.debug('No section root found')
+                return _EMPTY
+            if len(subroots) > 1:
+                raise ValueError('Section path should select exactly one element')
+            subroot = subroots[0]
+            _logger.debug('Moving root to %s element', subroot.tag)
+
         data = {}
         for rule in self.rules:
             extracted = rule.extract(subroot)
