@@ -543,9 +543,7 @@ class Rules(Extractor):
         """
         if element is None:
             return _EMPTY
-
         subroot = element if self.section is None else self.section(element)[0]
-
         data = {}
         for rule in self.rules:
             extracted = rule.extract(subroot)
@@ -625,38 +623,13 @@ class Rule:
         return data
 
 
-def set_root_node(root, path, **kwargs):
-    """Change the root node of the tree.
-
-    :sig: (Element, str) -> Element
-    :param root: Current root of the tree.
-    :param path: XPath to select the new root.
-    :return: New root node of the tree.
-    """
-    _logger.debug('selecting new root using path: "%s"', path)
-    elements = XPath(path)(root)
-
-    if len(elements) != 1:
-        _logger.debug('%s elements match for new root', len(elements))
-        return None
-
-    root = elements[0]
-    _logger.debug('setting root to "%s" element', root.tag)
-
-    if _USE_LXML:
-        root = ElementTree.fromstring(ElementTree.tostring(root))
-
-    return root
-
-
-def remove_nodes(root, path, get_parent, **kwargs):
+def remove_nodes(root, path, get_parent):
     """Remove selected nodes from the tree.
 
-    :sig: (Element, str, Callable[[Element], Element]) -> Element
+    :sig: (Element, str, Callable[[Element], Element]) -> None
     :param root: Root node of the tree.
     :param path: XPath to select the nodes to remove.
     :param get_parent: Function to get the parent of an element.
-    :return: Root node of the tree.
     """
     elements = XPath(path)(root)
     _logger.debug('removing %s elements using path: "%s"', len(elements), path)
@@ -665,10 +638,9 @@ def remove_nodes(root, path, get_parent, **kwargs):
             _logger.debug('removing element: "%s"', element.tag)
             # XXX: could this be hazardous? parent removed in earlier iteration?
             get_parent(element).remove(element)
-    return root
 
 
-def set_node_attr(root, path, name, value, **kwargs):
+def set_node_attr(root, path, name, value):
     """Set an attribute for selected nodes.
 
     :sig:
@@ -677,12 +649,11 @@ def set_node_attr(root, path, name, value, **kwargs):
             str,
             Union[str, Mapping[str, Any]],
             Union[str, Mapping[str, Any]]
-        ) -> Element
+        ) -> None
     :param root: Root node of the tree.
     :param path: XPath to select the nodes to set attributes for.
     :param name: Description for name generation.
     :param value: Description for value generation.
-    :return: Root node of the tree.
     """
     elements = XPath(path)(root)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
@@ -702,17 +673,15 @@ def set_node_attr(root, path, name, value, **kwargs):
         _logger.debug('setting "%s" attribute to "%s" on "%s" element',
                       attr_name, attr_value, element.tag)
         element.attrib[attr_name] = attr_value
-    return root
 
 
-def set_node_text(root, path, text, **kwargs):
+def set_node_text(root, path, text):
     """Set the text for selected nodes.
 
-    :sig: (Element, str, Union[str, Mapping[str, Any]]) -> Element
+    :sig: (Element, str, Union[str, Mapping[str, Any]]) -> None
     :param root: Root node of the tree.
     :param path: XPath to select the nodes to set attributes for.
     :param text: Description for text generation.
-    :return: Root node of the tree.
     """
     elements = XPath(path)(root)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
@@ -721,15 +690,6 @@ def set_node_text(root, path, text, **kwargs):
         # note that the text can be None in which case the existing text will be cleared
         _logger.debug('setting text to "%s" on "%s" element', node_text, element.tag)
         element.text = node_text
-    return root
-
-
-_PREPROCESSORS = {
-    'root': set_root_node,
-    'remove': remove_nodes,
-    'set_attr': set_node_attr,
-    'set_text': set_node_text
-}
 
 
 def build_tree(document, force_html=False):
@@ -751,27 +711,26 @@ def build_tree(document, force_html=False):
 def preprocess(root, pre):
     """Process a tree before starting extraction.
 
-    :sig: (Element, Sequence[Mapping[str, Any]]) -> Element
+    :sig: (Element, Sequence[Mapping[str, Any]]) -> None
     :param root: Root of tree to process.
     :param pre: Descriptions for processing operations.
-    :return: Root of processed tree.
     """
     get_parent = None
 
     for step in pre:
         op = step['op']
-
-        if (op == 'remove') and (get_parent is None):
-            # ElementTree doesn't support parent queries, so we'll build a map for it
-            get_parent = ElementTree._Element.getparent if _USE_LXML else \
-                {e: p for p in root.iter() for e in p}.get
-            step['get_parent'] = get_parent
-
-        func = _PREPROCESSORS.get(op)
-        root = func(root, **step)
-        if root is None:
-            break
-    return root
+        if op == 'remove':
+            if get_parent is None:
+                # ElementTree doesn't support parent queries, so we'll build a map for it
+                get_parent = ElementTree._Element.getparent if _USE_LXML else \
+                    {e: p for p in root.iter() for e in p}.get
+            remove_nodes(root, step['path'], get_parent=get_parent)
+        elif op == 'set_attr':
+            set_node_attr(root, step['path'], name=step['name'], value=step['value'])
+        elif op == 'set_text':
+            set_node_text(root, step['path'], text=step['text'])
+        else:
+            raise ValueError('Unknown preprocessing operation')
 
 
 def extract(element, items, section=None):
@@ -798,7 +757,7 @@ def scrape(document, spec):
     root = build_tree(document)
     pre = spec.get('pre')
     if pre is not None:
-        root = preprocess(root, pre)
+        preprocess(root, pre)
     data = extract(root, spec.get('items'), section=spec.get('section'))
     return data
 

@@ -8,7 +8,7 @@ History
 
 - Added a class-based API for writing specifications.
 - Added predefined transformation functions.
-- Removed all callables from specification maps. Use the new API instead.
+- Removed callables from specification maps. Use the new API instead.
 - Added support for registering new reducers and transformers.
 - Added support for defining sections in document.
 - Refactored XPath evaluation method in order to parse path expressions once.
