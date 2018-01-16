@@ -13,11 +13,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Piculet.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Piculet is a module for extracting data from XML documents using XPath queries.
+"""Piculet is a utility for extracting data from XML or HTML documents using XPath queries.
 
-It can also scrape web pages by first converting the HTML source into XHTML.
-Piculet consists of this single source file with no dependencies other than
-the standard library, which makes it very easy to integrate into applications.
+It consists of this single source file with no dependencies other than the standard library,
+which makes it very easy to integrate into applications.
 
 For more details, please refer to the documentation: https://piculet.readthedocs.io/
 """
