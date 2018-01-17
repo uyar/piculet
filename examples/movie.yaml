@@ -1,0 +1,62 @@
+items:
+
+  - key: title
+    value: 
+      path: 
+      path: //title/text()
+      reduce: first
+
+  - key: year
+    value:
+      path: //span[@class="year"]/text()
+      reduce: first
+      transform: int
+
+  - key: genres
+    value:
+      foreach: //ul[@class="genres"]/li
+      path: ./text()
+      reduce: first
+
+  - key: director
+    value: 
+      section: //div[@class="director"]//a
+      items:
+        - key: name
+          value:
+            path: ./text()
+            reduce: first
+        - key: link
+          value:
+            path: ./@href
+            reduce: first
+
+  - key: cast
+    value:
+      foreach: //table[@class="cast"]/tr
+      items:
+        - key: name
+          value:
+            path: ./td[1]/a/text()
+            reduce: first
+        - key: link
+          value:
+            path: ./td[1]/a/@href
+            reduce: first
+        - key: character
+          value:
+            path: ./td[2]/text()
+            reduce: first
+
+  - key: review
+    value:
+      path: //div[@class="review"]//text()
+      reduce: clean
+
+  - foreach: //div[@class="info"]
+    key:
+      path: ./h3/text()
+      reduce: normalize
+    value:
+      path: ./p/text()
+      reduce: first
