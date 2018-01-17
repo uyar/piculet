@@ -11,7 +11,7 @@ with open('HISTORY.rst') as history_file:
 
 setup(
     name='piculet',
-    version='1.0b5',
+    version='1.0b6',
     description='XML/HTML scraper using XPath queries.',
     long_description=readme + '\n\n' + history,
     url='https://bitbucket.org/uyar/piculet',
