@@ -4,7 +4,8 @@
       "key": "title",
       "value": {
         "path": "//title/text()",
-        "reduce": "first"}
+        "reduce": "first"
+      }
     },
     {
       "key": "year",
@@ -25,18 +26,19 @@
     {
       "key": "director",
       "value": {
+        "section": "//div[@class='director']//a",
         "items": [
           {
             "key": "name",
             "value": {
-              "path": "//div[@class='director']//a/text()",
+              "path": "./text()",
               "reduce": "first"
             }
           },
           {
             "key": "link",
             "value": {
-              "path": "//div[@class='director']//a/@href",
+              "path": "./@href",
               "reduce": "first"
             }
           }
