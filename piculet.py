@@ -802,8 +802,16 @@ def scrape_document(address, spec, content_format='xml'):
     :param content_format: Whether the content is XML or HTML.
     """
     _logger.debug('loading spec from file: "%s"', os.path.abspath(spec))
+    if os.path.splitext(spec)[-1] == '.yaml':
+        if find_loader('yaml') is None:
+            raise RuntimeError('YAML support not available')
+        import yaml
+        spec_loader = yaml.load
+    else:
+        spec_loader = json.loads
+
     with open(spec) as f:
-        spec_map = json.loads(f.read())
+        spec_map = spec_loader(f.read())
 
     if address.startswith(('http://', 'https://')):
         _logger.debug('loading url: "%s"', address)

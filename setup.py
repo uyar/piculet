@@ -40,6 +40,7 @@ setup(
     py_modules=['piculet'],
     install_requires=[],
     extras_require={
+        'yaml': ['pyyaml'],
         'dev': [
             'flake8',
             'flake8-isort',

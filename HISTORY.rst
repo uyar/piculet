@@ -3,6 +3,11 @@
 History
 =======
 
+1.0b6 (unreleased)
+------------------
+
+- Support for writing specifications in YAML.
+
 1.0b5 (2018-01-16)
 ------------------
 
