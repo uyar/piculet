@@ -35,8 +35,8 @@ a specification file::
 
 The location of the document can be given as a file path or a URL.
 For example, say you want to extract some data from the file `shining.html`_.
-An example specification is given in `movie.json`_ [#yaml]_.
-Download both these files and run the command::
+An example specification is given in `movie.json`_.
+Download both of these files and run the command::
 
    $ piculet scrape -s movie.json shining.html
 
@@ -117,12 +117,18 @@ the :func:`scrape_document <piculet.scrape_document>` function:
    spec = 'wikipedia.json'
    data = scrape_document(url, spec, content_format='html')
 
-.. [#yaml]
+YAML support
+------------
 
-   A YAML configuration example can be found in `movie.yaml`_.
-   For YAML support, install Piculet using the command
-   ``pip install piculet[yaml]``. Note that this creates an
-   external dependency.
+To use YAML for specification, Piculet has to be installed with YAML support::
+
+   pip install piculet[yaml]
+
+Note that this will install an external module for parsing YAML files,
+and therefore will not be contained to the standard library anymore.
+
+The YAML version of the configuration example above can be found in
+`movie.yaml`_.
 
 .. _shining.html: https://bitbucket.org/uyar/piculet/src/tip/examples/shining.html
 .. _movie.json: https://bitbucket.org/uyar/piculet/src/tip/examples/movie.json
