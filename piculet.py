@@ -325,6 +325,7 @@ class Registry:
         """Initialize this registry.
 
         :sig: (Mapping[str, Any]) -> None
+        :param entries: Entries to add to this registry.
         """
         self.__dict__.update(entries)
 
