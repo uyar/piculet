@@ -13,12 +13,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Piculet.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Piculet is a utility for extracting data from XML or HTML documents using XPath queries.
+"""Piculet is a module for scraping XML and HTML documents using XPath queries.
 
-It consists of this single source file with no dependencies other than the standard library,
-which makes it very easy to integrate into applications.
+It consists of this single source file with no dependencies other than
+the standard library, which makes it very easy to integrate into applications.
+It has been tested with Python 2.7, Python 3.3+, PyPy2 5.7+, and PyPy3 5.7+.
 
-For more details, please refer to the documentation: https://piculet.readthedocs.io/
+For more information, please refer to the documentation:
+https://piculet.readthedocs.io/
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -521,7 +523,7 @@ class Rules(Extractor):
         :param rules: Rules for generating the data items.
         :param section: Path for setting the root of this section.
         :param transform: Function to transform extracted value.
-        :param foreach: Path to apply for generating a collection of data items.
+        :param foreach: Path for generating multiple items.
         """
         if not PY3:
             Extractor.__init__(self, transform=transform, foreach=foreach)
@@ -746,7 +748,12 @@ def preprocess(root, pre):
 def extract(element, items, section=None):
     """Extract data from an XML element.
 
-    :sig: (Element, Sequence[Mapping[str, Any]], Optional[str]) -> Mapping[str, Any]
+    :sig:
+        (
+            Element,
+            Sequence[Mapping[str, Any]],
+            Optional[str]
+        ) -> Mapping[str, Any]
     :param element: Element to extract the data from.
     :param items: Descriptions for extracting items.
     :param section: Path to select the root element for these items.
