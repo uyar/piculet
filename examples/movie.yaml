@@ -2,7 +2,6 @@ items:
 
   - key: title
     value: 
-      path: 
       path: //title/text()
       reduce: first
 
