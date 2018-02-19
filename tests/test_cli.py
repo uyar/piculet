@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from pytest import config, mark, raises
 
 import json
+import logging
 import os
 import sys
 from io import StringIO
@@ -60,9 +61,8 @@ def test_unrecognized_arguments_should_print_usage_and_exit(capsys):
     assert 'unrecognized arguments: --foo' in err
 
 
-@mark.skipif(sys.version_info[:2] == (3, 3),
-             reason='pytest version with caplog does not support py33')
 def test_debug_mode_should_print_debug_messages(caplog):
+    caplog.set_level(logging.DEBUG)
     with mock.patch('sys.stdin', StringIO('<html></html>')):
         piculet.main(argv=['piculet', '--debug', 'h2x', '-'])
     assert caplog.record_tuples[0][-1] == 'running in debug mode'
@@ -76,7 +76,8 @@ def test_h2x_no_input_should_print_usage_and_exit(capsys):
     assert ('required: file' in err) or ('too few arguments' in err)
 
 
-@mark.skipif(sys.platform not in {'linux', 'linux2'}, reason='/dev/shm only available on linux')
+@mark.skipif(sys.platform not in {'linux', 'linux2'},
+             reason='/dev/shm only available on linux')
 def test_h2x_should_read_given_file(capsys):
     content = '<html></html>'
     with open('/dev/shm/test.html', 'w') as f:
@@ -128,7 +129,8 @@ def test_scrape_local_should_scrape_given_file(capsys):
     assert data['title'] == 'The Shining'
 
 
-@mark.skipif(not config.getvalue('--cov'), reason='takes random amount of time')
+@mark.skipif(not config.getvalue('--cov'),
+             reason='takes unforeseen amount of time')
 def test_scrape_should_scrape_given_url(capsys):
     piculet.main(argv=['piculet', 'scrape', 'https://en.wikipedia.org/wiki/David_Bowie',
                        '-s', wikipedia_spec, '--html'])

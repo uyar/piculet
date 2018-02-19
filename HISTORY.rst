@@ -3,6 +3,11 @@
 History
 =======
 
+1.0b7 (unreleased)
+------------------
+
+- Drop support for Python 3.3.
+
 1.0b6 (2018-01-17)
 ------------------
 

@@ -17,7 +17,7 @@
 
 It consists of this single source file with no dependencies other than
 the standard library, which makes it very easy to integrate into applications.
-It has been tested with Python 2.7, Python 3.3+, PyPy2 5.7+, and PyPy3 5.7+.
+It has been tested with Python 2.7, Python 3.4+, PyPy2 5.7+, and PyPy3 5.7+.
 
 For more information, please refer to the documentation:
 https://piculet.readthedocs.io/
@@ -38,7 +38,6 @@ from pkgutil import find_loader
 
 
 PY3 = sys.version_info >= (3, 0)
-PY34 = sys.version_info >= (3, 4)
 
 
 if not PY3:
@@ -57,7 +56,7 @@ else:
     from urllib.request import urlopen
 
 
-if not PY34:
+if not PY3:
     from contextlib import contextmanager
 
     @contextmanager
@@ -133,8 +132,6 @@ class HTMLNormalizer(HTMLParser):
         """
         if not PY3:
             HTMLParser.__init__(self)
-        elif not PY34:
-            super().__init__()
         else:
             super().__init__(convert_charrefs=True)
 
