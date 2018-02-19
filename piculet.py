@@ -149,6 +149,10 @@ class HTMLNormalizer(HTMLParser):
             self._open_omitted_tags.append(tag)
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
+            if '@' in tag:
+                # email address in angular brackets
+                print('&lt;%s&gt;', end='')
+                return
             if (tag == 'li') and (self._open_tags[-1] == 'li'):
                 _logger.debug('opened "li" without closing previous "li", adding closing tag')
                 self.handle_endtag('li')
