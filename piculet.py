@@ -151,7 +151,7 @@ class HTMLNormalizer(HTMLParser):
             # stack empty -> not in omit mode
             if '@' in tag:
                 # email address in angular brackets
-                print('&lt;%s&gt;', end='')
+                print('&lt;%s&gt;' % tag, end='')
                 return
             if (tag == 'li') and (self._open_tags[-1] == 'li'):
                 _logger.debug('opened "li" without closing previous "li", adding closing tag')
