@@ -366,7 +366,10 @@ _TRANSFORMERS = {
     'len': len,
     'lower': str.lower,
     'upper': str.upper,
-    'capitalize': str.capitalize
+    'capitalize': str.capitalize,
+    'lstrip': str.lstrip,
+    'rstrip': str.rstrip,
+    'strip': str.strip
 }
 
 transformers = Registry(_TRANSFORMERS)  # sig: Registry
