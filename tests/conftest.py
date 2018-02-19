@@ -4,18 +4,22 @@ from pytest import fixture
 
 import logging
 import os
+import sys
 from hashlib import md5
 from io import BytesIO
 
 import piculet
 
 
-if not piculet.PY3:
+PY2 = sys.version_info < (3, 0)
+
+
+if PY2:
     import mock
 else:
     from unittest import mock
 
-if not piculet.PY3:
+if PY2:
     from urllib2 import urlopen
 else:
     from urllib.request import urlopen

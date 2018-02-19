@@ -37,14 +37,14 @@ from operator import itemgetter
 from pkgutil import find_loader
 
 
-PY3 = sys.version_info >= (3, 0)
+PY2 = sys.version_info < (3, 0)
 
 
-if not PY3:
+if PY2:
     str, bytes = unicode, str
 
 
-if not PY3:
+if PY2:
     from cgi import escape as html_escape
     from HTMLParser import HTMLParser
     from StringIO import StringIO
@@ -56,7 +56,7 @@ else:
     from urllib.request import urlopen
 
 
-if not PY3:
+if PY2:
     from contextlib import contextmanager
 
     @contextmanager
@@ -130,7 +130,7 @@ class HTMLNormalizer(HTMLParser):
         :param omit_tags: Tags to remove, along with all their content.
         :param omit_attrs: Attributes to remove.
         """
-        if not PY3:
+        if PY2:
             HTMLParser.__init__(self)
         else:
             super().__init__(convert_charrefs=True)
@@ -297,7 +297,7 @@ else:
             else:
                 steps = path.split('/')
                 front, last = steps[:-1], steps[-1]
-                # PY3: *front, last = path.split('/')
+                # after dropping PY2: *front, last = path.split('/')
                 if last.startswith('@'):
                     self.__evaluate = partial(attribute, subpath='/'.join(front), attr=last[1:])
                 else:
@@ -475,7 +475,7 @@ class Path(Extractor):
         :param transform: Function to transform extracted value.
         :param foreach: Path to apply for generating a collection of data.
         """
-        if not PY3:
+        if PY2:
             Extractor.__init__(self, transform=transform, foreach=foreach)
         else:
             super().__init__(transform=transform, foreach=foreach)
@@ -526,7 +526,7 @@ class Rules(Extractor):
         :param transform: Function to transform extracted value.
         :param foreach: Path for generating multiple items.
         """
-        if not PY3:
+        if PY2:
             Extractor.__init__(self, transform=transform, foreach=foreach)
         else:
             super().__init__(transform=transform, foreach=foreach)
@@ -713,7 +713,7 @@ def build_tree(document, force_html=False):
     :param force_html: Force to parse from HTML without converting.
     :return: Root element of the XML tree.
     """
-    content = document if PY3 else document.encode('utf-8')
+    content = document.encode('utf-8') if PY2 else document
     if _USE_LXML and force_html:
         _logger.info('using lxml html builder')
         import lxml.html
