@@ -48,6 +48,7 @@ if PY2:
     from cgi import escape as html_escape
     from HTMLParser import HTMLParser
     from StringIO import StringIO
+    from htmlentitydefs import name2codepoint
     from urllib2 import urlopen
 else:
     from html import escape as html_escape
@@ -215,13 +216,14 @@ class HTMLNormalizer(HTMLParser):
     def handle_entityref(self, name):
         """Process an entity reference."""
         # XXX: doesn't get called if convert_charrefs=True
-        ref = self.unescape('&' + name + ';')
-        print('&#%d;' % ord(ref))
+        num = name2codepoint.get(name)  # we are sure we're on PY2 here
+        if num is not None:
+            print('&#%(ref)d;' % {'ref': num}, end='')
 
     def handle_charref(self, name):
         """Process a character reference."""
         # XXX: doesn't get called if convert_charrefs=True
-        print('&#' + name + ';', end='')
+        print('&#%(ref)s;' % {'ref': name}, end='')
 
     # def feed(self, data):
         # super().feed(data)
