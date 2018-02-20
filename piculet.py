@@ -211,7 +211,8 @@ class HTMLNormalizer(HTMLParser):
         """Process collected character data."""
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
-            print(html_escape(data), end='')
+            line = html_escape(data)
+            print(line.decode('utf-8') if PY2 else line, end='')
 
     def handle_entityref(self, name):
         """Process an entity reference."""
