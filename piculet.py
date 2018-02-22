@@ -212,7 +212,7 @@ class HTMLNormalizer(HTMLParser):
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             line = html_escape(data)
-            print(line.decode('utf-8') if isinstance(line, bytes) else line, end='')
+            print(line.decode('utf-8') if PY2 and isinstance(line, bytes) else line, end='')
 
     def handle_entityref(self, name):
         """Process an entity reference."""
