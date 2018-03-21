@@ -171,6 +171,12 @@ def test_html_to_xhtml_incorrect_nesting_should_be_reordered():
     assert normalized == '''<html><div><p></p></div></html>'''
 
 
+def test_html_to_xhtml_angular_brackets_with_at_symbols_should_be_replaced():
+    content = '''<html><p><uyar@tekir.org></p></html>'''
+    normalized = html_to_xhtml(content)
+    assert normalized == '''<html><p>&lt;uyar@tekir.org&gt;</p></html>'''
+
+
 def test_html_to_xhtml_ampersands_should_be_replaced_in_data():
     content = '''<html><p>&</p></html>'''
     normalized = html_to_xhtml(content)
