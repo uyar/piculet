@@ -8,6 +8,7 @@ History
 
 - Dropped support for Python 3.3.
 - Fixes for handling Unicode data in HTML for Python 2.
+- Added registry for preprocessors.
 
 1.0b6 (2018-01-17)
 ------------------

@@ -7,8 +7,9 @@ from html.parser import HTMLParser
 from xml.etree.ElementTree import Element
 
 
-reducers = ...      # type: Registry
-transformers = ...  # type: Registry
+preprocessors = ...  # type: Registry
+reducers = ...       # type: Registry
+transformers = ...   # type: Registry
 
 def decode_html(
         content: bytes,

@@ -707,6 +707,16 @@ class Registry:
         self.__dict__[key] = value
 
 
+_PREPROCESSORS = {
+    'remove': remove_elements,
+    'set_attr': set_element_attr,
+    'set_text': set_element_text
+}
+
+preprocessors = Registry(_PREPROCESSORS)    # sig: Registry
+"""Predefined preprocessors."""
+
+
 _REDUCERS = {
     'first': itemgetter(0),
     'concat': partial(str.join, ''),
@@ -714,7 +724,7 @@ _REDUCERS = {
     'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
 }
 
-reducers = Registry(_REDUCERS)          # sig: Registry
+reducers = Registry(_REDUCERS)              # sig: Registry
 """Predefined reducers."""
 
 
@@ -731,7 +741,7 @@ _TRANSFORMERS = {
     'strip': str.strip
 }
 
-transformers = Registry(_TRANSFORMERS)  # sig: Registry
+transformers = Registry(_TRANSFORMERS)      # sig: Registry
 """Predefined transformers."""
 
 
