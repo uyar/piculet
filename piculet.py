@@ -322,64 +322,6 @@ else:
     xpath = lambda e, p: XPath(p)(e)
 
 
-class Registry:
-    """A simple, attribute-based namespace."""
-
-    def __init__(self, entries):
-        """Initialize this registry.
-
-        :sig: (Mapping[str, Any]) -> None
-        :param entries: Entries to add to this registry.
-        """
-        self.__dict__.update(entries)
-
-    def get(self, item):
-        """Get the value of an entry from this registry.
-
-        :sig: (str) -> Any
-        :param item: Entry to get the value for.
-        :return: Value of entry.
-        """
-        return self.__dict__.get(item)
-
-    def register(self, key, value):
-        """Register a new entry in this registry.
-
-        :sig: (str, Any) -> None
-        :param key: Key to search the entry in this registry.
-        :param value: Value to store for the entry.
-        """
-        self.__dict__[key] = value
-
-
-_REDUCERS = {
-    'first': itemgetter(0),
-    'concat': partial(str.join, ''),
-    'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
-    'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
-}
-
-reducers = Registry(_REDUCERS)          # sig: Registry
-"""Predefined reducers."""
-
-
-_TRANSFORMERS = {
-    'int': int,
-    'float': float,
-    'bool': bool,
-    'len': len,
-    'lower': str.lower,
-    'upper': str.upper,
-    'capitalize': str.capitalize,
-    'lstrip': str.lstrip,
-    'rstrip': str.rstrip,
-    'strip': str.strip
-}
-
-transformers = Registry(_TRANSFORMERS)  # sig: Registry
-"""Predefined transformers."""
-
-
 _EMPTY = {}     # empty result singleton
 
 
@@ -726,6 +668,64 @@ def build_tree(document, force_html=False):
         import lxml.html
         return lxml.html.fromstring(content)
     return ElementTree.fromstring(content)
+
+
+class Registry:
+    """A simple, attribute-based namespace."""
+
+    def __init__(self, entries):
+        """Initialize this registry.
+
+        :sig: (Mapping[str, Any]) -> None
+        :param entries: Entries to add to this registry.
+        """
+        self.__dict__.update(entries)
+
+    def get(self, item):
+        """Get the value of an entry from this registry.
+
+        :sig: (str) -> Any
+        :param item: Entry to get the value for.
+        :return: Value of entry.
+        """
+        return self.__dict__.get(item)
+
+    def register(self, key, value):
+        """Register a new entry in this registry.
+
+        :sig: (str, Any) -> None
+        :param key: Key to search the entry in this registry.
+        :param value: Value to store for the entry.
+        """
+        self.__dict__[key] = value
+
+
+_REDUCERS = {
+    'first': itemgetter(0),
+    'concat': partial(str.join, ''),
+    'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
+    'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
+}
+
+reducers = Registry(_REDUCERS)          # sig: Registry
+"""Predefined reducers."""
+
+
+_TRANSFORMERS = {
+    'int': int,
+    'float': float,
+    'bool': bool,
+    'len': len,
+    'lower': str.lower,
+    'upper': str.upper,
+    'capitalize': str.capitalize,
+    'lstrip': str.lstrip,
+    'rstrip': str.rstrip,
+    'strip': str.strip
+}
+
+transformers = Registry(_TRANSFORMERS)  # sig: Registry
+"""Predefined transformers."""
 
 
 def preprocess(root, pre):
