@@ -584,14 +584,21 @@ class Rule:
         return data
 
 
-def remove_elements(root, path, get_parent):
+def remove_elements(root, path):
     """Remove selected elements from the tree.
 
-    :sig: (Element, str, Callable[[Element], Element]) -> None
+    :sig: (Element, str) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to remove.
-    :param get_parent: Function to get the parent of an element.
     """
+    if _USE_LXML:
+        get_parent = ElementTree._Element.getparent
+    else:
+        # ElementTree doesn't support parent queries, so we'll build a map for it
+        get_parent = root.attrib.get('_get_parent')
+        if get_parent is None:
+            get_parent = {e: p for p in root.iter() for e in p}.get
+            root.attrib['_get_parent'] = get_parent
     elements = XPath(path)(root)
     _logger.debug('removing %s elements using path: "%s"', len(elements), path)
     if len(elements) > 0:
@@ -735,16 +742,10 @@ def preprocess(root, pre):
     :param root: Root of tree to process.
     :param pre: Descriptions for processing operations.
     """
-    get_parent = None
-
     for step in pre:
         op = step['op']
         if op == 'remove':
-            if get_parent is None:
-                # ElementTree doesn't support parent queries, so we'll build a map for it
-                get_parent = ElementTree._Element.getparent if _USE_LXML else \
-                    {e: p for p in root.iter() for e in p}.get
-            remove_elements(root, step['path'], get_parent=get_parent)
+            remove_elements(root, step['path'])
         elif op == 'set_attr':
             set_element_attr(root, step['path'], name=step['name'], value=step['value'])
         elif op == 'set_text':
