@@ -6,7 +6,7 @@ History
 1.0b7 (unreleased)
 ------------------
 
-- Drop support for Python 3.3.
+- Dropped support for Python 3.3.
 - Fixes for handling Unicode data in HTML for Python 2.
 
 1.0b6 (2018-01-17)
