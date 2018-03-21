@@ -106,11 +106,7 @@ class Rule:
 
     def extract(self, element: Element) -> Mapping[str, Any]: ...
 
-def remove_elements(
-        root: Element,
-        path: str,
-        get_parent: Callable[[Element], Element]
-) -> None: ...
+def remove_elements(root: Element, path: str) -> None: ...
 
 def set_element_attr(
         root: Element,
