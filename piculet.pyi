@@ -34,6 +34,8 @@ def html_to_xhtml(
 ) -> str: ...
 
 class XPath:
+    _eval = ...  # type: Callable[[Element], Union[Sequence[str], Sequence[Element]]]
+
     def __init__(self, path: str) -> None: ...
 
     def __call__(

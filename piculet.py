@@ -298,17 +298,19 @@ else:
                 path = '.' + path
 
             if path.endswith('//text()'):
-                self.__evaluate = descendant
+                _eval = descendant
             elif path.endswith('/text()'):
-                self.__evaluate = child
+                _eval = child
             else:
                 steps = path.split('/')
                 front, last = steps[:-1], steps[-1]
                 # after dropping PY2: *front, last = path.split('/')
                 if last.startswith('@'):
-                    self.__evaluate = partial(attribute, subpath='/'.join(front), attr=last[1:])
+                    _eval = partial(attribute, subpath='/'.join(front), attr=last[1:])
                 else:
-                    self.__evaluate = partial(Element.findall, path=path)
+                    _eval = partial(Element.findall, path=path)
+
+            self._eval = _eval  # sig: Callable[[Element], Union[Sequence[str], Sequence[Element]]]
 
         def __call__(self, element):
             """Apply this evaluator to an element.
@@ -317,7 +319,7 @@ else:
             :param element: Element to apply this expression to.
             :return: Elements or strings resulting from the query.
             """
-            return self.__evaluate(element)
+            return self._eval(element)
 
     xpath = lambda e, p: XPath(p)(e)
 
