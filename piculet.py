@@ -254,6 +254,9 @@ def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
 ###########################################################
 
 
+# sigalias: XPathResult = Union[Sequence[str], Sequence[Element]]
+
+
 _USE_LXML = find_loader('lxml') is not None
 if _USE_LXML:
     _logger.info('using lxml')
@@ -310,12 +313,12 @@ else:
                 else:
                     _eval = partial(Element.findall, path=path)
 
-            self._eval = _eval  # sig: Callable[[Element], Union[Sequence[str], Sequence[Element]]]
+            self._eval = _eval  # sig: Callable[[Element], XPathResult]
 
         def __call__(self, element):
             """Apply this evaluator to an element.
 
-            :sig: (Element) -> Union[Sequence[str], Sequence[Element]]
+            :sig: (Element) -> XPathResult
             :param element: Element to apply this expression to.
             :return: Elements or strings resulting from the query.
             """
@@ -327,21 +330,24 @@ else:
 _EMPTY = {}     # empty result singleton
 
 
+# sigalias: Reducer = Callable[[Sequence[str]], str]
+# sigalias: PathTransformer = Callable[[str], Any]
+# sigalias: MapTransformer = Callable[[Mapping[str, Any]], Any]
+# sigalias: Transformer = Union[PathTransformer, MapTransformer]
+# sigalias: ExtractedItem = Union[str, Mapping[str, Any]]
+
+
 class Extractor:
     """Abstract base extractor for getting data out of an XML element."""
 
     def __init__(self, transform=None, foreach=None):
         """Initialize this extractor.
 
-        :sig:
-            (
-                Optional[Callable[[Union[str, Mapping[str, Any]]], Any]],
-                Optional[str]
-            ) -> None
+        :sig: (Optional[Transformer], Optional[str]) -> None
         :param transform: Function to transform the extracted value.
         :param foreach: Path to apply for generating a collection of values.
         """
-        self.transform = transform  # sig: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]]
+        self.transform = transform  # sig: Optional[Transformer]
         """Function to transform the extracted value."""
 
         self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPath]
@@ -350,7 +356,7 @@ class Extractor:
     def apply(self, element):
         """Get the raw data from an element using this extractor.
 
-        :sig: (Element) -> Union[str, Mapping[str, Any]]
+        :sig: (Element) -> ExtractedItem
         :param element: Element to apply this extractor to.
         :return: Extracted raw data.
         """
@@ -414,11 +420,10 @@ class Path(Extractor):
     def __init__(self, path, reduce=None, transform=None, foreach=None):
         """Initialize this extractor.
 
-        :sig:
-            (
+        :sig: (
                 str,
-                Optional[Callable[[Sequence[str]], str]],
-                Optional[Callable[[str], Any]],
+                Optional[Reducer],
+                Optional[PathTransformer],
                 Optional[str]
             ) -> None
         :param path: Path to apply to get the data.
@@ -437,7 +442,7 @@ class Path(Extractor):
         if reduce is None:
             reduce = reducers.concat
 
-        self.reduce = reduce        # sig: Callable[[Sequence[str]], str]
+        self.reduce = reduce        # sig: Reducer
         """Function to reduce selected texts into a single string."""
 
     def apply(self, element):
@@ -469,7 +474,7 @@ class Rules(Extractor):
             (
                 Sequence[Rule],
                 str,
-                Optional[Callable[[Mapping[str, Any]], Any]],
+                Optional[MapTransformer],
                 Optional[str]
             ) -> None
         :param rules: Rules for generating the data items.
