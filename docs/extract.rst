@@ -22,7 +22,8 @@ its content:
 
 .. code-block:: python
 
-   >>> document = open('shining.html').read()
+   >>> with open('shining.html') as f:
+   ...     document = f.read()
 
 The :func:`scrape <piculet.scrape>` function assumes that the document
 is in XML format. So if any conversion is needed, it has to be done
