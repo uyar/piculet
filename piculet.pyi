@@ -41,7 +41,7 @@ def html_to_xhtml(
 ) -> str: ...
 
 class XPath:
-    _eval = ...  # type: Callable[[Element], XPathResult]
+    _apply = ...  # type: Callable[[Element], XPathResult]
 
     def __init__(self, path: str) -> None: ...
 
