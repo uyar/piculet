@@ -6,6 +6,13 @@ from argparse import ArgumentParser
 from html.parser import HTMLParser
 from xml.etree.ElementTree import Element
 
+XPathResult = Union[Sequence[str], Sequence[Element]]
+Reducer = Callable[[Sequence[str]], str]
+PathTransformer = Callable[[str], Any]
+MapTransformer = Callable[[Mapping[str, Any]], Any]
+Transformer = Union[PathTransformer, MapTransformer]
+ExtractedItem = Union[str, Mapping[str, Any]]
+
 
 preprocessors = ...  # type: Registry
 reducers = ...       # type: Registry
@@ -34,26 +41,23 @@ def html_to_xhtml(
 ) -> str: ...
 
 class XPath:
-    _eval = ...  # type: Callable[[Element], Union[Sequence[str], Sequence[Element]]]
+    _eval = ...  # type: Callable[[Element], XPathResult]
 
     def __init__(self, path: str) -> None: ...
 
-    def __call__(
-            self,
-            element: Element
-    ) -> Union[Sequence[str], Sequence[Element]]: ...
+    def __call__(self, element: Element) -> XPathResult: ...
 
 class Extractor:
-    transform = ...  # type: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]]
+    transform = ...  # type: Optional[Transformer]
     foreach = ...    # type: Optional[XPath]
 
     def __init__(
             self,
-            transform: Optional[Callable[[Union[str, Mapping[str, Any]]], Any]] = ...,
+            transform: Optional[Transformer] = ...,
             foreach: Optional[str] = ...
     ) -> None: ...
 
-    def apply(self, element: Element) -> Union[str, Mapping[str, Any]]: ...
+    def apply(self, element: Element) -> ExtractedItem: ...
 
     def extract(
             self,
@@ -66,13 +70,13 @@ class Extractor:
 
 class Path(Extractor):
     path = ...    # type: XPath
-    reduce = ...  # type: Callable[[Sequence[str]], str]
+    reduce = ...  # type: Reducer
 
     def __init__(
             self,
             path: str,
-            reduce: Optional[Callable[[Sequence[str]], str]] = ...,
-            transform: Optional[Callable[[str], Any]] = ...,
+            reduce: Optional[Reducer] = ...,
+            transform: Optional[PathTransformer] = ...,
             foreach: Optional[str] = ...
     ) -> None: ...
 
@@ -86,7 +90,7 @@ class Rules(Extractor):
             self,
             rules: Sequence[Rule],
             section: str = ...,
-            transform: Optional[Callable[[Mapping[str, Any]], Any]] = ...,
+            transform: Optional[MapTransformer] = ...,
             foreach: Optional[str] = ...
     ) -> None: ...
 
