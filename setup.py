@@ -6,14 +6,11 @@ from setuptools import setup
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
-    history = history_file.read().replace('.. :changelog:', '')
-
 setup(
     name='piculet',
     version='1.0b7',
     description='XML/HTML scraper using XPath queries.',
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     url='https://bitbucket.org/uyar/piculet',
     author='H. Turgut Uyar',
     author_email='uyar@tekir.org',
