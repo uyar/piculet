@@ -8,7 +8,7 @@ with open('README.rst') as readme_file:
 
 setup(
     name='piculet',
-    version='1.0b7',
+    version='1.0',
     description='XML/HTML scraper using XPath queries.',
     long_description=readme,
     url='https://bitbucket.org/uyar/piculet',

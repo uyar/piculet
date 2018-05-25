@@ -873,7 +873,7 @@ def make_parser(prog):
     :return: Parser for arguments.
     """
     parser = ArgumentParser(prog=prog)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0b7')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
     parser.add_argument('--debug', action='store_true', help='enable debug messages')
 
     commands = parser.add_subparsers(metavar='command', dest='command')
