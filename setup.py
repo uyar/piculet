@@ -44,6 +44,7 @@ setup(
             'flake8',
             'flake8-isort',
             'flake8-docstrings',
+            'readme_renderer',
             'wheel',
             'twine'
         ],
