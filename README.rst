@@ -5,7 +5,7 @@ using XPath queries. It consists of a `single source file`_
 with no dependencies other than the standard library, which makes it very easy
 to integrate into applications. It also provides a command line interface.
 
-:PyPI: https://pypi.python.org/pypi/piculet/
+:PyPI: https://pypi.org/project/piculet/
 :Repository: https://bitbucket.org/uyar/piculet
 :Documentation: https://piculet.readthedocs.io/
 
