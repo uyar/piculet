@@ -130,9 +130,9 @@ and therefore will not be contained to the standard library anymore.
 The YAML version of the configuration example above can be found in
 `movie.yaml`_.
 
-.. _shining.html: https://bitbucket.org/uyar/piculet/src/tip/examples/shining.html
-.. _movie.json: https://bitbucket.org/uyar/piculet/src/tip/examples/movie.json
-.. _movie.yaml: https://bitbucket.org/uyar/piculet/src/tip/examples/movie.yaml
-.. _wikipedia.json: https://bitbucket.org/uyar/piculet/src/tip/examples/wikipedia.json
+.. _shining.html: https://github.com/uyar/piculet/blob/master/examples/shining.html
+.. _movie.json: https://github.com/uyar/piculet/blob/master/examples/movie.json
+.. _movie.yaml: https://github.com/uyar/piculet/blob/master/examples/movie.yaml
+.. _wikipedia.json: https://github.com/uyar/piculet/blob/master/examples/wikipedia.json
 .. _David Bowie: https://en.wikipedia.org/wiki/David_Bowie
 .. _Merlene Ottey: https://en.wikipedia.org/wiki/Merlene_Ottey

@@ -11,7 +11,7 @@ setup(
     version='1.0',
     description='XML/HTML scraper using XPath queries.',
     long_description=readme,
-    url='https://bitbucket.org/uyar/piculet',
+    url='https://github.com/uyar/piculet',
     author='H. Turgut Uyar',
     author_email='uyar@tekir.org',
     license='LGPL',
