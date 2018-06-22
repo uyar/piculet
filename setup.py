@@ -48,6 +48,7 @@ setup(
         'doc': [
             'sphinx',
             'sphinx_rtd_theme',
+            'sphinx_autobuild',
             'pygenstub'
         ],
         'test': [
