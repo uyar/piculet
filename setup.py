@@ -41,20 +41,14 @@ setup(
             'flake8',
             'flake8-isort',
             'flake8-docstrings',
-            'readme_renderer',
-            'wheel',
-            'twine'
         ],
         'doc': [
             'sphinx',
             'sphinx_rtd_theme',
-            'sphinx_autobuild',
-            'pygenstub'
         ],
         'test': [
             'pytest',
             'pytest-cov',
-            'pytest-profiling'
         ],
     },
     entry_points="""
