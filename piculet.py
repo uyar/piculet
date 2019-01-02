@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2018 H. Turgut Uyar <uyar@tekir.org>
+# Copyright (C) 2014-2019 H. Turgut Uyar <uyar@tekir.org>
 #
 # Piculet is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -121,7 +121,31 @@ class HTMLNormalizer(HTMLParser):
     DOCTYPE declarations and comments are removed.
     """
 
-    SELF_CLOSING_TAGS = {'br', 'hr', 'img', 'input', 'link', 'meta'}
+    VOID_ELEMENTS = frozenset({
+        'area',
+        'base',
+        'basefont',
+        'bgsound',
+        'br',
+        'col',
+        'command',
+        'embed',
+        'frame',
+        'hr',
+        'image',
+        'img',
+        'input',
+        'isindex',
+        'keygen',
+        'link',
+        'menuitem',
+        'meta',
+        'nextid',
+        'param',
+        'source',
+        'track',
+        'wbr'
+    })
     """Tags to handle as self-closing."""
 
     def __init__(self, omit_tags=None, omit_attrs=None):
@@ -174,17 +198,17 @@ class HTMLNormalizer(HTMLParser):
             line = '<%(tag)s%(attrs)s%(slash)s>' % {
                 'tag': tag,
                 'attrs': (' ' + ' '.join(attributes)) if len(attributes) > 0 else '',
-                'slash': ' /' if tag in self.SELF_CLOSING_TAGS else ''
+                'slash': ' /' if tag in self.VOID_ELEMENTS else ''
             }
             print(line, end='')
-            if tag not in self.SELF_CLOSING_TAGS:
+            if tag not in self.VOID_ELEMENTS:
                 self._open_tags.append(tag)
 
     def handle_endtag(self, tag):
         """Process the ending of an element."""
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
-            if tag not in self.SELF_CLOSING_TAGS:
+            if tag not in self.VOID_ELEMENTS:
                 last = self._open_tags[-1]
                 if (tag == 'ul') and (last == 'li'):
                     _logger.debug('closing "ul" without closing last "li", adding closing tag')
