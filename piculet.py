@@ -108,7 +108,7 @@ def decode_html(content, charset=None, fallback_charset="utf-8"):
                 charset_start = start + len(tag)
                 charset_end = content.find(b'"', charset_start)
                 charset = content[charset_start:charset_end].decode("ascii")
-                _logger.debug('charset found in "meta": "%s"', charset)
+                _logger.debug('charset found in <meta>: "%s"', charset)
                 break
         else:
             _logger.debug('charset not found, using fallback: "%s"', fallback_charset)
@@ -174,7 +174,7 @@ class HTMLNormalizer(HTMLParser):
     def handle_starttag(self, tag, attrs):
         """Process the starting of a new element."""
         if tag in self.omit_tags:
-            _logger.debug('omitting: "%s"', tag)
+            _logger.debug("omitting: <%s>", tag)
             self._open_omitted_tags.append(tag)
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
@@ -183,16 +183,16 @@ class HTMLNormalizer(HTMLParser):
                 print("&lt;%s&gt;" % tag, end="")
                 return
             if (tag == "li") and (self._open_tags[-1] == "li"):
-                _logger.debug('opened "li" without closing previous "li", adding closing tag')
+                _logger.debug("opened <li> without closing previous <li>, adding closing tag")
                 self.handle_endtag("li")
             attributes = []
             for attr_name, attr_value in attrs:
                 if attr_name in self.omit_attrs:
-                    _logger.debug('omitting "%s" attribute of "%s"', attr_name, tag)
+                    _logger.debug('omitting "%s" attribute of <%s>', attr_name, tag)
                     continue
                 if attr_value is None:
                     _logger.debug(
-                        'no value for "%s" attribute of "%s", adding empty value',
+                        'no value for "%s" attribute of <%s>, adding empty value',
                         attr_name,
                         tag,
                     )
@@ -218,18 +218,18 @@ class HTMLNormalizer(HTMLParser):
             if tag not in self.VOID_ELEMENTS:
                 last = self._open_tags[-1]
                 if (tag == "ul") and (last == "li"):
-                    _logger.debug('closing "ul" without closing last "li", adding closing tag')
+                    _logger.debug("closing <ul> without closing last <li>, adding closing tag")
                     self.handle_endtag("li")
                 if tag == last:
                     # expected end tag
                     print("</%(tag)s>" % {"tag": tag}, end="")
                     self._open_tags.pop()
                 elif tag not in self._open_tags:
-                    _logger.debug('closing tag "%s" without opening tag', tag)
+                    _logger.debug("closing tag <%s> without opening tag", tag)
                     # XXX: for <a><b></a></b>, this case gets invoked after the case below
                 elif tag == self._open_tags[-2]:
                     _logger.debug(
-                        'unexpected closing tag "%s" instead of "%s", closing both', tag, last
+                        "unexpected closing tag <%s> instead of <%s>, closing both", tag, last
                     )
                     print("</%(tag)s>" % {"tag": last}, end="")
                     print("</%(tag)s>" % {"tag": tag}, end="")
