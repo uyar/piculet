@@ -5,7 +5,7 @@ This section explains how to write the specification for extracting data
 from a document. We'll scrape the following HTML content for the movie
 "The Shining" in our examples:
 
-.. literalinclude:: ../examples/shining.html
+.. literalinclude:: ../../examples/shining.html
    :language: html
 
 Instead of the :func:`scrape_document <piculet.scrape_document>` function
