@@ -68,6 +68,8 @@ if PY2:
             yield new_stdout
         finally:
             sys.stdout = old_stdout
+
+
 else:
     from contextlib import redirect_stdout
 
@@ -83,11 +85,11 @@ _logger = logging.getLogger(__name__)
 # TODO: this is too fragile
 _CHARSET_TAGS = [
     b'<meta http-equiv="content-type" content="text/html; charset=',
-    b'<meta charset="'
+    b'<meta charset="',
 ]
 
 
-def decode_html(content, charset=None, fallback_charset='utf-8'):
+def decode_html(content, charset=None, fallback_charset="utf-8"):
     """Decode an HTML document according to a character set.
 
     If no character set is given, this will try to figure it out
@@ -105,7 +107,7 @@ def decode_html(content, charset=None, fallback_charset='utf-8'):
             if start >= 0:
                 charset_start = start + len(tag)
                 charset_end = content.find(b'"', charset_start)
-                charset = content[charset_start:charset_end].decode('ascii')
+                charset = content[charset_start:charset_end].decode("ascii")
                 _logger.debug('charset found in "meta": "%s"', charset)
                 break
         else:
@@ -121,31 +123,33 @@ class HTMLNormalizer(HTMLParser):
     DOCTYPE declarations and comments are removed.
     """
 
-    VOID_ELEMENTS = frozenset({
-        'area',
-        'base',
-        'basefont',
-        'bgsound',
-        'br',
-        'col',
-        'command',
-        'embed',
-        'frame',
-        'hr',
-        'image',
-        'img',
-        'input',
-        'isindex',
-        'keygen',
-        'link',
-        'menuitem',
-        'meta',
-        'nextid',
-        'param',
-        'source',
-        'track',
-        'wbr'
-    })
+    VOID_ELEMENTS = frozenset(
+        {
+            "area",
+            "base",
+            "basefont",
+            "bgsound",
+            "br",
+            "col",
+            "command",
+            "embed",
+            "frame",
+            "hr",
+            "image",
+            "img",
+            "input",
+            "isindex",
+            "keygen",
+            "link",
+            "menuitem",
+            "meta",
+            "nextid",
+            "param",
+            "source",
+            "track",
+            "wbr",
+        }
+    )
     """Tags to handle as self-closing."""
 
     def __init__(self, omit_tags=None, omit_attrs=None):
@@ -160,7 +164,7 @@ class HTMLNormalizer(HTMLParser):
         else:
             super().__init__(convert_charrefs=True)
 
-        self.omit_tags = set(omit_tags) if omit_tags is not None else set()     # sig: Set[str]
+        self.omit_tags = set(omit_tags) if omit_tags is not None else set()  # sig: Set[str]
         self.omit_attrs = set(omit_attrs) if omit_attrs is not None else set()  # sig: Set[str]
 
         # stacks used during normalization
@@ -174,33 +178,36 @@ class HTMLNormalizer(HTMLParser):
             self._open_omitted_tags.append(tag)
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
-            if '@' in tag:
+            if "@" in tag:
                 # email address in angular brackets
-                print('&lt;%s&gt;' % tag, end='')
+                print("&lt;%s&gt;" % tag, end="")
                 return
-            if (tag == 'li') and (self._open_tags[-1] == 'li'):
+            if (tag == "li") and (self._open_tags[-1] == "li"):
                 _logger.debug('opened "li" without closing previous "li", adding closing tag')
-                self.handle_endtag('li')
+                self.handle_endtag("li")
             attributes = []
             for attr_name, attr_value in attrs:
                 if attr_name in self.omit_attrs:
                     _logger.debug('omitting "%s" attribute of "%s"', attr_name, tag)
                     continue
                 if attr_value is None:
-                    _logger.debug('no value for "%s" attribute of "%s", adding empty value',
-                                  attr_name, tag)
-                    attr_value = ''
+                    _logger.debug(
+                        'no value for "%s" attribute of "%s", adding empty value',
+                        attr_name,
+                        tag,
+                    )
+                    attr_value = ""
                 markup = '%(name)s="%(value)s"' % {
-                    'name': attr_name,
-                    'value': html_escape(attr_value, quote=True)
+                    "name": attr_name,
+                    "value": html_escape(attr_value, quote=True),
                 }
                 attributes.append(markup)
-            line = '<%(tag)s%(attrs)s%(slash)s>' % {
-                'tag': tag,
-                'attrs': (' ' + ' '.join(attributes)) if len(attributes) > 0 else '',
-                'slash': ' /' if tag in self.VOID_ELEMENTS else ''
+            line = "<%(tag)s%(attrs)s%(slash)s>" % {
+                "tag": tag,
+                "attrs": (" " + " ".join(attributes)) if len(attributes) > 0 else "",
+                "slash": " /" if tag in self.VOID_ELEMENTS else "",
             }
-            print(line, end='')
+            print(line, end="")
             if tag not in self.VOID_ELEMENTS:
                 self._open_tags.append(tag)
 
@@ -210,21 +217,22 @@ class HTMLNormalizer(HTMLParser):
             # stack empty -> not in omit mode
             if tag not in self.VOID_ELEMENTS:
                 last = self._open_tags[-1]
-                if (tag == 'ul') and (last == 'li'):
+                if (tag == "ul") and (last == "li"):
                     _logger.debug('closing "ul" without closing last "li", adding closing tag')
-                    self.handle_endtag('li')
+                    self.handle_endtag("li")
                 if tag == last:
                     # expected end tag
-                    print('</%(tag)s>' % {'tag': tag}, end='')
+                    print("</%(tag)s>" % {"tag": tag}, end="")
                     self._open_tags.pop()
                 elif tag not in self._open_tags:
                     _logger.debug('closing tag "%s" without opening tag', tag)
                     # XXX: for <a><b></a></b>, this case gets invoked after the case below
                 elif tag == self._open_tags[-2]:
-                    _logger.debug('unexpected closing tag "%s" instead of "%s", closing both',
-                                  tag, last)
-                    print('</%(tag)s>' % {'tag': last}, end='')
-                    print('</%(tag)s>' % {'tag': tag}, end='')
+                    _logger.debug(
+                        'unexpected closing tag "%s" instead of "%s", closing both', tag, last
+                    )
+                    print("</%(tag)s>" % {"tag": last}, end="")
+                    print("</%(tag)s>" % {"tag": tag}, end="")
                     self._open_tags.pop()
                     self._open_tags.pop()
         elif (tag in self.omit_tags) and (tag == self._open_omitted_tags[-1]):
@@ -236,25 +244,25 @@ class HTMLNormalizer(HTMLParser):
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             line = html_escape(data)
-            print(line.decode('utf-8') if PY2 and isinstance(line, bytes) else line, end='')
+            print(line.decode("utf-8") if PY2 and isinstance(line, bytes) else line, end="")
 
     def handle_entityref(self, name):
         """Process an entity reference."""
         # XXX: doesn't get called if convert_charrefs=True
         num = name2codepoint.get(name)  # we are sure we're on PY2 here
         if num is not None:
-            print('&#%(ref)d;' % {'ref': num}, end='')
+            print("&#%(ref)d;" % {"ref": num}, end="")
 
     def handle_charref(self, name):
         """Process a character reference."""
         # XXX: doesn't get called if convert_charrefs=True
-        print('&#%(ref)s;' % {'ref': name}, end='')
+        print("&#%(ref)s;" % {"ref": name}, end="")
 
     # def feed(self, data):
-        # super().feed(data)
-        # # close all remaining open tags
-        # for tag in reversed(self._open_tags):
-        #     print('</%(tag)s>' % {'tag': tag}, end='')
+    # super().feed(data)
+    # # close all remaining open tags
+    # for tag in reversed(self._open_tags):
+    #     print('</%(tag)s>' % {'tag': tag}, end='')
 
 
 def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
@@ -281,9 +289,9 @@ def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
 # sigalias: XPathResult = Union[Sequence[str], Sequence[Element]]
 
 
-_USE_LXML = find_loader('lxml') is not None
+_USE_LXML = find_loader("lxml") is not None
 if _USE_LXML:
-    _logger.info('using lxml')
+    _logger.info("using lxml")
     from lxml import etree as ElementTree
     from lxml.etree import Element
 
@@ -306,38 +314,43 @@ else:
             :sig: (str) -> None
             :param path: XPath expression to evaluate.
             """
+
             def descendant(element):
                 # strip trailing '//text()'
                 return [t for e in element.findall(path[:-8]) for t in e.itertext() if t]
 
             def child(element):
                 # strip trailing '/text()'
-                return [t for e in element.findall(path[:-7])
-                        for t in ([e.text] + [c.tail if c.tail else '' for c in e]) if t]
+                return [
+                    t
+                    for e in element.findall(path[:-7])
+                    for t in ([e.text] + [c.tail if c.tail else "" for c in e])
+                    if t
+                ]
 
             def attribute(element, subpath, attr):
                 result = [e.attrib.get(attr) for e in element.findall(subpath)]
                 return [r for r in result if r is not None]
 
-            if path[0] == '/':
+            if path[0] == "/":
                 # ElementTree doesn't support absolute paths
                 # TODO: handle this properly, find root of tree
-                path = '.' + path
+                path = "." + path
 
-            if path.endswith('//text()'):
+            if path.endswith("//text()"):
                 _apply = descendant
-            elif path.endswith('/text()'):
+            elif path.endswith("/text()"):
                 _apply = child
             else:
-                steps = path.split('/')
+                steps = path.split("/")
                 front, last = steps[:-1], steps[-1]
                 # after dropping PY2: *front, last = path.split('/')
-                if last.startswith('@'):
-                    _apply = partial(attribute, subpath='/'.join(front), attr=last[1:])
+                if last.startswith("@"):
+                    _apply = partial(attribute, subpath="/".join(front), attr=last[1:])
                 else:
                     _apply = partial(Element.findall, path=path)
 
-            self._apply = _apply    # sig: Callable[[Element], XPathResult]
+            self._apply = _apply  # sig: Callable[[Element], XPathResult]
 
         def __call__(self, element):
             """Apply this evaluator to an element.
@@ -351,7 +364,7 @@ else:
     xpath = lambda e, p: XPath(p)(e)
 
 
-_EMPTY = {}     # empty result singleton
+_EMPTY = {}  # empty result singleton
 
 
 # sigalias: Reducer = Callable[[Sequence[str]], str]
@@ -384,7 +397,7 @@ class Extractor:
         :param element: Element to apply this extractor to.
         :return: Extracted raw data.
         """
-        raise NotImplementedError('Concrete extractors must implement this method')
+        raise NotImplementedError("Concrete extractors must implement this method")
 
     def extract(self, element, transform=True):
         """Get the processed data from an element using this extractor.
@@ -408,32 +421,33 @@ class Extractor:
         :return: Extractor object.
         :raise ValueError: When reducer or transformer names are unknown.
         """
-        transformer = item.get('transform')
+        transformer = item.get("transform")
         if transformer is None:
             transform = None
         else:
             transform = transformers.get(transformer)
             if transform is None:
-                raise ValueError('Unknown transformer')
+                raise ValueError("Unknown transformer")
 
-        foreach = item.get('foreach')
+        foreach = item.get("foreach")
 
-        path = item.get('path')
+        path = item.get("path")
         if path is not None:
-            reducer = item.get('reduce')
+            reducer = item.get("reduce")
             if reducer is None:
                 reduce = None
             else:
                 reduce = reducers.get(reducer)
                 if reduce is None:
-                    raise ValueError('Unknown reducer')
+                    raise ValueError("Unknown reducer")
             extractor = Path(path, reduce, transform=transform, foreach=foreach)
         else:
-            items = item.get('items')
+            items = item.get("items")
             # TODO: check for None
             rules = [Rule.from_map(i) for i in items]
-            extractor = Rules(rules, section=item.get('section'),
-                              transform=transform, foreach=foreach)
+            extractor = Rules(
+                rules, section=item.get("section"), transform=transform, foreach=foreach
+            )
 
         return extractor
 
@@ -460,13 +474,13 @@ class Path(Extractor):
         else:
             super().__init__(transform=transform, foreach=foreach)
 
-        self.path = XPath(path)     # sig: XPath
+        self.path = XPath(path)  # sig: XPath
         """XPath evaluator to apply to get the data."""
 
         if reduce is None:
             reduce = reducers.concat
 
-        self.reduce = reduce        # sig: Reducer
+        self.reduce = reduce  # sig: Reducer
         """Function to reduce selected texts into a single string."""
 
     def apply(self, element):
@@ -529,12 +543,12 @@ class Rules(Extractor):
         else:
             subroots = self.section(element)
             if len(subroots) == 0:
-                _logger.debug('No section root found')
+                _logger.debug("No section root found")
                 return _EMPTY
             if len(subroots) > 1:
-                raise ValueError('Section path should select exactly one element')
+                raise ValueError("Section path should select exactly one element")
             subroot = subroots[0]
-            _logger.debug('Moving root to %s element', subroot.tag)
+            _logger.debug("Moving root to %s element", subroot.tag)
 
         data = {}
         for rule in self.rules:
@@ -554,7 +568,7 @@ class Rule:
         :param extractor: Extractor that will generate this data item.
         :param foreach: Path for generating multiple items.
         """
-        self.key = key              # sig: Union[str, Extractor]
+        self.key = key  # sig: Union[str, Extractor]
         """Name to distinguish this data item."""
 
         self.extractor = extractor  # sig: Extractor
@@ -571,10 +585,10 @@ class Rule:
         :param item: Item description.
         :return: Rule object.
         """
-        item_key = item['key']
+        item_key = item["key"]
         key = item_key if isinstance(item_key, str) else Extractor.from_map(item_key)
-        value = Extractor.from_map(item['value'])
-        return Rule(key=key, extractor=value, foreach=item.get('foreach'))
+        value = Extractor.from_map(item["value"])
+        return Rule(key=key, extractor=value, foreach=item.get("foreach"))
 
     def extract(self, element):
         """Extract data out of an element using this rule.
@@ -603,14 +617,19 @@ class Rule:
                 # _logger.debug('extracted value for "%s": "%s"', key, data[key])
             else:
                 # don't try to transform list items by default, it might waste a lot of time
-                raw_values = [self.extractor.extract(r, transform=False)
-                              for r in self.extractor.foreach(subroot)]
+                raw_values = [
+                    self.extractor.extract(r, transform=False)
+                    for r in self.extractor.foreach(subroot)
+                ]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
                 if len(values) == 0:
                     # _logger.debug('no items found in list')
                     continue
-                data[key] = values if self.extractor.transform is None else \
-                    list(map(self.extractor.transform, values))
+                data[key] = (
+                    values
+                    if self.extractor.transform is None
+                    else list(map(self.extractor.transform, values))
+                )
                 # _logger.debug('extracted value for "%s": "%s"', key, data[key])
         return data
 
@@ -626,10 +645,10 @@ def remove_elements(root, path):
         get_parent = ElementTree._Element.getparent
     else:
         # ElementTree doesn't support parent queries, so we'll build a map for it
-        get_parent = root.attrib.get('_get_parent')
+        get_parent = root.attrib.get("_get_parent")
         if get_parent is None:
             get_parent = {e: p for p in root.iter() for e in p}.get
-            root.attrib['_get_parent'] = get_parent
+            root.attrib["_get_parent"] = get_parent
     elements = XPath(path)(root)
     _logger.debug('removing %s elements using path: "%s"', len(elements), path)
     if len(elements) > 0:
@@ -657,20 +676,21 @@ def set_element_attr(root, path, name, value):
     elements = XPath(path)(root)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
-        attr_name = name if isinstance(name, str) else \
-            Extractor.from_map(name).extract(element)
+        attr_name = name if isinstance(name, str) else Extractor.from_map(name).extract(element)
         if attr_name is None:
             _logger.debug('no attribute name generated for "%s" element', element.tag)
             continue
 
-        attr_value = value if isinstance(value, str) else \
-            Extractor.from_map(value).extract(element)
+        attr_value = (
+            value if isinstance(value, str) else Extractor.from_map(value).extract(element)
+        )
         if attr_value is None:
             _logger.debug('no attribute value generated for "%s" element', element.tag)
             continue
 
-        _logger.debug('setting "%s" attribute to "%s" on "%s" element',
-                      attr_name, attr_value, element.tag)
+        _logger.debug(
+            'setting "%s" attribute to "%s" on "%s" element', attr_name, attr_value, element.tag
+        )
         element.attrib[attr_name] = attr_value
 
 
@@ -685,8 +705,9 @@ def set_element_text(root, path, text):
     elements = XPath(path)(root)
     _logger.debug('updating %s elements using path: "%s"', len(elements), path)
     for element in elements:
-        element_text = text if isinstance(text, str) else \
-            Extractor.from_map(text).extract(element)
+        element_text = (
+            text if isinstance(text, str) else Extractor.from_map(text).extract(element)
+        )
         # note that the text can be None in which case the existing text will be cleared
         _logger.debug('setting text to "%s" on "%s" element', element_text, element.tag)
         element.text = element_text
@@ -700,10 +721,11 @@ def build_tree(document, force_html=False):
     :param force_html: Force to parse from HTML without converting.
     :return: Root element of the XML tree.
     """
-    content = document.encode('utf-8') if PY2 else document
+    content = document.encode("utf-8") if PY2 else document
     if _USE_LXML and force_html:
-        _logger.info('using lxml html builder')
+        _logger.info("using lxml html builder")
         import lxml.html
+
         return lxml.html.fromstring(content)
     return ElementTree.fromstring(content)
 
@@ -739,40 +761,40 @@ class Registry:
 
 
 _PREPROCESSORS = {
-    'remove': remove_elements,
-    'set_attr': set_element_attr,
-    'set_text': set_element_text
+    "remove": remove_elements,
+    "set_attr": set_element_attr,
+    "set_text": set_element_text,
 }
 
-preprocessors = Registry(_PREPROCESSORS)    # sig: Registry
+preprocessors = Registry(_PREPROCESSORS)  # sig: Registry
 """Predefined preprocessors."""
 
 
 _REDUCERS = {
-    'first': itemgetter(0),
-    'concat': partial(str.join, ''),
-    'clean': lambda xs: re.sub(r'\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
-    'normalize': lambda xs: re.sub(r'[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
+    "first": itemgetter(0),
+    "concat": partial(str.join, ""),
+    "clean": lambda xs: re.sub(r"\s+", " ", "".join(xs).replace("\xa0", " ")).strip(),
+    "normalize": lambda xs: re.sub(r"[^a-z0-9_]", "", "".join(xs).lower().replace(" ", "_")),
 }
 
-reducers = Registry(_REDUCERS)              # sig: Registry
+reducers = Registry(_REDUCERS)  # sig: Registry
 """Predefined reducers."""
 
 
 _TRANSFORMERS = {
-    'int': int,
-    'float': float,
-    'bool': bool,
-    'len': len,
-    'lower': str.lower,
-    'upper': str.upper,
-    'capitalize': str.capitalize,
-    'lstrip': str.lstrip,
-    'rstrip': str.rstrip,
-    'strip': str.strip
+    "int": int,
+    "float": float,
+    "bool": bool,
+    "len": len,
+    "lower": str.lower,
+    "upper": str.upper,
+    "capitalize": str.capitalize,
+    "lstrip": str.lstrip,
+    "rstrip": str.rstrip,
+    "strip": str.strip,
 }
 
-transformers = Registry(_TRANSFORMERS)      # sig: Registry
+transformers = Registry(_TRANSFORMERS)  # sig: Registry
 """Predefined transformers."""
 
 
@@ -784,15 +806,15 @@ def preprocess(root, pre):
     :param pre: Descriptions for processing operations.
     """
     for step in pre:
-        op = step['op']
-        if op == 'remove':
-            remove_elements(root, step['path'])
-        elif op == 'set_attr':
-            set_element_attr(root, step['path'], name=step['name'], value=step['value'])
-        elif op == 'set_text':
-            set_element_text(root, step['path'], text=step['text'])
+        op = step["op"]
+        if op == "remove":
+            remove_elements(root, step["path"])
+        elif op == "set_attr":
+            set_element_attr(root, step["path"], name=step["name"], value=step["value"])
+        elif op == "set_text":
+            set_element_text(root, step["path"], text=step["text"])
         else:
-            raise ValueError('Unknown preprocessing operation')
+            raise ValueError("Unknown preprocessing operation")
 
 
 def extract(element, items, section=None):
@@ -822,10 +844,10 @@ def scrape(document, spec):
     :return: Extracted data.
     """
     root = build_tree(document)
-    pre = spec.get('pre')
+    pre = spec.get("pre")
     if pre is not None:
         preprocess(root, pre)
-    data = extract(root, spec.get('items'), section=spec.get('section'))
+    data = extract(root, spec.get("items"), section=spec.get("section"))
     return data
 
 
@@ -840,17 +862,17 @@ def h2x(source):
     :sig: (str) -> None
     :param source: Path of HTML file to convert.
     """
-    if source == '-':
-        _logger.debug('reading from stdin')
+    if source == "-":
+        _logger.debug("reading from stdin")
         content = sys.stdin.read()
     else:
         _logger.debug('reading from file: "%s"', os.path.abspath(source))
-        with open(source, 'rb') as f:
+        with open(source, "rb") as f:
             content = decode_html(f.read())
-    print(html_to_xhtml(content), end='')
+    print(html_to_xhtml(content), end="")
 
 
-def scrape_document(address, spec, content_format='xml'):
+def scrape_document(address, spec, content_format="xml"):
     """Scrape data from a file path or a URL and print.
 
     :sig: (str, str, Optional[str]) -> None
@@ -859,10 +881,11 @@ def scrape_document(address, spec, content_format='xml'):
     :param content_format: Whether the content is XML or HTML.
     """
     _logger.debug('loading spec from file: "%s"', os.path.abspath(spec))
-    if os.path.splitext(spec)[-1] == '.yaml':
-        if find_loader('yaml') is None:
-            raise RuntimeError('YAML support not available')
+    if os.path.splitext(spec)[-1] == ".yaml":
+        if find_loader("yaml") is None:
+            raise RuntimeError("YAML support not available")
         import yaml
+
         spec_loader = yaml.load
     else:
         spec_loader = json.loads
@@ -870,18 +893,18 @@ def scrape_document(address, spec, content_format='xml'):
     with open(spec) as f:
         spec_map = spec_loader(f.read())
 
-    if address.startswith(('http://', 'https://')):
+    if address.startswith(("http://", "https://")):
         _logger.debug('loading url: "%s"', address)
         with urlopen(address) as f:
             content = f.read()
     else:
         _logger.debug('loading file: "%s"', os.path.abspath(address))
-        with open(address, 'rb') as f:
+        with open(address, "rb") as f:
             content = f.read()
     document = decode_html(content)
 
-    if content_format == 'html':
-        _logger.debug('converting html document to xhtml')
+    if content_format == "html":
+        _logger.debug("converting html document to xhtml")
         document = html_to_xhtml(document)
         # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
 
@@ -897,23 +920,25 @@ def make_parser(prog):
     :return: Parser for arguments.
     """
     parser = ArgumentParser(prog=prog)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
-    parser.add_argument('--debug', action='store_true', help='enable debug messages')
+    parser.add_argument("--version", action="version", version="%(prog)s 1.0")
+    parser.add_argument("--debug", action="store_true", help="enable debug messages")
 
-    commands = parser.add_subparsers(metavar='command', dest='command')
+    commands = parser.add_subparsers(metavar="command", dest="command")
     commands.required = True
 
-    h2x_parser = commands.add_parser('h2x', help='convert HTML to XHTML')
-    h2x_parser.add_argument('file', help='file to convert')
+    h2x_parser = commands.add_parser("h2x", help="convert HTML to XHTML")
+    h2x_parser.add_argument("file", help="file to convert")
     h2x_parser.set_defaults(func=lambda a: h2x(a.file))
 
-    scrape_parser = commands.add_parser('scrape', help='scrape a document')
-    scrape_parser.add_argument('document', help='file path or URL of document to scrape')
-    scrape_parser.add_argument('-s', '--spec', required=True, help='spec file')
-    scrape_parser.add_argument('--html', action='store_true', help='document is in HTML format')
-    scrape_parser.set_defaults(func=lambda a: scrape_document(
-        a.document, a.spec, content_format='html' if a.html else 'xml'
-    ))
+    scrape_parser = commands.add_parser("scrape", help="scrape a document")
+    scrape_parser.add_argument("document", help="file path or URL of document to scrape")
+    scrape_parser.add_argument("-s", "--spec", required=True, help="spec file")
+    scrape_parser.add_argument("--html", action="store_true", help="document is in HTML format")
+    scrape_parser.set_defaults(
+        func=lambda a: scrape_document(
+            a.document, a.spec, content_format="html" if a.html else "xml"
+        )
+    )
 
     return parser
 
@@ -925,13 +950,13 @@ def main(argv=None):
     :param argv: Command line arguments.
     """
     argv = argv if argv is not None else sys.argv
-    parser = make_parser(prog='piculet')
+    parser = make_parser(prog="piculet")
     arguments = parser.parse_args(argv[1:])
 
     # set debug mode
     if arguments.debug:
         logging.basicConfig(level=logging.DEBUG)
-        _logger.debug('running in debug mode')
+        _logger.debug("running in debug mode")
 
     # run the handler for the selected command
     try:
@@ -941,5 +966,5 @@ def main(argv=None):
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
