@@ -174,7 +174,7 @@ class HTMLNormalizer(HTMLParser):
     def handle_starttag(self, tag, attrs):
         """Process the starting of a new element."""
         if tag in self.omit_tags:
-            _logger.debug("omitting: <%s>", tag)
+            _logger.debug("omitting starting tag: <%s>", tag)
             self._open_omitted_tags.append(tag)
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
@@ -183,16 +183,16 @@ class HTMLNormalizer(HTMLParser):
                 print("&lt;%s&gt;" % tag, end="")
                 return
             if (tag == "li") and (self._open_tags[-1] == "li"):
-                _logger.debug("opened <li> without closing previous <li>, adding closing tag")
+                _logger.debug("opened <li> without closing previous <li>, adding </li>")
                 self.handle_endtag("li")
             attributes = []
             for attr_name, attr_value in attrs:
                 if attr_name in self.omit_attrs:
-                    _logger.debug("omitting %s attribute of <%s>", attr_name, tag)
+                    _logger.debug("omitting attribute of <%s>: %s", tag, attr_name)
                     continue
                 if attr_value is None:
                     _logger.debug(
-                        "no value for %s attribute of <%s>, adding empty value", attr_name, tag
+                        "adding empty value for attribute of <%s>: %s", tag, attr_name
                     )
                     attr_value = ""
                 markup = '%(name)s="%(value)s"' % {
@@ -216,14 +216,14 @@ class HTMLNormalizer(HTMLParser):
             if tag not in self.VOID_ELEMENTS:
                 last = self._open_tags[-1]
                 if (tag == "ul") and (last == "li"):
-                    _logger.debug("closing <ul> without closing last <li>, adding closing tag")
+                    _logger.debug("closing <ul> without closing last <li>, adding </li>")
                     self.handle_endtag("li")
                 if tag == last:
                     # expected end tag
                     print("</%(tag)s>" % {"tag": tag}, end="")
                     self._open_tags.pop()
                 elif tag not in self._open_tags:
-                    _logger.debug("closing tag <%s> without opening tag", tag)
+                    _logger.debug("closing tag without opening tag: <%s>", tag)
                     # XXX: for <a><b></a></b>, this case gets invoked after the case below
                 elif tag == self._open_tags[-2]:
                     _logger.debug(
@@ -488,7 +488,7 @@ class Path(Extractor):
         :param element: Element to apply this extractor to.
         :return: Extracted text.
         """
-        # _logger.debug('applying path "%s" on element <%s>', self.path, element.tag)
+        # _logger.debug("applying path on <%s>: %s", element.tag, self.path)
         selected = self.path(element)
         if len(selected) == 0:
             # _logger.debug("no match")
@@ -546,7 +546,7 @@ class Rules(Extractor):
             if len(subroots) > 1:
                 raise ValueError("Section path should select exactly one element")
             subroot = subroots[0]
-            _logger.debug("setting root to <%s> element", subroot.tag)
+            _logger.debug("setting root: <%s>", subroot.tag)
 
         data = {}
         for rule in self.rules:
@@ -598,7 +598,7 @@ class Rule:
         data = {}
         subroots = [element] if self.foreach is None else self.foreach(element)
         for subroot in subroots:
-            # _logger.debug("setting section element to: <%s>", subroot.tag)
+            # _logger.debug("setting section element: <%s>", subroot.tag)
 
             key = self.key if isinstance(self.key, str) else self.key.extract(subroot)
             if key is None:
@@ -648,7 +648,7 @@ def remove_elements(root, path):
             get_parent = {e: p for p in root.iter() for e in p}.get
             root.attrib["_get_parent"] = get_parent
     elements = XPath(path)(root)
-    _logger.debug('removing %s elements using path: "%s"', len(elements), path)
+    _logger.debug("removing %s elements using path: %s", len(elements), path)
     if len(elements) > 0:
         for element in elements:
             _logger.debug("removing element: <%s>", element.tag)
@@ -672,23 +672,21 @@ def set_element_attr(root, path, name, value):
     :param value: Description for value generation.
     """
     elements = XPath(path)(root)
-    _logger.debug('updating %s elements using path: "%s"', len(elements), path)
+    _logger.debug("updating %s elements using path: %s", len(elements), path)
     for element in elements:
         attr_name = name if isinstance(name, str) else Extractor.from_map(name).extract(element)
         if attr_name is None:
-            _logger.debug("no attribute name generated for <%s> element", element.tag)
+            _logger.debug("no attribute name generated for <%s>:", element.tag)
             continue
 
         attr_value = (
             value if isinstance(value, str) else Extractor.from_map(value).extract(element)
         )
         if attr_value is None:
-            _logger.debug("no attribute value generated for <%s> element", element.tag)
+            _logger.debug("no attribute value generated for <%s>:", element.tag)
             continue
 
-        _logger.debug(
-            "setting %s attribute to %s on <%s> element", attr_name, attr_value, element.tag
-        )
+        _logger.debug("setting %s attribute of <%s>: %s", attr_name, element.tag, attr_value)
         element.attrib[attr_name] = attr_value
 
 
@@ -701,13 +699,13 @@ def set_element_text(root, path, text):
     :param text: Description for text generation.
     """
     elements = XPath(path)(root)
-    _logger.debug('updating %s elements using path: "%s"', len(elements), path)
+    _logger.debug("updating %s elements using path: %s", len(elements), path)
     for element in elements:
         element_text = (
             text if isinstance(text, str) else Extractor.from_map(text).extract(element)
         )
         # note that the text can be None in which case the existing text will be cleared
-        _logger.debug('setting text to "%s" on <%s> element', element_text, element.tag)
+        _logger.debug("setting text of <%s>: %s", element.tag, element_text)
         element.text = element_text
 
 
