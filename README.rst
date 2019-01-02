@@ -9,8 +9,8 @@ to integrate into applications. It also provides a command line interface.
 :Repository: https://github.com/uyar/piculet
 :Documentation: https://piculet.readthedocs.io/
 
-Piculet has been tested with Python 2.7, Python 3.4+, PyPy2 5.7+,
-and PyPy3 5.7+. You can install the latest version using ``pip``::
+Piculet has been tested with Python 2.7, Python 3.4+, and compatible
+versions of PyPy. You can install the latest version using ``pip``::
 
     pip install piculet
 
