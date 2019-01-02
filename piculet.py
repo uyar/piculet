@@ -488,15 +488,15 @@ class Path(Extractor):
         :param element: Element to apply this extractor to.
         :return: Extracted text.
         """
-        # _logger.debug('applying path "%s" on "%s" element', self.path, element.tag)
+        # _logger.debug('applying path "%s" on element <%s>', self.path, element.tag)
         selected = self.path(element)
         if len(selected) == 0:
-            # _logger.debug('no match')
+            # _logger.debug("no match")
             value = None
         else:
-            # _logger.debug('selected elements: "%s"', selected)
+            # _logger.debug("selected elements: %s", selected)
             value = self.reduce(selected)
-            # _logger.debug('reduced using "%s": "%s"', self.reduce, value)
+            # _logger.debug("reduced using %s: %s", self.reduce, value)
         return value
 
 
@@ -541,12 +541,12 @@ class Rules(Extractor):
         else:
             subroots = self.section(element)
             if len(subroots) == 0:
-                _logger.debug("No section root found")
+                _logger.debug("no section root found")
                 return _EMPTY
             if len(subroots) > 1:
                 raise ValueError("Section path should select exactly one element")
             subroot = subroots[0]
-            _logger.debug("Moving root to %s element", subroot.tag)
+            _logger.debug("setting root to <%s> element", subroot.tag)
 
         data = {}
         for rule in self.rules:
@@ -598,21 +598,21 @@ class Rule:
         data = {}
         subroots = [element] if self.foreach is None else self.foreach(element)
         for subroot in subroots:
-            # _logger.debug('setting section element to: "%s"', section.tag)
+            # _logger.debug("setting section element to: <%s>", subroot.tag)
 
             key = self.key if isinstance(self.key, str) else self.key.extract(subroot)
             if key is None:
-                # _logger.debug('no value generated for key name')
+                # _logger.debug("no value generated for key name")
                 continue
-            # _logger.debug('extracting key: "%s"', key)
+            # _logger.debug("extracting key: %s", key)
 
             if self.extractor.foreach is None:
                 value = self.extractor.extract(subroot)
                 if (value is None) or (value is _EMPTY):
-                    # _logger.debug('no value generated for key')
+                    # _logger.debug("no value generated for key")
                     continue
                 data[key] = value
-                # _logger.debug('extracted value for "%s": "%s"', key, data[key])
+                # _logger.debug("extracted value for %s: %s", key, data[key])
             else:
                 # don't try to transform list items by default, it might waste a lot of time
                 raw_values = [
@@ -621,14 +621,14 @@ class Rule:
                 ]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
                 if len(values) == 0:
-                    # _logger.debug('no items found in list')
+                    # _logger.debug("no items found in list")
                     continue
                 data[key] = (
                     values
                     if self.extractor.transform is None
                     else list(map(self.extractor.transform, values))
                 )
-                # _logger.debug('extracted value for "%s": "%s"', key, data[key])
+                # _logger.debug("extracted value for %s: %s", key, data[key])
         return data
 
 
@@ -651,7 +651,7 @@ def remove_elements(root, path):
     _logger.debug('removing %s elements using path: "%s"', len(elements), path)
     if len(elements) > 0:
         for element in elements:
-            _logger.debug('removing element: "%s"', element.tag)
+            _logger.debug("removing element: <%s>", element.tag)
             # XXX: could this be hazardous? parent removed in earlier iteration?
             get_parent(element).remove(element)
 
@@ -676,18 +676,18 @@ def set_element_attr(root, path, name, value):
     for element in elements:
         attr_name = name if isinstance(name, str) else Extractor.from_map(name).extract(element)
         if attr_name is None:
-            _logger.debug('no attribute name generated for "%s" element', element.tag)
+            _logger.debug("no attribute name generated for <%s> element", element.tag)
             continue
 
         attr_value = (
             value if isinstance(value, str) else Extractor.from_map(value).extract(element)
         )
         if attr_value is None:
-            _logger.debug('no attribute value generated for "%s" element', element.tag)
+            _logger.debug("no attribute value generated for <%s> element", element.tag)
             continue
 
         _logger.debug(
-            'setting "%s" attribute to "%s" on "%s" element', attr_name, attr_value, element.tag
+            "setting %s attribute to %s on <%s> element", attr_name, attr_value, element.tag
         )
         element.attrib[attr_name] = attr_value
 
@@ -707,7 +707,7 @@ def set_element_text(root, path, text):
             text if isinstance(text, str) else Extractor.from_map(text).extract(element)
         )
         # note that the text can be None in which case the existing text will be cleared
-        _logger.debug('setting text to "%s" on "%s" element', element_text, element.tag)
+        _logger.debug('setting text to "%s" on <%s> element', element_text, element.tag)
         element.text = element_text
 
 
@@ -864,7 +864,7 @@ def h2x(source):
         _logger.debug("reading from stdin")
         content = sys.stdin.read()
     else:
-        _logger.debug('reading from file: "%s"', os.path.abspath(source))
+        _logger.debug("reading from file: %s", os.path.abspath(source))
         with open(source, "rb") as f:
             content = decode_html(f.read())
     print(html_to_xhtml(content), end="")
@@ -878,7 +878,7 @@ def scrape_document(address, spec, content_format="xml"):
     :param spec: Path of spec file.
     :param content_format: Whether the content is XML or HTML.
     """
-    _logger.debug('loading spec from file: "%s"', os.path.abspath(spec))
+    _logger.debug("loading spec from file: %s", os.path.abspath(spec))
     if os.path.splitext(spec)[-1] == ".yaml":
         if find_loader("yaml") is None:
             raise RuntimeError("YAML support not available")
@@ -892,11 +892,11 @@ def scrape_document(address, spec, content_format="xml"):
         spec_map = spec_loader(f.read())
 
     if address.startswith(("http://", "https://")):
-        _logger.debug('loading url: "%s"', address)
+        _logger.debug("loading url: %s", address)
         with urlopen(address) as f:
             content = f.read()
     else:
-        _logger.debug('loading file: "%s"', os.path.abspath(address))
+        _logger.debug("loading file: %s", os.path.abspath(address))
         with open(address, "rb") as f:
             content = f.read()
     document = decode_html(content)
