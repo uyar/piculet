@@ -108,12 +108,12 @@ def decode_html(content, charset=None, fallback_charset="utf-8"):
                 charset_start = start + len(tag)
                 charset_end = content.find(b'"', charset_start)
                 charset = content[charset_start:charset_end].decode("ascii")
-                _logger.debug('charset found in <meta>: "%s"', charset)
+                _logger.debug("charset found in <meta>: %s", charset)
                 break
         else:
-            _logger.debug('charset not found, using fallback: "%s"', fallback_charset)
+            _logger.debug("charset not found, using fallback: %s", fallback_charset)
             charset = fallback_charset
-    _logger.debug('decoding for charset: "%s"', charset)
+    _logger.debug("decoding for charset: %s", charset)
     return content.decode(charset)
 
 
@@ -188,13 +188,11 @@ class HTMLNormalizer(HTMLParser):
             attributes = []
             for attr_name, attr_value in attrs:
                 if attr_name in self.omit_attrs:
-                    _logger.debug('omitting "%s" attribute of <%s>', attr_name, tag)
+                    _logger.debug("omitting %s attribute of <%s>", attr_name, tag)
                     continue
                 if attr_value is None:
                     _logger.debug(
-                        'no value for "%s" attribute of <%s>, adding empty value',
-                        attr_name,
-                        tag,
+                        "no value for %s attribute of <%s>, adding empty value", attr_name, tag
                     )
                     attr_value = ""
                 markup = '%(name)s="%(value)s"' % {
