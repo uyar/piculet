@@ -1,5 +1,6 @@
 *.pyc
 *.egg-info
+__pycache__
 
 .cache
 .pytest_cache
@@ -7,7 +8,6 @@
 .tox
 .venv
 
-_build
 build
 dist
 prof
