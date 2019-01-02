@@ -727,8 +727,8 @@ preprocessors = Registry(_PREPROCESSORS)    # sig: Registry
 _REDUCERS = {
     'first': itemgetter(0),
     'concat': partial(str.join, ''),
-    'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
-    'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
+    'clean': lambda xs: re.sub(r'\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
+    'normalize': lambda xs: re.sub(r'[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
 }
 
 reducers = Registry(_REDUCERS)              # sig: Registry
