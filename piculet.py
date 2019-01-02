@@ -17,7 +17,6 @@
 
 It consists of this single source file with no dependencies other than
 the standard library, which makes it very easy to integrate into applications.
-It has been tested with Python 2.7, Python 3.4+, PyPy2 5.7+, and PyPy3 5.7+.
 
 For more information, please refer to the documentation:
 https://piculet.readthedocs.io/
