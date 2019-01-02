@@ -28,20 +28,20 @@ else:
 logging.raiseExceptions = False
 
 
-cache_dir = os.path.join(os.path.dirname(__file__), '.cache')
+cache_dir = os.path.join(os.path.dirname(__file__), ".cache")
 if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
 
 
 def mock_urlopen(url):
-    key = md5(url.encode('utf-8')).hexdigest()
+    key = md5(url.encode("utf-8")).hexdigest()
     cache_file = os.path.join(cache_dir, key)
     if not os.path.exists(cache_file):
         content = urlopen(url).read()
-        with open(cache_file, 'wb') as f:
+        with open(cache_file, "wb") as f:
             f.write(content)
     else:
-        with open(cache_file, 'rb') as f:
+        with open(cache_file, "rb") as f:
             content = f.read()
     return BytesIO(content)
 
@@ -49,10 +49,10 @@ def mock_urlopen(url):
 piculet.urlopen = mock.Mock(wraps=mock_urlopen)
 
 
-@fixture(scope='session')
+@fixture(scope="session")
 def shining_content():
     """Contents of the shining.html file."""
-    file_path = os.path.join(os.path.dirname(__file__), '..', 'examples', 'shining.html')
+    file_path = os.path.join(os.path.dirname(__file__), "..", "examples", "shining.html")
     with open(file_path) as f:
         content = f.read()
     return content
