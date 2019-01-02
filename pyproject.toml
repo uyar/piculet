@@ -1,0 +1,90 @@
+[tool.poetry]
+name = "piculet"
+version = "1.0"
+description = "XML/HTML scraper using XPath queries."
+readme = "README.rst"
+
+authors = ["H. Turgut Uyar <uyar@tekir.org>"]
+license = "LGPL-3.0+"
+
+url = "https://github.com/uyar/piculet"
+documentation = "https://piculet.readthedocs.io/"
+repository = "https://github.com/uyar/piculet"
+
+keywords = ["xml", "html", "xpath", "scrape"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.4",
+    "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Topic :: Text Processing :: Markup :: XML",
+    "Topic :: Utilities"
+]
+
+include = ["HISTORY.rst", "tests/**/*.py", "docs/source/**/*", "docs/Makefile"]
+
+[tool.poetry.dependencies]
+python = "^3.4|^2.7"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.4"
+pytest-cov = "^2.6"
+flake8 = "^3.6"
+flake8-isort = "^2.6"
+flake8-docstrings = "^1.3"
+sphinx = "^1.8"
+sphinx_rtd_theme = "^0.4.2"
+pygenstub = "^1.2"
+
+[tool.poetry.scripts]
+piculet = "piculet:main"
+
+[tool.black]
+line-length = 96
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py{37,36,35,34,27}{,-lxml}, pypy{3,}{,-lxml}, style, docs
+skipsdist = True
+
+[testenv]
+whitelist_externals = poetry
+skip_install = true
+deps =
+    lxml: lxml
+    py27: mock
+    pypy: mock
+commands =
+    poetry install -v
+    poetry run {posargs:pytest}
+
+[testenv:style]
+whitelist_externals = poetry
+skip_install = true
+commands =
+    poetry install -v
+    poetry run flake8 piculet.py
+
+[testenv:docs]
+whitelist_externals = poetry
+skip_install = true
+changedir = docs/
+commands =
+    poetry install -v
+    poetry run sphinx-build -b html source/ build/html/
+"""
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
