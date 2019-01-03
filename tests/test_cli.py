@@ -23,6 +23,10 @@ base_dir = os.path.dirname(__file__)
 wikipedia_spec = os.path.join(base_dir, "..", "examples", "wikipedia.json")
 
 
+def test_version():
+    assert get_distribution("piculet").version == piculet.__version__
+
+
 def test_help_should_print_usage_and_exit(capsys):
     with raises(SystemExit):
         piculet.main(argv=["piculet", "--help"])

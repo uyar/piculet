@@ -57,7 +57,9 @@ class Extractor:
     transform = ...  # type: Optional[Transformer]
     foreach = ...  # type: Optional[XPath]
     def __init__(
-        self, transform: Optional[Transformer] = ..., foreach: Optional[str] = ...
+        self,
+        transform: Optional[Transformer] = ...,
+        foreach: Optional[str] = ...,
     ) -> None: ...
     def apply(self, element: Element) -> ExtractedItem: ...
     def extract(

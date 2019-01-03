@@ -36,6 +36,9 @@ from operator import itemgetter
 from pkgutil import find_loader
 
 
+__version__ = "1.0"
+
+
 PY2 = sys.version_info < (3, 0)
 
 
@@ -915,7 +918,7 @@ def make_parser(prog):
     :return: Parser for arguments.
     """
     parser = ArgumentParser(prog=prog)
-    parser.add_argument("--version", action="version", version="%(prog)s 1.0")
+    parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
     parser.add_argument("--debug", action="store_true", help="enable debug messages")
 
     commands = parser.add_subparsers(metavar="command", dest="command")
