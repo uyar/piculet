@@ -314,6 +314,10 @@ else:
             :sig: (str) -> None
             :param path: XPath expression to evaluate.
             """
+            if path[0] == "/":
+                # ElementTree doesn't support absolute paths
+                # TODO: handle this properly, find root of tree
+                path = "." + path
 
             def descendant(element):
                 # strip trailing '//text()'
@@ -331,11 +335,6 @@ else:
             def attribute(element, subpath, attr):
                 result = [e.attrib.get(attr) for e in element.findall(subpath)]
                 return [r for r in result if r is not None]
-
-            if path[0] == "/":
-                # ElementTree doesn't support absolute paths
-                # TODO: handle this properly, find root of tree
-                path = "." + path
 
             if path.endswith("//text()"):
                 _apply = descendant
