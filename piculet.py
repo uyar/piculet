@@ -363,7 +363,7 @@ else:
     xpath = lambda e, p: XPath(p)(e)
 
 
-_EMPTY = {}  # empty result singleton
+_EMPTY = {}  # sig: Dict
 
 
 # sigalias: Reducer = Callable[[Sequence[str]], str]
