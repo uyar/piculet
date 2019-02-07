@@ -1,6 +1,12 @@
 History
 =======
 
+1.0.1 (2019-02-07)
+------------------
+
+- Accept both .yaml and .yml as valid YAML file extensions.
+- Documentation fixes.
+
 1.0 (2018-05-25)
 ----------------
 
