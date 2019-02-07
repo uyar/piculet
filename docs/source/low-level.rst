@@ -33,6 +33,19 @@ the :func:`html_to_xhtml <piculet.html_to_xhtml>` function:
    >>> converted = html_to_xhtml(document)
    >>> root = build_tree(converted)
 
+If lxml is available, you can use the ``lxml_html`` parameter for building
+the tree without converting an HTML document into XHTML:
+
+.. code-block:: python
+
+   >>> root = build_tree(document, lxml_html=True)
+
+.. note::
+
+   Note that if you use the lxml.html builder, there might be differences about
+   how the tree is built compared to the piculet conversion method and the path
+   queries for preprocessing and extraction might need changes.
+
 Preprocessing
 -------------
 
@@ -42,7 +55,7 @@ function:
 .. code-block:: python
 
    >>> from piculet import preprocess
-   >>> ops = [{'op': 'remove', 'path': '//div'}]
+   >>> ops = [{"op": "remove", "path": '//div[class="ad"]'}]
    >>> preprocess(root, ops)
 
 Data extraction
@@ -57,10 +70,11 @@ a reducer, and a transformer.
 
 .. code-block:: python
 
-   >>> from piculet import Path, Rule
+   >>> from piculet import Path, Rule, reducers, transformers
    >>> extractor = Path('//span[@class="year"]/text()',
-   ...                  reduce=reducers.first, transform=int)
-   >>> rule = Rule(key='year', extractor=extractor)
+   ...                  reduce=reducers.first,
+   ...                  transform=transformers.int)
+   >>> rule = Rule(key="year", extractor=extractor)
    >>> rule.extract(root)
    {'year': 1980}
 
@@ -69,9 +83,10 @@ An extractor can have a ``foreach`` attribute if it will be multi-valued:
 .. code-block:: python
 
    >>> extractor = Path(foreach='//ul[@class="genres"]/li',
-   ...                  path='./text()', reduce=reducers.first,
-   ...                  transform=str.lower)
-   >>> rule = Rule(key='genres', extractor=extractor)
+   ...                  path="./text()",
+   ...                  reduce=reducers.first,
+   ...                  transform=transformers.lower)
+   >>> rule = Rule(key="genres", extractor=extractor)
    >>> rule.extract(root)
    {'genres': ['horror', 'drama']}
 
@@ -88,10 +103,11 @@ and also as an extractor for any rule with subrules.
 .. code-block:: python
 
    >>> from piculet import Rules
-   >>> rules = [Rule(key='title',
-   ...               extractor=Path('//title/text()')),
-   ...          Rule('year',
-   ...               extractor=Path('//span[@class="year"]/text()', transform=int))]
+   >>> rules = [Rule(key="title",
+   ...               extractor=Path("//title/text()")),
+   ...          Rule(key="year",
+   ...               extractor=Path('//span[@class="year"]/text()',
+   ...               transform=transformers.int))]
    >>> Rules(rules).extract(root)
    {'title': 'The Shining', 'year': 1980}
 
@@ -102,16 +118,16 @@ mapping example in the data extraction chapter.
 .. code-block:: python
 
    >>> rules = [
-   ...     Rule(key='cast',
+   ...     Rule(key="cast",
    ...          extractor=Rules(
    ...              foreach='//table[@class="cast"]/tr',
    ...              rules=[
-   ...                  Rule(key='name',
-   ...                       extractor=Path('./td[1]/a/text()')),
-   ...                  Rule(key='character',
-   ...                       extractor=Path('./td[2]/text()'))
+   ...                  Rule(key="name",
+   ...                       extractor=Path("./td[1]/a/text()")),
+   ...                  Rule(key="character",
+   ...                       extractor=Path("./td[2]/text()"))
    ...              ],
-   ...              transform=lambda x: '%(name)s as %(character)s' % x
+   ...              transform=lambda x: "%(name)s as %(character)s" % x
    ...          ))
    ... ]
    >>> Rules(rules).extract(root)
@@ -124,14 +140,14 @@ extraction chapter:
 .. code-block:: python
 
    >>> rules = [
-   ...     Rule(key='director',
+   ...     Rule(key="director",
    ...          extractor=Rules(
    ...              section='//div[@class="director"]//a',
    ...              rules=[
-   ...                  Rule(key='name',
-   ...                       extractor=Path('./text()')),
-   ...                  Rule(key='link',
-   ...                       extractor=Path('./@href'))
+   ...                  Rule(key="name",
+   ...                       extractor=Path("./text()")),
+   ...                  Rule(key="link",
+   ...                       extractor=Path("./@href"))
    ...              ]))
    ... ]
    >>> Rules(rules).extract(root)

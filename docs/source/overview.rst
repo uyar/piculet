@@ -82,7 +82,6 @@ This should print the following output::
    {
      "birthplace": "Brixton, London, England",
      "born": "1947-01-08",
-     "died": "2016-01-10",
      "name": "David Bowie",
      "occupation": [
        "Singer",
@@ -96,7 +95,7 @@ you will get similar data for `Merlene Ottey`_. Note that since the markup
 used in Wikipedia pages for persons varies, the kinds of data you get
 with this specification will also vary.
 
-Piculet can be used as an HTML to XHTML convertor by invoking it with
+Piculet can be used as a simplistic HTML to XHTML convertor by invoking it with
 the ``h2x`` command. This command takes the file name as input and prints
 the converted content, as in ``piculet h2x foo.html``. If the input file name
 is given as ``-`` it will read the content from the standard input
@@ -107,15 +106,16 @@ Using in programs
 -----------------
 
 The scraping operation can also be invoked programmatically using
-the :func:`scrape_document <piculet.scrape_document>` function:
+the :func:`scrape_document <piculet.scrape_document>` function. Note that
+this function prints its output and doesn't return anything:
 
 .. code-block:: python
 
    from piculet import scrape_document
 
-   url = 'https://en.wikipedia.org/wiki/David_Bowie'
-   spec = 'wikipedia.json'
-   data = scrape_document(url, spec, content_format='html')
+   url = "https://en.wikipedia.org/wiki/David_Bowie"
+   spec = "wikipedia.json"
+   scrape_document(url, spec, content_format="html")
 
 YAML support
 ------------

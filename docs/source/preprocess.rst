@@ -12,17 +12,17 @@ The syntax for writing preprocessing operations is as follows:
 .. code-block:: python
 
    rules = {
-       'pre': [
+       "pre": [
            {
-               'op': '...',
+               "op": "...",
                ...
            },
            {
-               'op': '...',
+               "op": "...",
                ...
            }
        ],
-       'items': [ ... ]
+       "items": [ ... ]
    }
 
 Every preprocessing operation item has a name which is given as the value
@@ -40,7 +40,7 @@ that are selected by a given XPath query:
 
 .. code-block:: python
 
-   {'op': 'remove', 'path': '...'}
+   {"op": "remove", "path": "..."}
 
 Setting element attributes
 --------------------------
@@ -50,7 +50,7 @@ sets an attribute for these elements to a given value:
 
 .. code-block:: python
 
-   {'op': 'remove', 'path': '...', 'name': '...', 'value': '...'}
+   {"op": "set_attr", "path": "...", "name": "...", "value": "..."}
 
 The attribute "name" can be a literal string or an extractor as described
 in the data extraction chapter. Similarly, the attribute "value" can be given
@@ -64,6 +64,6 @@ sets their texts to a given value:
 
 .. code-block:: python
 
-   {'op': 'remove', 'path': '...', 'text': '...'}
+   {"op": "set_text", "path": "...", "text": "..."}
 
 The "text" can be a literal string or an extractor.

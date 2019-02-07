@@ -1,4 +1,4 @@
-Copyright (C) 2014-2018 H. Turgut Uyar <uyar@tekir.org>
+Copyright (C) 2014-2019 H. Turgut Uyar <uyar@tekir.org>
 
 Piculet is a module for extracting data from XML or HTML documents
 using XPath queries. It consists of a `single source file`_
