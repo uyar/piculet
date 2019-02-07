@@ -710,16 +710,16 @@ def set_element_text(root, path, text):
         element.text = element_text
 
 
-def build_tree(document, force_html=False):
+def build_tree(document, lxml_html=False):
     """Build a tree from an XML document.
 
     :sig: (str, Optional[bool]) -> Element
     :param document: XML document to build the tree from.
-    :param force_html: Force to parse from HTML without converting.
+    :param lxml_html: Use the lxml.html builder if available.
     :return: Root element of the XML tree.
     """
     content = document.encode("utf-8") if PY2 else document
-    if _USE_LXML and force_html:
+    if _USE_LXML and lxml_html:
         _logger.info("using lxml html builder")
         import lxml.html
 
@@ -832,15 +832,16 @@ def extract(element, items, section=None):
     return rules.extract(element)
 
 
-def scrape(document, spec):
+def scrape(document, spec, lxml_html=False):
     """Extract data from a document after optionally preprocessing it.
 
-    :sig: (str, Mapping[str, Any]) -> Mapping[str, Any]
+    :sig: (str, Mapping[str, Any], Optional[bool]) -> Mapping[str, Any]
     :param document: Document to scrape.
     :param spec: Extraction specification.
+    :param lxml_html: Use the lxml.html builder if available.
     :return: Extracted data.
     """
-    root = build_tree(document)
+    root = build_tree(document, lxml_html=lxml_html)
     pre = spec.get("pre")
     if pre is not None:
         preprocess(root, pre)
