@@ -3,7 +3,7 @@
     {
       "key": "name",
       "value": {
-        "path": "//span[@class='fn']/text()",
+        "path": "//div[@class='fn']/text()",
         "reducer": "first"
       }
     },
@@ -17,15 +17,8 @@
     {
       "key": "birthplace",
       "value": {
-        "path": "//span[@class='birthplace']//text()",
+        "path": "//div[@class='birthplace']//text()",
         "reducer": "clean"
-      }
-    },
-    {
-      "key": "died",
-      "value": {
-        "path": "//span[@class='dday deathdate']/text()",
-        "reducer": "first"
       }
     },
     {
