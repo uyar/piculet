@@ -3,6 +3,7 @@
 from typing import (
     Any,
     Callable,
+    Dict,
     Iterable,
     List,
     Mapping,
@@ -23,6 +24,7 @@ MapTransformer = Callable[[Mapping[str, Any]], Any]
 Transformer = Union[PathTransformer, MapTransformer]
 ExtractedItem = Union[str, Mapping[str, Any]]
 
+_EMPTY = ...  # type: Dict
 preprocessors = ...  # type: Registry
 reducers = ...  # type: Registry
 transformers = ...  # type: Registry
@@ -57,9 +59,7 @@ class Extractor:
     transform = ...  # type: Optional[Transformer]
     foreach = ...  # type: Optional[XPath]
     def __init__(
-        self,
-        transform: Optional[Transformer] = ...,
-        foreach: Optional[str] = ...,
+        self, transform: Optional[Transformer] = ..., foreach: Optional[str] = ...
     ) -> None: ...
     def apply(self, element: Element) -> ExtractedItem: ...
     def extract(
