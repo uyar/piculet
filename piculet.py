@@ -97,7 +97,7 @@ def decode_html(content, charset=None, fallback_charset="utf-8"):
     If no character set is given, this will try to figure it out
     from the corresponding ``meta`` tags.
 
-    :sig: (bytes, Optional[str], Optional[str]) -> str
+    :sig: (bytes, Optional[str], str) -> str
     :param content: Content of HTML document to decode.
     :param charset: Character set of the page.
     :param fallback_charset: Character set to use if it can't be figured out.
@@ -401,7 +401,7 @@ class Extractor:
     def extract(self, element, transform=True):
         """Get the processed data from an element using this extractor.
 
-        :sig: (Element, Optional[bool]) -> Any
+        :sig: (Element, bool) -> Any
         :param element: Element to extract the data from.
         :param transform: Whether the transformation will be applied or not.
         :return: Extracted and optionally transformed data.
@@ -713,7 +713,7 @@ def set_element_text(root, path, text):
 def build_tree(document, lxml_html=False):
     """Build a tree from an XML document.
 
-    :sig: (str, Optional[bool]) -> Element
+    :sig: (str, bool) -> Element
     :param document: XML document to build the tree from.
     :param lxml_html: Use the lxml.html builder if available.
     :return: Root element of the XML tree.
@@ -835,7 +835,7 @@ def extract(element, items, section=None):
 def scrape(document, spec, lxml_html=False):
     """Extract data from a document after optionally preprocessing it.
 
-    :sig: (str, Mapping[str, Any], Optional[bool]) -> Mapping[str, Any]
+    :sig: (str, Mapping[str, Any], bool) -> Mapping[str, Any]
     :param document: Document to scrape.
     :param spec: Extraction specification.
     :param lxml_html: Use the lxml.html builder if available.
@@ -873,7 +873,7 @@ def h2x(source):
 def scrape_document(address, spec, content_format="xml"):
     """Scrape data from a file path or a URL and print.
 
-    :sig: (str, str, Optional[str]) -> None
+    :sig: (str, str, str) -> None
     :param address: File path or URL of document to scrape.
     :param spec: Path of spec file.
     :param content_format: Whether the content is XML or HTML.
