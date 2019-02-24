@@ -16,7 +16,7 @@ versions of PyPy. You can install the latest version using ``pip``::
 Getting help
 ------------
 
-The documentation is available on: https://piculet.readthedocs.io/
+The documentation is available on: https://piculet.tekir.org/
 
 The source code can be obtained from: https://github.com/uyar/piculet
 

@@ -19,7 +19,7 @@ It consists of this single source file with no dependencies other than
 the standard library, which makes it very easy to integrate into applications.
 
 For more information, please refer to the documentation:
-https://piculet.readthedocs.io/
+https://piculet.tekir.org/
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
