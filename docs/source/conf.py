@@ -35,7 +35,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Piculet'
-copyright = '2016-2018, H. Turgut Uyar'
+copyright = '2014-2019, H. Turgut Uyar'
 author = 'H. Turgut Uyar'
 
 # The version info for the project you're documenting, acts as replacement for
