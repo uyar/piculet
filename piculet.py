@@ -947,8 +947,9 @@ def main(argv=None):
     :sig: (Optional[List[str]]) -> None
     :param argv: Command line arguments.
     """
-    argv = argv if argv is not None else sys.argv
     parser = make_parser(prog="piculet")
+
+    argv = argv if argv is not None else sys.argv
     arguments = parser.parse_args(argv[1:])
 
     # set debug mode
