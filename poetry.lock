@@ -643,7 +643,7 @@ socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7,<2.0)"]
 yaml = ["pyyaml"]
 
 [metadata]
-content-hash = "ffab883dae7c8c2ed9ae34401934dbe110a5b728f553a6da0b697fdef8c23c0e"
+content-hash = "ad7b14673e66d355ffe7397350be51bdeb6cc641e76a70f4322906f187beaf6d"
 python-versions = "^3.4|^2.7"
 
 [metadata.hashes]
