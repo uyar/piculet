@@ -70,12 +70,14 @@ deps =
     py27: mock
     pypy: mock
 commands =
+    poetry run rm -rf pip-wheel-metadata
     poetry install -v
     poetry run {posargs:pytest}
 
 [testenv:style]
 whitelist_externals = poetry
 commands =
+    poetry run rm -rf pip-wheel-metadata
     poetry install -v
     poetry run flake8 piculet.py
 
@@ -83,6 +85,7 @@ commands =
 whitelist_externals = poetry
 changedir = docs/
 commands =
+    poetry run rm -rf ../pip-wheel-metadata
     poetry install -v
     poetry run sphinx-build -b html source/ build/html/
 """
