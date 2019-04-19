@@ -61,11 +61,10 @@ line-length = 96
 legacy_tox_ini = """
 [tox]
 envlist = py{37,36,35,34,27}{,-lxml}, pypy{36,35}{,-lxml}, style, docs
-skipsdist = True
+isolated_build = True
 
 [testenv]
 whitelist_externals = poetry
-skip_install = true
 deps =
     lxml: lxml
     py27: mock
@@ -76,14 +75,12 @@ commands =
 
 [testenv:style]
 whitelist_externals = poetry
-skip_install = true
 commands =
     poetry install -v
     poetry run flake8 piculet.py
 
 [testenv:docs]
 whitelist_externals = poetry
-skip_install = true
 changedir = docs/
 commands =
     poetry install -v
