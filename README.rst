@@ -12,8 +12,8 @@
     :target: https://pypi.org/project/piculet/
     :alt: Project license.
 
-.. |pipelines| image:: https://dev.azure.com/uyar0839/piculet/_apis/build/status/uyar.piculet?branchName=master
-    :target: https://dev.azure.com/uyar0839/piculet/_build
+.. |pipelines| image:: https://dev.azure.com/tekir/piculet/_apis/build/status/uyar.piculet?branchName=master
+    :target: https://dev.azure.com/tekir/piculet/_build
     :alt: Azure Pipelines build status.
 
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square
