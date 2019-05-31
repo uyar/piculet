@@ -42,6 +42,7 @@ yaml = ["pyyaml"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.4"
+mock = {version = "^3.0", python = "^2.7"}
 pytest-cov = "^2.6"
 flake8 = "^3.6"
 flake8-isort = "^2.6"
