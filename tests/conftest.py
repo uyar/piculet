@@ -20,6 +20,7 @@ else:
     from unittest import mock
 
 if PY2:
+    from codecs import open
     from urllib2 import urlopen
 else:
     from urllib.request import urlopen
@@ -53,7 +54,7 @@ piculet.urlopen = mock.Mock(wraps=mock_urlopen)
 def shining_content():
     """Contents of the shining.html file."""
     file_path = os.path.join(os.path.dirname(__file__), "..", "examples", "shining.html")
-    with open(file_path) as f:
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
     return content
 
