@@ -40,7 +40,7 @@ from pkgutil import find_loader
 __version__ = "2.0.0.dev0"
 
 
-PY2 = sys.version_info < (3, 0)
+PY2 = sys.version_info < (3,)
 
 
 if PY2:

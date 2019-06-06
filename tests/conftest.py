@@ -11,7 +11,7 @@ from io import BytesIO
 import piculet
 
 
-PY2 = sys.version_info < (3, 0)
+PY2 = sys.version_info < (3,)
 
 
 if PY2:
