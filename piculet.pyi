@@ -29,9 +29,6 @@ preprocessors = ...  # type: Registry
 reducers = ...  # type: Registry
 transformers = ...  # type: Registry
 
-def decode_html(
-    content: bytes, charset: Optional[str] = ..., fallback_charset: str = ...
-) -> str: ...
 
 class HTMLNormalizer(HTMLParser):
     omit_tags = ...  # type: Set[str]

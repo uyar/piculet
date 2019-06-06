@@ -85,41 +85,6 @@ _logger = logging.getLogger(__name__)
 ###########################################################
 
 
-# TODO: this is too fragile
-_CHARSET_TAGS = [
-    b'<meta http-equiv="content-type" content="text/html; charset=',
-    b'<meta charset="',
-]
-
-
-def decode_html(content, charset=None, fallback_charset="utf-8"):
-    """Decode an HTML document according to a character set.
-
-    If no character set is given, this will try to figure it out
-    from the corresponding ``meta`` tags.
-
-    :sig: (bytes, Optional[str], str) -> str
-    :param content: Content of HTML document to decode.
-    :param charset: Character set of the page.
-    :param fallback_charset: Character set to use if it can't be figured out.
-    :return: Decoded content of the document.
-    """
-    if charset is None:
-        for tag in _CHARSET_TAGS:
-            start = content.find(tag)
-            if start >= 0:
-                charset_start = start + len(tag)
-                charset_end = content.find(b'"', charset_start)
-                charset = content[charset_start:charset_end].decode("ascii")
-                _logger.debug("charset found in <meta>: %s", charset)
-                break
-        else:
-            _logger.debug("charset not found, using fallback: %s", fallback_charset)
-            charset = fallback_charset
-    _logger.debug("decoding for charset: %s", charset)
-    return content.decode(charset)
-
-
 class HTMLNormalizer(HTMLParser):
     """HTML cleaner and XHTML convertor.
 
@@ -874,8 +839,8 @@ def h2x(source):
         content = sys.stdin.read()
     else:
         _logger.debug("reading from file: %s", os.path.abspath(source))
-        with open(source, "rb") as f:
-            content = decode_html(f.read())
+        with open(source) as f:
+            content = f.read()
     print(html_to_xhtml(content), end="")
 
 
@@ -908,7 +873,7 @@ def scrape_document(address, spec, content_format="xml"):
         _logger.debug("loading file: %s", os.path.abspath(address))
         with open(address, "rb") as f:
             content = f.read()
-    document = decode_html(content)
+    document = content.decode()
 
     if content_format == "html":
         _logger.debug("converting html document to xhtml")
