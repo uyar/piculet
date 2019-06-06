@@ -31,7 +31,13 @@ classifiers = [
     "Topic :: Utilities"
 ]
 
-include = ["HISTORY.rst", "*.pyi", "tests/**/*.py", "docs/source/**/*", "docs/Makefile"]
+include = [
+    "HISTORY.rst",
+    "*.pyi",
+    "tests/**/*.py",
+    "docs/source/**/*",
+    "docs/Makefile"
+]
 
 [tool.poetry.dependencies]
 python = "^3.4|^2.7"
@@ -61,15 +67,13 @@ line-length = 96
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{37,36,35,34,27}{,-lxml}, pypy{36,35}{,-lxml}, style, docs
+envlist = py{37,36,35,34,27}{,-lxml}, pypy{36,35,}{,-lxml}, style, docs
 isolated_build = True
 
 [testenv]
 whitelist_externals = poetry
 deps =
     lxml: lxml
-    py27: mock
-    pypy: mock
 commands =
     poetry install -v
     poetry run {posargs:pytest}
@@ -78,7 +82,7 @@ commands =
 whitelist_externals = poetry
 commands =
     poetry install -v
-    poetry run flake8 piculet.py
+    poetry run {posargs:flake8} piculet.py
 
 [testenv:docs]
 whitelist_externals = poetry
