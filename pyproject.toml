@@ -67,7 +67,7 @@ line-length = 96
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{37,36,35,34,27}{,-lxml}, pypy{36,35,}{,-lxml}, style, docs
+envlist = py{37,36,35,34,27}{,-lxml}, pypy{36,35,27}{,-lxml}, style, docs
 isolated_build = True
 
 [testenv]
@@ -76,20 +76,27 @@ deps =
     lxml: lxml
 commands =
     poetry install -v
-    poetry run {posargs:pytest}
+    {posargs:pytest}
+
+[testenv:pypy36]
+basepython = pypy3.6
+
+[testenv:pypy36-lxml]
+basepython = pypy3.6
+
+[testenv:pypy27]
+basepython = pypy2.7
 
 [testenv:style]
-whitelist_externals = poetry
 commands =
     poetry install -v
-    poetry run {posargs:flake8} piculet.py
+    {posargs:flake8} piculet.py
 
 [testenv:docs]
-whitelist_externals = poetry
 changedir = docs/
 commands =
     poetry install -v
-    poetry run sphinx-build -b html source/ build/html/
+    sphinx-build -b html source/ build/html/
 """
 
 [build-system]
