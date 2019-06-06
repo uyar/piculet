@@ -37,7 +37,7 @@ from operator import itemgetter
 from pkgutil import find_loader
 
 
-__version__ = "1.0.2.dev0"
+__version__ = "2.0.0.dev0"
 
 
 PY2 = sys.version_info < (3, 0)
