@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "piculet"
-version = "1.0.1"
+version = "1.0.2.dev0"
 description = "XML/HTML scraper using XPath queries."
 readme = "README.rst"
 
