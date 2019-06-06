@@ -461,15 +461,11 @@ class Path(Extractor):
         :param element: Element to apply this extractor to.
         :return: Extracted text.
         """
-        # _logger.debug("applying path on <%s>: %s", element.tag, self.path)
         selected = self.path(element)
         if len(selected) == 0:
-            # _logger.debug("no match")
             value = None
         else:
-            # _logger.debug("selected elements: %s", selected)
             value = self.reduce(selected)
-            # _logger.debug("reduced using %s: %s", self.reduce, value)
         return value
 
 
@@ -514,12 +510,10 @@ class Rules(Extractor):
         else:
             subroots = self.section(element)
             if len(subroots) == 0:
-                _logger.debug("no section root found")
                 return _EMPTY
             if len(subroots) > 1:
                 raise ValueError("Section path should select exactly one element")
             subroot = subroots[0]
-            _logger.debug("setting root: <%s>", subroot.tag)
 
         data = {}
         for rule in self.rules:
@@ -571,21 +565,15 @@ class Rule:
         data = {}
         subroots = [element] if self.foreach is None else self.foreach(element)
         for subroot in subroots:
-            # _logger.debug("setting section element: <%s>", subroot.tag)
-
             key = self.key if isinstance(self.key, str) else self.key.extract(subroot)
             if key is None:
-                # _logger.debug("no value generated for key name")
                 continue
-            # _logger.debug("extracting key: %s", key)
 
             if self.extractor.foreach is None:
                 value = self.extractor.extract(subroot)
                 if (value is None) or (value is _EMPTY):
-                    # _logger.debug("no value generated for key")
                     continue
                 data[key] = value
-                # _logger.debug("extracted value for %s: %s", key, data[key])
             else:
                 # don't try to transform list items by default, it might waste a lot of time
                 raw_values = [
@@ -594,14 +582,12 @@ class Rule:
                 ]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
                 if len(values) == 0:
-                    # _logger.debug("no items found in list")
                     continue
                 data[key] = (
                     values
                     if self.extractor.transform is None
                     else list(map(self.extractor.transform, values))
                 )
-                # _logger.debug("extracted value for %s: %s", key, data[key])
         return data
 
 
@@ -621,10 +607,8 @@ def remove_elements(root, path):
             get_parent = {e: p for p in root.iter() for e in p}.get
             root.attrib["_get_parent"] = get_parent
     elements = XPath(path)(root)
-    _logger.debug("removing %s elements using path: %s", len(elements), path)
     if len(elements) > 0:
         for element in elements:
-            _logger.debug("removing element: <%s>", element.tag)
             # XXX: could this be hazardous? parent removed in earlier iteration?
             get_parent(element).remove(element)
 
@@ -645,21 +629,17 @@ def set_element_attr(root, path, name, value):
     :param value: Description for value generation.
     """
     elements = XPath(path)(root)
-    _logger.debug("updating %s elements using path: %s", len(elements), path)
     for element in elements:
         attr_name = name if isinstance(name, str) else Extractor.from_map(name).extract(element)
         if attr_name is None:
-            _logger.debug("no attribute name generated for <%s>:", element.tag)
             continue
 
         attr_value = (
             value if isinstance(value, str) else Extractor.from_map(value).extract(element)
         )
         if attr_value is None:
-            _logger.debug("no attribute value generated for <%s>:", element.tag)
             continue
 
-        _logger.debug("setting %s attribute of <%s>: %s", attr_name, element.tag, attr_value)
         element.attrib[attr_name] = attr_value
 
 
@@ -672,13 +652,11 @@ def set_element_text(root, path, text):
     :param text: Description for text generation.
     """
     elements = XPath(path)(root)
-    _logger.debug("updating %s elements using path: %s", len(elements), path)
     for element in elements:
         element_text = (
             text if isinstance(text, str) else Extractor.from_map(text).extract(element)
         )
         # note that the text can be None in which case the existing text will be cleared
-        _logger.debug("setting text of <%s>: %s", element.tag, element_text)
         element.text = element_text
 
 
@@ -917,7 +895,6 @@ def main(argv=None):
     argv = argv if argv is not None else sys.argv
     arguments = parser.parse_args(argv[1:])
 
-    # set debug mode
     if arguments.debug:
         logging.basicConfig(level=logging.DEBUG)
         _logger.info("running in debug mode")
