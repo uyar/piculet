@@ -360,7 +360,15 @@ else:
             """
             return self._apply(element)
 
-    xpath = lambda e, p: XPath(p)(e)
+    def xpath(element, path):
+        """Apply an XPath expression to an XML element.
+
+        :sig: (Element, str) -> XPathResult
+        :param element: Element to apply the path to.
+        :param path: XPath expression to apply to the element.
+        :return: Elements or strings resulting from the query.
+        """
+        return XPath(path)(element)
 
 
 _EMPTY = {}  # sig: Dict
