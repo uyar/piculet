@@ -13,10 +13,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Piculet.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Piculet is a module for scraping XML and HTML documents using XPath queries.
+"""Module for scraping XML and HTML documents using XPath queries.
 
-It consists of this single source file with no dependencies other than
-the standard library, which makes it very easy to integrate into applications.
+It consists of this single source file with no dependencies
+other than the standard library, which makes it very easy
+to integrate into applications.
 
 For more information, please refer to the documentation:
 https://piculet.tekir.org/
