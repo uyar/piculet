@@ -8,8 +8,6 @@ __pycache__
 .tox
 .venv
 
-pip-wheel-metadata
-
 build
 dist
 prof
