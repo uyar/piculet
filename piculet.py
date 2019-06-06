@@ -833,10 +833,8 @@ def h2x(source):
     :param source: Path of HTML file to convert.
     """
     if source == "-":
-        _logger.debug("reading from stdin")
         content = sys.stdin.read()
     else:
-        _logger.debug("reading from file: %s", os.path.abspath(source))
         with open(source) as f:
             content = f.read()
     print(html_to_xhtml(content), end="")
@@ -850,7 +848,6 @@ def scrape_document(address, spec, content_format="xml"):
     :param spec: Path of spec file.
     :param content_format: Whether the content is XML or HTML.
     """
-    _logger.debug("loading spec from file: %s", os.path.abspath(spec))
     if os.path.splitext(spec)[-1] in (".yaml", ".yml"):
         if find_loader("yaml") is None:
             raise RuntimeError("YAML support not available")
@@ -864,19 +861,15 @@ def scrape_document(address, spec, content_format="xml"):
         spec_map = spec_loader(f.read())
 
     if address.startswith(("http://", "https://")):
-        _logger.debug("loading url: %s", address)
         with urlopen(address) as f:
             content = f.read()
     else:
-        _logger.debug("loading file: %s", os.path.abspath(address))
         with open(address, "rb") as f:
             content = f.read()
     document = content.decode()
 
     if content_format == "html":
-        _logger.debug("converting html document to xhtml")
         document = html_to_xhtml(document)
-        # _logger.debug('=== CONTENT START ===\n%s\n=== CONTENT END===', document)
 
     data = scrape(document, spec_map)
     print(json.dumps(data, indent=2, sort_keys=True))
@@ -927,7 +920,7 @@ def main(argv=None):
     # set debug mode
     if arguments.debug:
         logging.basicConfig(level=logging.DEBUG)
-        _logger.debug("running in debug mode")
+        _logger.info("running in debug mode")
 
     # run the handler for the selected command
     try:
