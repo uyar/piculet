@@ -24,6 +24,7 @@ MapTransformer = Callable[[Mapping[str, Any]], Any]
 Transformer = Union[PathTransformer, MapTransformer]
 ExtractedItem = Union[str, Mapping[str, Any]]
 
+USE_LXML = ...  # type: bool
 _EMPTY = ...  # type: Dict
 preprocessors = ...  # type: Registry
 reducers = ...  # type: Registry

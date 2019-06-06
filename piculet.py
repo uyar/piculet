@@ -253,8 +253,8 @@ def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
 # sigalias: XPathResult = Union[Sequence[str], Sequence[Element]]
 
 
-_USE_LXML = find_loader("lxml") is not None
-if _USE_LXML:
+USE_LXML = find_loader("lxml") is not None  # sig: bool
+if USE_LXML:
     _logger.info("using lxml")
     from lxml import etree as ElementTree
     from lxml.etree import Element
@@ -612,7 +612,7 @@ def remove_elements(root, path):
     :param root: Root element of the tree.
     :param path: XPath to select the elements to remove.
     """
-    if _USE_LXML:
+    if USE_LXML:
         get_parent = ElementTree._Element.getparent
     else:
         # ElementTree doesn't support parent queries, so we'll build a map for it
@@ -691,7 +691,7 @@ def build_tree(document, lxml_html=False):
     :return: Root element of the XML tree.
     """
     content = document.encode("utf-8") if PY2 else document
-    if _USE_LXML and lxml_html:
+    if USE_LXML and lxml_html:
         _logger.info("using lxml html builder")
         import lxml.html
 
