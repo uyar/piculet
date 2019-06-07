@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "piculet"
-version = "2.0.0.dev0"
+version = "2.0.0.dev1"
 description = "XML/HTML scraper using XPath queries."
 readme = "README.rst"
 
@@ -21,8 +21,6 @@ classifiers = [
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.5",
-    "Programming Language :: Python :: 3.4",
-    "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -40,7 +38,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.4|^2.7"
+python = "^3.5"
 pyyaml = {version = "^3.13", optional = true}
 
 [tool.poetry.extras]
@@ -67,7 +65,7 @@ line-length = 96
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{37,36,35,34,27}{,-lxml}, pypy{36,35,27}{,-lxml}, style, docs
+envlist = py{37,36,35}{,-lxml}, pypy{36,35}{,-lxml}, style, docs
 isolated_build = True
 
 [testenv]
@@ -83,9 +81,6 @@ basepython = pypy3.6
 
 [testenv:pypy36-lxml]
 basepython = pypy3.6
-
-[testenv:pypy27]
-basepython = pypy2.7
 
 [testenv:style]
 commands =
