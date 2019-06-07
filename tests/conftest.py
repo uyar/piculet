@@ -1,29 +1,13 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from pytest import fixture
+from unittest import mock
 
 import logging
 import os
-import sys
 from hashlib import md5
 from io import BytesIO
+from urllib.request import urlopen
 
 import piculet
-
-
-PY2 = sys.version_info < (3,)
-
-
-if PY2:
-    import mock
-else:
-    from unittest import mock
-
-if PY2:
-    from codecs import open
-    from urllib2 import urlopen
-else:
-    from urllib.request import urlopen
 
 
 logging.raiseExceptions = False
