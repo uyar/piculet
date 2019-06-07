@@ -408,11 +408,7 @@ class Path(Extractor):
         :return: Extracted text.
         """
         selected = self.path(element)
-        if len(selected) == 0:
-            value = None
-        else:
-            value = self.reduce(selected)
-        return value
+        return self.reduce(selected) if len(selected) > 0 else None
 
 
 class Rules(Extractor):
