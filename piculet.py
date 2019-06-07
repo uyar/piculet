@@ -23,8 +23,6 @@ For more information, please refer to the documentation:
 https://piculet.tekir.org/
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import json
 import logging
 import os
@@ -32,49 +30,17 @@ import re
 import sys
 from argparse import ArgumentParser
 from collections import deque
+from contextlib import redirect_stdout
 from functools import partial
+from html import escape as html_escape
+from html.parser import HTMLParser
+from io import StringIO
 from operator import itemgetter
 from pkgutil import find_loader
+from urllib.request import urlopen
 
 
 __version__ = "2.0.0.dev1"
-
-
-PY2 = sys.version_info < (3,)
-
-
-if PY2:
-    str, bytes = unicode, str
-
-
-if PY2:
-    from cgi import escape as html_escape
-    from HTMLParser import HTMLParser
-    from StringIO import StringIO
-    from htmlentitydefs import name2codepoint
-    from urllib2 import urlopen
-else:
-    from html import escape as html_escape
-    from html.parser import HTMLParser
-    from io import StringIO
-    from urllib.request import urlopen
-
-
-if PY2:
-    from contextlib import contextmanager
-
-    @contextmanager
-    def redirect_stdout(new_stdout):
-        """Context manager for temporarily redirecting stdout."""
-        old_stdout, sys.stdout = sys.stdout, new_stdout
-        try:
-            yield new_stdout
-        finally:
-            sys.stdout = old_stdout
-
-
-else:
-    from contextlib import redirect_stdout
 
 
 _logger = logging.getLogger(__name__)
@@ -128,10 +94,7 @@ class HTMLNormalizer(HTMLParser):
         :param omit_tags: Tags to remove, along with all their content.
         :param omit_attrs: Attributes to remove.
         """
-        if PY2:
-            HTMLParser.__init__(self)
-        else:
-            super().__init__(convert_charrefs=True)
+        super().__init__(convert_charrefs=True)
 
         self.omit_tags = set(omit_tags) if omit_tags is not None else set()  # sig: Set[str]
         self.omit_attrs = set(omit_attrs) if omit_attrs is not None else set()  # sig: Set[str]
@@ -208,19 +171,7 @@ class HTMLNormalizer(HTMLParser):
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             line = html_escape(data)
-            print(line.decode("utf-8") if PY2 and isinstance(line, bytes) else line, end="")
-
-    def handle_entityref(self, name):
-        """Process an entity reference."""
-        # XXX: doesn't get called if convert_charrefs=True
-        num = name2codepoint.get(name)  # we are sure we're on PY2 here
-        if num is not None:
-            print("&#%(ref)d;" % {"ref": num}, end="")
-
-    def handle_charref(self, name):
-        """Process a character reference."""
-        # XXX: doesn't get called if convert_charrefs=True
-        print("&#%(ref)s;" % {"ref": name}, end="")
+            print(line, end="")
 
     # def feed(self, data):
     #     super().feed(data)
@@ -305,9 +256,7 @@ else:
             elif path.endswith("/text()"):
                 _apply = child
             else:
-                steps = path.split("/")
-                front, last = steps[:-1], steps[-1]
-                # after dropping PY2: *front, last = path.split('/')
+                *front, last = path.split("/")
                 if last.startswith("@"):
                     _apply = partial(attribute, subpath="/".join(front), attr=last[1:])
                 else:
@@ -440,10 +389,7 @@ class Path(Extractor):
         :param transform: Function to transform extracted value.
         :param foreach: Path to apply for generating a collection of data.
         """
-        if PY2:
-            Extractor.__init__(self, transform=transform, foreach=foreach)
-        else:
-            super().__init__(transform=transform, foreach=foreach)
+        super().__init__(transform=transform, foreach=foreach)
 
         self.path = XPath(path)  # sig: XPath
         """XPath evaluator to apply to get the data."""
@@ -487,10 +433,7 @@ class Rules(Extractor):
         :param transform: Function to transform extracted value.
         :param foreach: Path for generating multiple items.
         """
-        if PY2:
-            Extractor.__init__(self, transform=transform, foreach=foreach)
-        else:
-            super().__init__(transform=transform, foreach=foreach)
+        super().__init__(transform=transform, foreach=foreach)
 
         self.rules = rules  # sig: Sequence[Rule]
         """Rules for generating the data items."""
@@ -668,13 +611,12 @@ def build_tree(document, lxml_html=False):
     :param lxml_html: Use the lxml.html builder if available.
     :return: Root element of the XML tree.
     """
-    content = document.encode("utf-8") if PY2 else document
     if USE_LXML and lxml_html:
         _logger.info("using lxml html builder")
         import lxml.html
 
-        return lxml.html.fromstring(content)
-    return ElementTree.fromstring(content)
+        return lxml.html.fromstring(document)
+    return ElementTree.fromstring(document)
 
 
 class Registry:
