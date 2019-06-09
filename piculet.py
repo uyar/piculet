@@ -28,6 +28,7 @@ import logging
 import os
 import re
 import sys
+from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from collections import deque
 from contextlib import redirect_stdout
@@ -292,7 +293,7 @@ _EMPTY = {}  # sig: Dict
 # sigalias: ExtractedItem = Union[str, Mapping[str, Any]]
 
 
-class Extractor:
+class Extractor(ABC):
     """Abstract base extractor for getting data out of an XML element."""
 
     def __init__(self, *, transform=None, foreach=None):
@@ -308,6 +309,7 @@ class Extractor:
         self.foreach = xpath(foreach) if foreach is not None else None  # sig: Optional[XPath]
         """Path to apply for generating a collection of values."""
 
+    @abstractmethod
     def apply(self, element):
         """Get the raw data from an element using this extractor.
 
@@ -315,7 +317,6 @@ class Extractor:
         :param element: Element to apply this extractor to.
         :return: Extracted raw data.
         """
-        raise NotImplementedError("Concrete extractors must implement this method")
 
     def extract(self, element, *, transform=True):
         """Get the processed data from an element using this extractor.

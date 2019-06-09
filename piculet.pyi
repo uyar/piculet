@@ -13,6 +13,7 @@ from typing import (
     Union,
 )
 
+from abc import ABC
 from argparse import ArgumentParser
 from html.parser import HTMLParser
 from xml.etree.ElementTree import Element
@@ -55,7 +56,7 @@ class XPath:
 
 def xpath(path: str) -> XPath: ...
 
-class Extractor:
+class Extractor(ABC):
     transform = ...  # type: Optional[Transformer]
     foreach = ...  # type: Optional[XPath]
     def __init__(
