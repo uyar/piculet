@@ -31,7 +31,7 @@ import sys
 from argparse import ArgumentParser
 from collections import deque
 from contextlib import redirect_stdout
-from functools import partial
+from functools import lru_cache, partial
 from html import escape as html_escape
 from html.parser import HTMLParser
 from io import StringIO
@@ -271,6 +271,7 @@ else:
             return self._apply(element)
 
 
+@lru_cache(maxsize=None)
 def xpath(path):
     """Get a compiled XPath expression that can be applied to an element.
 
