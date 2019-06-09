@@ -87,7 +87,7 @@ class HTMLNormalizer(HTMLParser):
     )
     """Tags to handle as self-closing."""
 
-    def __init__(self, omit_tags=None, omit_attrs=None):
+    def __init__(self, *, omit_tags=None, omit_attrs=None):
         """Initialize this normalizer.
 
         :sig: (Optional[Iterable[str]], Optional[Iterable[str]]) -> None
@@ -180,7 +180,7 @@ class HTMLNormalizer(HTMLParser):
     #         print('</%(tag)s>' % {'tag': tag}, end='')
 
 
-def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
+def html_to_xhtml(document, *, omit_tags=None, omit_attrs=None):
     """Clean HTML and convert to XHTML.
 
     :sig: (str, Optional[Iterable[str]], Optional[Iterable[str]]) -> str
@@ -214,7 +214,7 @@ else:
     from xml.etree.ElementTree import Element
 
     class XPath:
-        """An XPath expression evaluator.
+        """An XPath expression that can be applied to an element.
 
         This class is mainly needed to compensate for the lack of ``text()``
         and ``@attr`` axis queries in ElementTree XPath support.
@@ -262,7 +262,7 @@ else:
             self._apply = _apply  # sig: Callable[[Element], XPathResult]
 
         def __call__(self, element):
-            """Apply this evaluator to an element.
+            """Apply this expression to an element.
 
             :sig: (Element) -> XPathResult
             :param element: Element to apply this expression to.
@@ -295,7 +295,7 @@ _EMPTY = {}  # sig: Dict
 class Extractor:
     """Abstract base extractor for getting data out of an XML element."""
 
-    def __init__(self, transform=None, foreach=None):
+    def __init__(self, *, transform=None, foreach=None):
         """Initialize this extractor.
 
         :sig: (Optional[Transformer], Optional[str]) -> None
@@ -317,7 +317,7 @@ class Extractor:
         """
         raise NotImplementedError("Concrete extractors must implement this method")
 
-    def extract(self, element, transform=True):
+    def extract(self, element, *, transform=True):
         """Get the processed data from an element using this extractor.
 
         :sig: (Element, bool) -> Any
@@ -358,7 +358,7 @@ class Extractor:
                 reduce = reducers.get(reducer)
                 if reduce is None:
                     raise ValueError("Unknown reducer")
-            extractor = Path(path, reduce, transform=transform, foreach=foreach)
+            extractor = Path(path, reduce=reduce, transform=transform, foreach=foreach)
         else:
             items = item.get("items")
             # TODO: check for None
@@ -373,7 +373,7 @@ class Extractor:
 class Path(Extractor):
     """An extractor for getting text out of an XML element."""
 
-    def __init__(self, path, reduce=None, transform=None, foreach=None):
+    def __init__(self, path, reduce=None, *, transform=None, foreach=None):
         """Initialize this extractor.
 
         :sig: (
@@ -412,7 +412,7 @@ class Path(Extractor):
 class Rules(Extractor):
     """An extractor for getting data items out of an XML element."""
 
-    def __init__(self, rules, section=None, transform=None, foreach=None):
+    def __init__(self, rules, *, section=None, transform=None, foreach=None):
         """Initialize this extractor.
 
         :sig:
@@ -462,7 +462,7 @@ class Rules(Extractor):
 class Rule:
     """A rule describing how to get a data item out of an XML element."""
 
-    def __init__(self, key, extractor, foreach=None):
+    def __init__(self, key, extractor, *, foreach=None):
         """Initialize this rule.
 
         :sig: (Union[str, Extractor], Extractor, Optional[str]) -> None
@@ -597,7 +597,7 @@ def set_element_text(root, path, text):
         element.text = element_text
 
 
-def build_tree(document, lxml_html=False):
+def build_tree(document, *, lxml_html=False):
     """Build a tree from an XML document.
 
     :sig: (str, bool) -> Element
@@ -700,7 +700,7 @@ def preprocess(root, pre):
             raise ValueError("Unknown preprocessing operation")
 
 
-def extract(element, items, section=None):
+def extract(element, items, *, section=None):
     """Extract data from an XML element.
 
     :sig:
@@ -718,7 +718,7 @@ def extract(element, items, section=None):
     return rules.extract(element)
 
 
-def scrape(document, spec, lxml_html=False):
+def scrape(document, spec, *, lxml_html=False):
     """Extract data from a document after optionally preprocessing it.
 
     :sig: (str, Mapping[str, Any], bool) -> Mapping[str, Any]
@@ -754,7 +754,7 @@ def h2x(source):
     print(html_to_xhtml(content), end="")
 
 
-def scrape_document(address, spec, content_format="xml"):
+def scrape_document(address, spec, *, content_format="xml"):
     """Scrape data from a file path or a URL and print.
 
     :sig: (str, str, str) -> None
