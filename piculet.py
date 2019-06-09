@@ -305,7 +305,7 @@ class Extractor:
         self.transform = transform  # sig: Optional[Transformer]
         """Function to transform the extracted value."""
 
-        self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPath]
+        self.foreach = xpath(foreach) if foreach is not None else None  # sig: Optional[XPath]
         """Path to apply for generating a collection of values."""
 
     def apply(self, element):
@@ -389,7 +389,7 @@ class Path(Extractor):
         """
         super().__init__(transform=transform, foreach=foreach)
 
-        self.path = XPath(path)  # sig: XPath
+        self.path = xpath(path)  # sig: XPath
         """XPath evaluator to apply to get the data."""
 
         if reduce is None:
@@ -432,7 +432,7 @@ class Rules(Extractor):
         self.rules = rules  # sig: Sequence[Rule]
         """Rules for generating the data items."""
 
-        self.section = XPath(section) if section is not None else None  # sig: Optional[XPath]
+        self.section = xpath(section) if section is not None else None  # sig: Optional[XPath]
         """XPath expression for selecting a subroot for this section."""
 
     def apply(self, element):
@@ -476,7 +476,7 @@ class Rule:
         self.extractor = extractor  # sig: Extractor
         """Extractor that will generate this data item."""
 
-        self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPath]
+        self.foreach = xpath(foreach) if foreach is not None else None  # sig: Optional[XPath]
         """XPath evaluator for generating multiple items."""
 
     @staticmethod
@@ -543,7 +543,7 @@ def remove_elements(root, path):
         if get_parent is None:
             get_parent = {e: p for p in root.iter() for e in p}.get
             root.attrib["_get_parent"] = get_parent
-    elements = XPath(path)(root)
+    elements = xpath(path)(root)
     if len(elements) > 0:
         for element in elements:
             # XXX: could this be hazardous? parent removed in earlier iteration?
@@ -565,7 +565,7 @@ def set_element_attr(root, path, name, value):
     :param name: Description for name generation.
     :param value: Description for value generation.
     """
-    elements = XPath(path)(root)
+    elements = xpath(path)(root)
     for element in elements:
         attr_name = name if isinstance(name, str) else Extractor.from_map(name).extract(element)
         if attr_name is None:
@@ -588,7 +588,7 @@ def set_element_text(root, path, text):
     :param path: XPath to select the elements to set attributes for.
     :param text: Description for text generation.
     """
-    elements = XPath(path)(root)
+    elements = xpath(path)(root)
     for element in elements:
         element_text = (
             text if isinstance(text, str) else Extractor.from_map(text).extract(element)
