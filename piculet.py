@@ -208,10 +208,7 @@ USE_LXML = find_loader("lxml") is not None  # sig: bool
 if USE_LXML:
     _logger.info("using lxml")
     from lxml import etree as ElementTree
-    from lxml.etree import Element
-
-    XPath = ElementTree.XPath
-    xpath = ElementTree._Element.xpath
+    from lxml.etree import Element, XPath
 else:
     from xml.etree import ElementTree
     from xml.etree.ElementTree import Element
@@ -273,15 +270,15 @@ else:
             """
             return self._apply(element)
 
-    def xpath(element, path):
-        """Apply an XPath expression to an XML element.
 
-        :sig: (Element, str) -> XPathResult
-        :param element: Element to apply the path to.
-        :param path: XPath expression to apply to the element.
-        :return: Elements or strings resulting from the query.
-        """
-        return XPath(path)(element)
+def xpath(path):
+    """Get a compiled XPath expression that can be applied to an element.
+
+    :sig: (str) -> XPath
+    :param path: XPath expression to compile.
+    :return: Compiled expression.
+    """
+    return XPath(path)
 
 
 _EMPTY = {}  # sig: Dict
