@@ -5,6 +5,7 @@ History
 ------------------
 
 - Drop support for Python 2 and 3.4.
+- Cache compiled XPath expressions.
 - Remove HTML charset detection.
 
 1.0.1 (2019-02-07)

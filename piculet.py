@@ -221,10 +221,10 @@ else:
         """
 
         def __init__(self, path):
-            """Initialize this evaluator.
+            """Initialize this expression.
 
             :sig: (str) -> None
-            :param path: XPath expression to evaluate.
+            :param path: XPath expression to compile.
             """
             if path[0] == "/":
                 # ElementTree doesn't support absolute paths
