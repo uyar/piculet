@@ -361,8 +361,7 @@ class Extractor(ABC):
                     raise ValueError("Unknown reducer")
             extractor = Path(path, reduce=reduce, transform=transform, foreach=foreach)
         else:
-            items = item.get("items")
-            # TODO: check for None
+            items = item.get("items", [])
             rules = [Rule.from_map(i) for i in items]
             extractor = Rules(
                 rules, section=item.get("section"), transform=transform, foreach=foreach
