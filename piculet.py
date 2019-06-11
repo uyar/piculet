@@ -747,13 +747,13 @@ def h2x(source):
     print(html_to_xhtml(content), end="")
 
 
-def scrape_document(address, spec, *, content_format="xml"):
+def scrape_document(address, spec, *, html=False):
     """Scrape data from a file path or a URL and print.
 
-    :sig: (str, str, str) -> None
+    :sig: (str, str, bool) -> None
     :param address: File path or URL of document to scrape.
     :param spec: Path of spec file.
-    :param content_format: Whether the content is XML or HTML.
+    :param html: Whether the content is in HTML format.
     """
     if os.path.splitext(spec)[-1] in (".yaml", ".yml"):
         if find_loader("yaml") is None:
@@ -775,7 +775,7 @@ def scrape_document(address, spec, *, content_format="xml"):
             content = f.read()
     document = content.decode()
 
-    if content_format == "html":
+    if html:
         document = html_to_xhtml(document)
 
     data = scrape(document, spec_map)
@@ -809,11 +809,7 @@ def main(argv=None):
     arguments = parser.parse_args(argv[1:])
 
     try:
-        scrape_document(
-            arguments.document,
-            arguments.spec,
-            content_format="html" if arguments.html else "xml",
-        )
+        scrape_document(arguments.document, arguments.spec, html=arguments.html)
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(1)
