@@ -24,7 +24,6 @@ https://piculet.tekir.org/
 """
 
 import json
-import os
 import re
 import sys
 from abc import ABC, abstractmethod
@@ -36,6 +35,7 @@ from html import escape as html_escape
 from html.parser import HTMLParser
 from io import StringIO
 from operator import itemgetter
+from pathlib import Path as FSPath
 from pkgutil import find_loader
 from urllib.request import urlopen
 
@@ -750,12 +750,12 @@ def h2x(source):
 def scrape_document(address, spec, *, html=False):
     """Scrape data from a file path or a URL and print.
 
-    :sig: (str, str, bool) -> None
+    :sig: (str, FSPath, bool) -> None
     :param address: File path or URL of document to scrape.
     :param spec: Path of spec file.
     :param html: Whether the content is in HTML format.
     """
-    if os.path.splitext(spec)[-1] in (".yaml", ".yml"):
+    if spec.suffix in {".yaml", ".yml"}:
         if find_loader("strictyaml") is None:
             raise RuntimeError("YAML support not available")
         import strictyaml
@@ -764,8 +764,8 @@ def scrape_document(address, spec, *, html=False):
     else:
         spec_loader = json.loads
 
-    with open(spec) as f:
-        spec_map = spec_loader(f.read())
+    spec_content = spec.read_text(encoding="utf-8")
+    spec_map = spec_loader(spec_content)
 
     if address.startswith(("http://", "https://")):
         with urlopen(address) as f:
@@ -804,7 +804,8 @@ def main(argv=None):
         if arguments.h2x:
             h2x(arguments.document)
         else:
-            scrape_document(arguments.document, arguments.spec, html=arguments.html)
+            spec = FSPath(arguments.spec)
+            scrape_document(arguments.document, spec, html=arguments.html)
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(1)
