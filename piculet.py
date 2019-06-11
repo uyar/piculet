@@ -747,15 +747,14 @@ def h2x(source):
     print(html_to_xhtml(content), end="")
 
 
-def scrape_document(address, spec, *, html=False):
-    """Scrape data from a file path or a URL and print.
+def load_spec(path):
+    """Load an extraction specification from a file.
 
-    :sig: (str, FSPath, bool) -> None
-    :param address: File path or URL of document to scrape.
-    :param spec: Path of spec file.
-    :param html: Whether the content is in HTML format.
+    :sig: (FSPath) -> Mapping[str, Any]
+    :param path: Path of specification file.
+    :return: Loaded specification.
     """
-    if spec.suffix in {".yaml", ".yml"}:
+    if path.suffix in {".yaml", ".yml"}:
         if find_loader("strictyaml") is None:
             raise RuntimeError("YAML support not available")
         import strictyaml
@@ -764,9 +763,18 @@ def scrape_document(address, spec, *, html=False):
     else:
         spec_loader = json.loads
 
-    spec_content = spec.read_text(encoding="utf-8")
-    spec_map = spec_loader(spec_content)
+    spec_content = path.read_text(encoding="utf-8")
+    return spec_loader(spec_content)
 
+
+def scrape_document(address, spec, *, html=False):
+    """Scrape data from a file path or a URL and print.
+
+    :sig: (str, Mapping[str, Any], bool) -> None
+    :param address: File path or URL of document to scrape.
+    :param spec: Path of spec file.
+    :param html: Whether the content is in HTML format.
+    """
     if address.startswith(("http://", "https://")):
         with urlopen(address) as f:
             content = f.read()
@@ -778,7 +786,7 @@ def scrape_document(address, spec, *, html=False):
     if html:
         document = html_to_xhtml(document)
 
-    data = scrape(document, spec_map)
+    data = scrape(document, spec)
     print(json.dumps(data, indent=2, sort_keys=True))
 
 
@@ -804,7 +812,7 @@ def main(argv=None):
         if arguments.h2x:
             h2x(arguments.document)
         else:
-            spec = FSPath(arguments.spec)
+            spec = load_spec(FSPath(arguments.spec))
             scrape_document(arguments.document, spec, html=arguments.html)
     except Exception as e:
         print(e, file=sys.stderr)
