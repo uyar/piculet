@@ -19,7 +19,8 @@ def mock_urlopen(url):
     if cache_file.exists():
         content = cache_file.read_bytes()
     else:
-        content = urlopen(url).read()
+        with urlopen(url) as connection:
+            content = connection.read()
         cache_file.write_bytes(content)
     return BytesIO(content)
 
