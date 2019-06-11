@@ -1,4 +1,5 @@
 import pytest
+from unittest import mock
 
 import json
 import sys
@@ -8,12 +9,6 @@ from pathlib import Path
 from pkg_resources import get_distribution
 
 import piculet
-
-
-if sys.version_info.major < 3:
-    import mock
-else:
-    from unittest import mock
 
 
 wikipedia_spec = Path(__file__).parent.parent.joinpath("examples", "wikipedia.json")
