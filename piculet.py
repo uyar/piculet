@@ -40,7 +40,7 @@ from pkgutil import find_loader
 from urllib.request import urlopen
 
 
-__version__ = "2.0.0.dev1"
+__version__ = "2.0.0.dev1"  # sig: str
 
 
 ###########################################################
