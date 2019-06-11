@@ -791,24 +791,9 @@ def make_parser(prog):
     """
     parser = ArgumentParser(prog=prog)
     parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
-
-    commands = parser.add_subparsers(metavar="command", dest="command")
-    commands.required = True
-
-    h2x_parser = commands.add_parser("h2x", help="convert HTML to XHTML")
-    h2x_parser.add_argument("file", help="file to convert")
-    h2x_parser.set_defaults(func=lambda a: h2x(a.file))
-
-    scrape_parser = commands.add_parser("scrape", help="scrape a document")
-    scrape_parser.add_argument("document", help="file path or URL of document to scrape")
-    scrape_parser.add_argument("-s", "--spec", required=True, help="spec file")
-    scrape_parser.add_argument("--html", action="store_true", help="document is in HTML format")
-    scrape_parser.set_defaults(
-        func=lambda a: scrape_document(
-            a.document, a.spec, content_format="html" if a.html else "xml"
-        )
-    )
-
+    parser.add_argument("document", help="path or URL of document")
+    parser.add_argument("-s", "--spec", required=True, help="spec file")
+    parser.add_argument("--html", action="store_true", help="document is in HTML format")
     return parser
 
 
@@ -823,9 +808,12 @@ def main(argv=None):
     argv = argv if argv is not None else sys.argv
     arguments = parser.parse_args(argv[1:])
 
-    # run the handler for the selected command
     try:
-        arguments.func(arguments)
+        scrape_document(
+            arguments.document,
+            arguments.spec,
+            content_format="html" if arguments.html else "xml",
+        )
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(1)
