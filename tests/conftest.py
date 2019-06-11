@@ -1,29 +1,26 @@
 from pytest import fixture
 from unittest import mock
 
-import os
 from hashlib import md5
 from io import BytesIO
+from pathlib import Path
 from urllib.request import urlopen
 
 import piculet
 
 
-cache_dir = os.path.join(os.path.dirname(__file__), ".cache")
-if not os.path.exists(cache_dir):
-    os.makedirs(cache_dir)
+cache_dir = Path(__file__).with_name(".cache")
+cache_dir.mkdir(exist_ok=True)
 
 
 def mock_urlopen(url):
-    key = md5(url.encode("utf-8")).hexdigest()
-    cache_file = os.path.join(cache_dir, key)
-    if not os.path.exists(cache_file):
-        content = urlopen(url).read()
-        with open(cache_file, "wb") as f:
-            f.write(content)
+    url_key = md5(url.encode("utf-8")).hexdigest()
+    cache_file = Path(cache_dir, url_key)
+    if cache_file.exists():
+        content = cache_file.read_bytes()
     else:
-        with open(cache_file, "rb") as f:
-            content = f.read()
+        content = urlopen(url).read()
+        cache_file.write_bytes(content)
     return BytesIO(content)
 
 
@@ -33,10 +30,8 @@ piculet.urlopen = mock.Mock(wraps=mock_urlopen)
 @fixture(scope="session")
 def shining_content():
     """Contents of the shining.html file."""
-    file_path = os.path.join(os.path.dirname(__file__), "..", "examples", "shining.html")
-    with open(file_path, encoding="utf-8") as f:
-        content = f.read()
-    return content
+    path = Path(__file__).parent.parent.joinpath("examples", "shining.html")
+    return path.read_text(encoding="utf-8")
 
 
 @fixture

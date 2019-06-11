@@ -1,9 +1,9 @@
 from pytest import config, mark, raises
 
 import json
-import os
 import sys
 from io import StringIO
+from pathlib import Path
 
 from pkg_resources import get_distribution
 
@@ -16,8 +16,7 @@ else:
     from unittest import mock
 
 
-base_dir = os.path.dirname(__file__)
-wikipedia_spec = os.path.join(base_dir, "..", "examples", "wikipedia.json")
+wikipedia_spec = Path(__file__).parent.parent.joinpath("examples", "wikipedia.json")
 
 
 def test_version():
@@ -73,11 +72,11 @@ def test_h2x_no_input_should_print_usage_and_exit(capsys):
 @mark.skipif(sys.platform not in {"linux", "linux2"}, reason="/dev/shm only available on linux")
 def test_h2x_should_read_given_file(capsys):
     content = "<html></html>"
-    with open("/dev/shm/test.html", "w") as f:
-        f.write(content)
+    path = Path("/dev/shm/test.html")
+    path.write_text(content, encoding="utf-8")
     piculet.main(argv=["piculet", "h2x", "/dev/shm/test.html"])
     out, err = capsys.readouterr()
-    os.unlink("/dev/shm/test.html")
+    path.unlink()
     assert out == content
 
 
@@ -91,7 +90,7 @@ def test_h2x_should_read_stdin_when_input_is_dash(capsys):
 
 def test_scrape_no_url_should_print_usage_and_exit(capsys):
     with raises(SystemExit):
-        piculet.main(argv=["piculet", "scrape", "-s", wikipedia_spec])
+        piculet.main(argv=["piculet", "scrape", "-s", str(wikipedia_spec)])
     out, err = capsys.readouterr()
     assert err.startswith("usage: ")
     assert ("required: document" in err) or ("too few arguments" in err)
@@ -113,10 +112,10 @@ def test_scrape_missing_spec_file_should_fail_and_exit(capsys):
 
 
 def test_scrape_local_should_scrape_given_file(capsys):
-    dirname = os.path.join(os.path.dirname(__file__), "..", "examples")
-    shining = os.path.join(dirname, "shining.html")
-    spec = os.path.join(dirname, "movie.json")
-    piculet.main(argv=["piculet", "scrape", shining, "-s", spec])
+    dirpath = Path(__file__).parent.parent.joinpath("examples")
+    shining = Path(dirpath, "shining.html")
+    spec = Path(dirpath, "movie.json")
+    piculet.main(argv=["piculet", "scrape", str(shining), "-s", str(spec)])
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data["title"] == "The Shining"
@@ -130,7 +129,7 @@ def test_scrape_should_scrape_given_url(capsys):
             "scrape",
             "https://en.wikipedia.org/wiki/David_Bowie",
             "-s",
-            wikipedia_spec,
+            str(wikipedia_spec),
             "--html",
         ]
     )
