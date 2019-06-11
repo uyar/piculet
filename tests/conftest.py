@@ -3,8 +3,9 @@ from unittest import mock
 
 from hashlib import md5
 from io import BytesIO
-from pathlib import Path
 from urllib.request import urlopen
+
+from pathstring import Path
 
 import piculet
 

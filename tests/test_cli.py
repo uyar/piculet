@@ -4,14 +4,17 @@ from unittest import mock
 import json
 import sys
 from io import StringIO
-from pathlib import Path
 
+from pathstring import Path
 from pkg_resources import get_distribution
 
 import piculet
 
 
-wikipedia_spec = Path(__file__).parent.parent.joinpath("examples", "wikipedia.json")
+examples_dir = Path(__file__).parent.parent.joinpath("examples")
+wikipedia_spec = Path(examples_dir, "wikipedia.json")
+movie_spec = Path(examples_dir, "movie.json")
+shining_html = Path(examples_dir, "shining.html")
 
 
 def test_help_should_print_usage_and_exit(capsys):
@@ -67,7 +70,7 @@ def test_h2x_should_read_given_file(capsys):
     content = "<html></html>"
     path = Path("/dev/shm/test.html")
     path.write_text(content, encoding="utf-8")
-    piculet.main(argv=["piculet", "h2x", "/dev/shm/test.html"])
+    piculet.main(argv=["piculet", "h2x", path])
     out, err = capsys.readouterr()
     path.unlink()
     assert out == content
@@ -83,7 +86,7 @@ def test_h2x_should_read_stdin_when_input_is_dash(capsys):
 
 def test_scrape_no_url_should_print_usage_and_exit(capsys):
     with pytest.raises(SystemExit):
-        piculet.main(argv=["piculet", "scrape", "-s", str(wikipedia_spec)])
+        piculet.main(argv=["piculet", "scrape", "-s", wikipedia_spec])
     out, err = capsys.readouterr()
     assert err.startswith("usage: ")
     assert "required: document" in err
@@ -105,10 +108,7 @@ def test_scrape_missing_spec_file_should_fail_and_exit(capsys):
 
 
 def test_scrape_local_should_scrape_given_file(capsys):
-    dirpath = Path(__file__).parent.parent.joinpath("examples")
-    shining = Path(dirpath, "shining.html")
-    spec = Path(dirpath, "movie.json")
-    piculet.main(argv=["piculet", "scrape", str(shining), "-s", str(spec)])
+    piculet.main(argv=["piculet", "scrape", shining_html, "-s", movie_spec])
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data["title"] == "The Shining"
@@ -124,7 +124,7 @@ def test_scrape_should_scrape_given_url(capsys):
             "scrape",
             "https://en.wikipedia.org/wiki/David_Bowie",
             "-s",
-            str(wikipedia_spec),
+            wikipedia_spec,
             "--html",
         ]
     )
