@@ -60,7 +60,7 @@ def test_html_to_xhtml_omitted_attributes_should_be_removed():
 def test_html_to_xhtml_self_closing_tags_should_have_slash_at_end():
     content = """<html><br></html>"""
     normalized = html_to_xhtml(content)
-    assert normalized == """<html><br /></html>"""
+    assert normalized == """<html><br/></html>"""
 
 
 def test_html_to_xhtml_attributes_should_have_values():

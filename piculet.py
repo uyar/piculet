@@ -129,7 +129,7 @@ class HTMLNormalizer(HTMLParser):
             line = "<%(tag)s%(attrs)s%(slash)s>" % {
                 "tag": tag,
                 "attrs": (" " + " ".join(attributes)) if len(attributes) > 0 else "",
-                "slash": " /" if tag in self.VOID_ELEMENTS else "",
+                "slash": "/" if tag in self.VOID_ELEMENTS else "",
             }
             print(line, end="")
             if tag not in self.VOID_ELEMENTS:

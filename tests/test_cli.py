@@ -107,7 +107,7 @@ def test_h2x_if_given_file_should_print_converted_content(capsys):
     piculet.main(argv=["piculet", "--h2x", f.name])
     out, err = capsys.readouterr()
     f.close()
-    assert out == "<img />"
+    assert out == "<img/>"
 
 
 def test_h2x_if_given_dash_should_read_from_stdin(capsys):
@@ -115,4 +115,4 @@ def test_h2x_if_given_dash_should_read_from_stdin(capsys):
     with mock.patch("sys.stdin", StringIO(content)):
         piculet.main(argv=["piculet", "--h2x", "-"])
     out, err = capsys.readouterr()
-    assert out == "<img />"
+    assert out == "<img/>"
