@@ -14,10 +14,6 @@ import piculet
 wikipedia_spec = Path(__file__).parent.parent.joinpath("examples", "wikipedia.json")
 
 
-def test_version():
-    assert get_distribution("piculet").version == piculet.__version__
-
-
 def test_help_should_print_usage_and_exit(capsys):
     with pytest.raises(SystemExit):
         piculet.main(argv=["piculet", "--help"])

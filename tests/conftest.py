@@ -30,12 +30,13 @@ piculet.urlopen = mock.Mock(wraps=mock_urlopen)
 
 @pytest.fixture(scope="session")
 def shining_content():
-    """Contents of the shining.html file."""
+    """Contents of the test file for the movie "The Shining"."""
     path = Path(__file__).parent.parent.joinpath("examples", "shining.html")
-    return path.read_text(encoding="utf-8")
+    content = path.read_text(encoding="utf-8")
+    return content
 
 
 @pytest.fixture
 def shining(shining_content):
-    """Root element of the XML tree for the movie document "The Shining"."""
+    """Root element of the test XML tree for the movie "The Shining"."""
     return piculet.build_tree(shining_content)
