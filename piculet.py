@@ -756,7 +756,7 @@ def scrape_document(address, spec, *, html=False):
     :param html: Whether the content is in HTML format.
     """
     if os.path.splitext(spec)[-1] in (".yaml", ".yml"):
-        if find_loader("strictyam") is None:
+        if find_loader("strictyaml") is None:
             raise RuntimeError("YAML support not available")
         import strictyaml
 
