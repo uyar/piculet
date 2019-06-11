@@ -791,17 +791,17 @@ def main(argv=None):
     parser = ArgumentParser(prog="piculet")
     parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
     parser.add_argument("document", help="path or URL of document")
-    parser.add_argument("-s", "--spec", required=True, help="spec file")
     parser.add_argument("--html", action="store_true", help="document is in HTML format")
+
+    command = parser.add_mutually_exclusive_group(required=True)
+    command.add_argument("-s", "--spec", help="spec file")
+    command.add_argument("--h2x", action="store_true", help="convert HTML to XHTML")
 
     argv = argv if argv is not None else sys.argv
     arguments = parser.parse_args(argv[1:])
 
-    try:
+    if not arguments.h2x:
         scrape_document(arguments.document, arguments.spec, html=arguments.html)
-    except Exception as e:
-        print(e, file=sys.stderr)
-        sys.exit(1)
 
 
 if __name__ == "__main__":
