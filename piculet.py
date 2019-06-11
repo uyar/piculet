@@ -782,28 +782,17 @@ def scrape_document(address, spec, *, html=False):
     print(json.dumps(data, indent=2, sort_keys=True))
 
 
-def make_parser(prog):
-    """Build a parser for command line arguments.
-
-    :sig: (str) -> ArgumentParser
-    :param prog: Name of program.
-    :return: Parser for arguments.
-    """
-    parser = ArgumentParser(prog=prog)
-    parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
-    parser.add_argument("document", help="path or URL of document")
-    parser.add_argument("-s", "--spec", required=True, help="spec file")
-    parser.add_argument("--html", action="store_true", help="document is in HTML format")
-    return parser
-
-
 def main(argv=None):
     """Entry point of the command line utility.
 
     :sig: (Optional[List[str]]) -> None
     :param argv: Command line arguments.
     """
-    parser = make_parser(prog="piculet")
+    parser = ArgumentParser(prog="piculet")
+    parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
+    parser.add_argument("document", help="path or URL of document")
+    parser.add_argument("-s", "--spec", required=True, help="spec file")
+    parser.add_argument("--html", action="store_true", help="document is in HTML format")
 
     argv = argv if argv is not None else sys.argv
     arguments = parser.parse_args(argv[1:])
