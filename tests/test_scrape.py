@@ -1,4 +1,4 @@
-from pytest import raises
+import pytest
 
 from piculet import reducers, scrape, transformers
 
@@ -28,7 +28,7 @@ def test_added_reducer_should_be_usable(shining_content):
 
 
 def test_unknown_reducer_should_raise_error(shining_content):
-    with raises(ValueError):
+    with pytest.raises(ValueError):
         items = [{"key": "year", "value": {"path": "//h1//text()", "reduce": "foo"}}]
         scrape(shining_content, {"items": items})
 
@@ -54,7 +54,7 @@ def test_added_transformer_should_be_usable(shining_content):
 
 
 def test_unknown_transformer_should_raise_error(shining_content):
-    with raises(ValueError):
+    with pytest.raises(ValueError):
         items = [
             {
                 "key": "year",
@@ -261,7 +261,7 @@ def test_section_no_roots_should_return_empty_result(shining_content):
 
 
 def test_section_multiple_roots_should_raise_error(shining_content):
-    with raises(ValueError):
+    with pytest.raises(ValueError):
         items = [
             {
                 "key": "director",

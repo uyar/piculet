@@ -1,10 +1,10 @@
-from pytest import raises
+import pytest
 
 from piculet import extract, preprocess
 
 
 def test_unknown_preprocessor_should_raise_error(shining):
-    with raises(ValueError):
+    with pytest.raises(ValueError):
         pre = [{"op": "foo", "path": "//tr[1]"}]
         preprocess(shining, pre)
 

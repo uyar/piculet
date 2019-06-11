@@ -1,4 +1,4 @@
-from pytest import fixture
+import pytest
 from unittest import mock
 
 from hashlib import md5
@@ -27,14 +27,14 @@ def mock_urlopen(url):
 piculet.urlopen = mock.Mock(wraps=mock_urlopen)
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def shining_content():
     """Contents of the shining.html file."""
     path = Path(__file__).parent.parent.joinpath("examples", "shining.html")
     return path.read_text(encoding="utf-8")
 
 
-@fixture
+@pytest.fixture
 def shining(shining_content):
     """Root element of the XML tree for the movie document "The Shining"."""
     return piculet.build_tree(shining_content)

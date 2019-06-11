@@ -1,4 +1,4 @@
-from pytest import raises
+import pytest
 
 from piculet import Path, Rule, Rules, build_tree, reducers, transformers
 
@@ -258,7 +258,7 @@ def test_section_no_roots_should_return_empty_result(shining):
 
 
 def test_section_multiple_roots_should_raise_error(shining):
-    with raises(ValueError):
+    with pytest.raises(ValueError):
         rules = [
             Rule(
                 key="director",

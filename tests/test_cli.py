@@ -1,4 +1,4 @@
-from pytest import config, mark, raises
+import pytest
 
 import json
 import sys
@@ -24,21 +24,21 @@ def test_version():
 
 
 def test_help_should_print_usage_and_exit(capsys):
-    with raises(SystemExit):
+    with pytest.raises(SystemExit):
         piculet.main(argv=["piculet", "--help"])
     out, err = capsys.readouterr()
     assert out.startswith("usage: ")
 
 
 def test_version_should_print_version_number_and_exit(capsys):
-    with raises(SystemExit):
+    with pytest.raises(SystemExit):
         piculet.main(argv=["piculet", "--version"])
     out, err = capsys.readouterr()
     assert "piculet " + get_distribution("piculet").version + "\n" in {out, err}
 
 
 def test_no_command_should_print_usage_and_exit(capsys):
-    with raises(SystemExit):
+    with pytest.raises(SystemExit):
         piculet.main(argv=["piculet"])
     out, err = capsys.readouterr()
     assert err.startswith("usage: ")
@@ -46,7 +46,7 @@ def test_no_command_should_print_usage_and_exit(capsys):
 
 
 def test_invalid_command_should_print_usage_and_exit(capsys):
-    with raises(SystemExit):
+    with pytest.raises(SystemExit):
         piculet.main(argv=["piculet", "foo"])
     out, err = capsys.readouterr()
     assert err.startswith("usage: ")
@@ -54,7 +54,7 @@ def test_invalid_command_should_print_usage_and_exit(capsys):
 
 
 def test_unrecognized_arguments_should_print_usage_and_exit(capsys):
-    with raises(SystemExit):
+    with pytest.raises(SystemExit):
         piculet.main(argv=["piculet", "--foo", "h2x", ""])
     out, err = capsys.readouterr()
     assert err.startswith("usage: ")
@@ -62,14 +62,16 @@ def test_unrecognized_arguments_should_print_usage_and_exit(capsys):
 
 
 def test_h2x_no_input_should_print_usage_and_exit(capsys):
-    with raises(SystemExit):
+    with pytest.raises(SystemExit):
         piculet.main(argv=["piculet", "h2x"])
     out, err = capsys.readouterr()
     assert err.startswith("usage: ")
     assert ("required: file" in err) or ("too few arguments" in err)
 
 
-@mark.skipif(sys.platform not in {"linux", "linux2"}, reason="/dev/shm only available on linux")
+@pytest.mark.skipif(
+    sys.platform not in {"linux", "linux2"}, reason="/dev/shm only available on linux"
+)
 def test_h2x_should_read_given_file(capsys):
     content = "<html></html>"
     path = Path("/dev/shm/test.html")
@@ -89,7 +91,7 @@ def test_h2x_should_read_stdin_when_input_is_dash(capsys):
 
 
 def test_scrape_no_url_should_print_usage_and_exit(capsys):
-    with raises(SystemExit):
+    with pytest.raises(SystemExit):
         piculet.main(argv=["piculet", "scrape", "-s", str(wikipedia_spec)])
     out, err = capsys.readouterr()
     assert err.startswith("usage: ")
@@ -97,7 +99,7 @@ def test_scrape_no_url_should_print_usage_and_exit(capsys):
 
 
 def test_scrape_no_spec_should_print_usage_and_exit(capsys):
-    with raises(SystemExit):
+    with pytest.raises(SystemExit):
         piculet.main(argv=["piculet", "scrape", "http://www.foo.com/"])
     out, err = capsys.readouterr()
     assert err.startswith("usage: ")
@@ -105,7 +107,7 @@ def test_scrape_no_spec_should_print_usage_and_exit(capsys):
 
 
 def test_scrape_missing_spec_file_should_fail_and_exit(capsys):
-    with raises(SystemExit):
+    with pytest.raises(SystemExit):
         piculet.main(argv=["piculet", "scrape", "http://www.foo.com/", "-s", "foo.json"])
     out, err = capsys.readouterr()
     assert "No such file or directory: " in err
@@ -121,7 +123,9 @@ def test_scrape_local_should_scrape_given_file(capsys):
     assert data["title"] == "The Shining"
 
 
-@mark.skipif(not config.getvalue("--cov"), reason="takes unforeseen amount of time")
+@pytest.mark.skipif(
+    not pytest.config.getvalue("--cov"), reason="takes unforeseen amount of time"
+)
 def test_scrape_should_scrape_given_url(capsys):
     piculet.main(
         argv=[
