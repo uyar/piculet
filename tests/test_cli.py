@@ -2,8 +2,8 @@ import pytest
 from unittest import mock
 
 import json
-import sys
 from io import StringIO
+from tempfile import NamedTemporaryFile, gettempdir
 
 from pathstring import Path
 from pkg_resources import get_distribution
@@ -18,6 +18,10 @@ examples_dir = Path(__file__).parent.parent.joinpath("examples")
 wikipedia_spec = Path(examples_dir, "wikipedia.json")
 movie_spec = Path(examples_dir, "movie.json")
 shining_html = Path(examples_dir, "shining.html")
+
+tempdir = Path("/dev/shm")
+if not tempdir.exists():
+    tempdir = Path(gettempdir())
 
 
 def test_help_should_print_usage_and_exit(capsys):
@@ -96,22 +100,19 @@ def test_h2x_if_given_no_document_should_print_usage_and_exit(capsys):
     assert "required: document" in err
 
 
-@pytest.mark.skipif(
-    sys.platform not in {"linux", "linux2"}, reason="/dev/shm only available on linux"
-)
 def test_h2x_if_given_file_should_print_converted_content(capsys):
-    content = "<html></html>"
-    path = Path("/dev/shm/test.html")
-    path.write_text(content, encoding="utf-8")
-    piculet.main(argv=["piculet", "--h2x", path])
+    content = "<img>"
+    f = NamedTemporaryFile(dir=tempdir, buffering=0)
+    f.write(content.encode("utf-8"))
+    piculet.main(argv=["piculet", "--h2x", f.name])
     out, err = capsys.readouterr()
-    path.unlink()
-    assert out == content
+    f.close()
+    assert out == "<img />"
 
 
 def test_h2x_if_given_dash_should_read_from_stdin(capsys):
-    content = "<html></html>"
+    content = "<img>"
     with mock.patch("sys.stdin", StringIO(content)):
         piculet.main(argv=["piculet", "--h2x", "-"])
     out, err = capsys.readouterr()
-    assert out == content
+    assert out == "<img />"
