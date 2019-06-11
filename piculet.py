@@ -800,8 +800,14 @@ def main(argv=None):
     argv = argv if argv is not None else sys.argv
     arguments = parser.parse_args(argv[1:])
 
-    if not arguments.h2x:
-        scrape_document(arguments.document, arguments.spec, html=arguments.html)
+    try:
+        if arguments.h2x:
+            h2x(arguments.document)
+        else:
+            scrape_document(arguments.document, arguments.spec, html=arguments.html)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
