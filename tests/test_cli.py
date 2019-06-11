@@ -1,7 +1,6 @@
 from pytest import config, mark, raises
 
 import json
-import logging
 import os
 import sys
 from io import StringIO
@@ -61,13 +60,6 @@ def test_unrecognized_arguments_should_print_usage_and_exit(capsys):
     out, err = capsys.readouterr()
     assert err.startswith("usage: ")
     assert "unrecognized arguments: --foo" in err
-
-
-def test_debug_mode_should_print_debug_messages(caplog):
-    caplog.set_level(logging.DEBUG)
-    with mock.patch("sys.stdin", StringIO("<html></html>")):
-        piculet.main(argv=["piculet", "--debug", "h2x", "-"])
-    assert caplog.record_tuples[0][-1] == "running in debug mode"
 
 
 def test_h2x_no_input_should_print_usage_and_exit(capsys):

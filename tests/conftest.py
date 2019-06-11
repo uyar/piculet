@@ -1,16 +1,12 @@
 from pytest import fixture
 from unittest import mock
 
-import logging
 import os
 from hashlib import md5
 from io import BytesIO
 from urllib.request import urlopen
 
 import piculet
-
-
-logging.raiseExceptions = False
 
 
 cache_dir = os.path.join(os.path.dirname(__file__), ".cache")

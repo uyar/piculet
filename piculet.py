@@ -24,7 +24,6 @@ https://piculet.tekir.org/
 """
 
 import json
-import logging
 import os
 import re
 import sys
@@ -42,10 +41,6 @@ from urllib.request import urlopen
 
 
 __version__ = "2.0.0.dev1"
-
-
-_logger = logging.getLogger(__name__)
-_logger.addHandler(logging.NullHandler())
 
 
 ###########################################################
@@ -207,7 +202,6 @@ def html_to_xhtml(document, *, omit_tags=None, omit_attrs=None):
 
 USE_LXML = find_loader("lxml") is not None  # sig: bool
 if USE_LXML:
-    _logger.info("using lxml")
     from lxml import etree as ElementTree
     from lxml.etree import Element, XPath
 else:
@@ -606,7 +600,6 @@ def build_tree(document, *, lxml_html=False):
     :return: Root element of the XML tree.
     """
     if USE_LXML and lxml_html:
-        _logger.info("using lxml html builder")
         import lxml.html
 
         return lxml.html.fromstring(document)
@@ -798,7 +791,6 @@ def make_parser(prog):
     """
     parser = ArgumentParser(prog=prog)
     parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
-    parser.add_argument("--debug", action="store_true", help="enable debug messages")
 
     commands = parser.add_subparsers(metavar="command", dest="command")
     commands.required = True
@@ -830,10 +822,6 @@ def main(argv=None):
 
     argv = argv if argv is not None else sys.argv
     arguments = parser.parse_args(argv[1:])
-
-    if arguments.debug:
-        logging.basicConfig(level=logging.DEBUG)
-        _logger.info("running in debug mode")
 
     # run the handler for the selected command
     try:
