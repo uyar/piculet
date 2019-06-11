@@ -11,20 +11,23 @@ from pkg_resources import get_distribution
 import piculet
 
 
+coverage_mode = pytest.config.getvalue("--cov")
+
+
 examples_dir = Path(__file__).parent.parent.joinpath("examples")
 wikipedia_spec = Path(examples_dir, "wikipedia.json")
 movie_spec = Path(examples_dir, "movie.json")
 shining_html = Path(examples_dir, "shining.html")
 
 
-def test_help_command_should_print_usage_and_exit(capsys):
+def test_help_should_print_usage_and_exit(capsys):
     with pytest.raises(SystemExit):
         piculet.main(argv=["piculet", "--help"])
     out, err = capsys.readouterr()
     assert out.startswith("usage: ")
 
 
-def test_version_command_should_print_version_number_and_exit(capsys):
+def test_version_should_print_version_number_and_exit(capsys):
     with pytest.raises(SystemExit):
         piculet.main(argv=["piculet", "--version"])
     out, err = capsys.readouterr()
@@ -69,9 +72,7 @@ def test_scrape_if_given_file_should_print_extracted_data(capsys):
     assert data["title"] == "The Shining"
 
 
-@pytest.mark.skipif(
-    not pytest.config.getvalue("--cov"), reason="takes unforeseen amount of time"
-)
+@pytest.mark.skipif(not coverage_mode, reason="takes unforeseen amount of time")
 def test_scrape_if_given_url_should_retrieve_url(capsys):
     piculet.main(
         argv=[
