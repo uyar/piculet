@@ -17,98 +17,53 @@ movie_spec = Path(examples_dir, "movie.json")
 shining_html = Path(examples_dir, "shining.html")
 
 
-def test_help_should_print_usage_and_exit(capsys):
+def test_help_command_should_print_usage_and_exit(capsys):
     with pytest.raises(SystemExit):
         piculet.main(argv=["piculet", "--help"])
     out, err = capsys.readouterr()
     assert out.startswith("usage: ")
 
 
-def test_version_should_print_version_number_and_exit(capsys):
+def test_version_command_should_print_version_number_and_exit(capsys):
     with pytest.raises(SystemExit):
         piculet.main(argv=["piculet", "--version"])
     out, err = capsys.readouterr()
     assert "piculet " + get_distribution("piculet").version + "\n" in {out, err}
 
 
-def test_no_command_should_print_usage_and_exit(capsys):
+def test_if_given_no_document_should_print_usage_and_exit(capsys):
     with pytest.raises(SystemExit):
         piculet.main(argv=["piculet"])
-    out, err = capsys.readouterr()
-    assert err.startswith("usage: ")
-    assert "required: command" in err
-
-
-def test_invalid_command_should_print_usage_and_exit(capsys):
-    with pytest.raises(SystemExit):
-        piculet.main(argv=["piculet", "foo"])
-    out, err = capsys.readouterr()
-    assert err.startswith("usage: ")
-    assert "invalid choice: 'foo'" in err
-
-
-def test_unrecognized_arguments_should_print_usage_and_exit(capsys):
-    with pytest.raises(SystemExit):
-        piculet.main(argv=["piculet", "--foo", "h2x", ""])
-    out, err = capsys.readouterr()
-    assert err.startswith("usage: ")
-    assert "unrecognized arguments: --foo" in err
-
-
-def test_h2x_no_input_should_print_usage_and_exit(capsys):
-    with pytest.raises(SystemExit):
-        piculet.main(argv=["piculet", "h2x"])
-    out, err = capsys.readouterr()
-    assert err.startswith("usage: ")
-    assert "required: file" in err
-
-
-@pytest.mark.skipif(
-    sys.platform not in {"linux", "linux2"}, reason="/dev/shm only available on linux"
-)
-def test_h2x_should_read_given_file(capsys):
-    content = "<html></html>"
-    path = Path("/dev/shm/test.html")
-    path.write_text(content, encoding="utf-8")
-    piculet.main(argv=["piculet", "h2x", path])
-    out, err = capsys.readouterr()
-    path.unlink()
-    assert out == content
-
-
-def test_h2x_should_read_stdin_when_input_is_dash(capsys):
-    content = "<html></html>"
-    with mock.patch("sys.stdin", StringIO(content)):
-        piculet.main(argv=["piculet", "h2x", "-"])
-    out, err = capsys.readouterr()
-    assert out == content
-
-
-def test_scrape_no_url_should_print_usage_and_exit(capsys):
-    with pytest.raises(SystemExit):
-        piculet.main(argv=["piculet", "scrape", "-s", wikipedia_spec])
     out, err = capsys.readouterr()
     assert err.startswith("usage: ")
     assert "required: document" in err
 
 
-def test_scrape_no_spec_should_print_usage_and_exit(capsys):
+def test_if_given_document_without_command_should_print_usage_and_exit(capsys):
     with pytest.raises(SystemExit):
-        piculet.main(argv=["piculet", "scrape", "http://www.foo.com/"])
+        piculet.main(argv=["piculet", shining_html])
     out, err = capsys.readouterr()
     assert err.startswith("usage: ")
-    assert "required: -s" in err
+    assert "error: one of the arguments -s/--spec --h2x is required" in err
 
 
-def test_scrape_missing_spec_file_should_fail_and_exit(capsys):
+def test_scrape_if_given_no_document_should_print_usage_and_exit(capsys):
     with pytest.raises(SystemExit):
-        piculet.main(argv=["piculet", "scrape", "http://www.foo.com/", "-s", "foo.json"])
+        piculet.main(argv=["piculet", "-s", wikipedia_spec])
+    out, err = capsys.readouterr()
+    assert err.startswith("usage: ")
+    assert "required: document" in err
+
+
+def test_scrape_if_given_missing_spec_file_should_fail_and_exit(capsys):
+    with pytest.raises(SystemExit):
+        piculet.main(argv=["piculet", shining_html, "-s", "foo.json"])
     out, err = capsys.readouterr()
     assert "No such file or directory: " in err
 
 
-def test_scrape_local_should_scrape_given_file(capsys):
-    piculet.main(argv=["piculet", "scrape", shining_html, "-s", movie_spec])
+def test_scrape_if_given_file_should_print_extracted_data(capsys):
+    piculet.main(argv=["piculet", shining_html, "-s", movie_spec])
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data["title"] == "The Shining"
@@ -117,11 +72,10 @@ def test_scrape_local_should_scrape_given_file(capsys):
 @pytest.mark.skipif(
     not pytest.config.getvalue("--cov"), reason="takes unforeseen amount of time"
 )
-def test_scrape_should_scrape_given_url(capsys):
+def test_scrape_if_given_url_should_retrieve_url(capsys):
     piculet.main(
         argv=[
             "piculet",
-            "scrape",
             "https://en.wikipedia.org/wiki/David_Bowie",
             "-s",
             wikipedia_spec,
@@ -131,3 +85,32 @@ def test_scrape_should_scrape_given_url(capsys):
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data["name"] == "David Bowie"
+
+
+def test_h2x_if_given_no_document_should_print_usage_and_exit(capsys):
+    with pytest.raises(SystemExit):
+        piculet.main(argv=["piculet", "--h2x"])
+    out, err = capsys.readouterr()
+    assert err.startswith("usage: ")
+    assert "required: document" in err
+
+
+@pytest.mark.skipif(
+    sys.platform not in {"linux", "linux2"}, reason="/dev/shm only available on linux"
+)
+def test_h2x_if_given_file_should_print_converted_content(capsys):
+    content = "<html></html>"
+    path = Path("/dev/shm/test.html")
+    path.write_text(content, encoding="utf-8")
+    piculet.main(argv=["piculet", "--h2x", path])
+    out, err = capsys.readouterr()
+    path.unlink()
+    assert out == content
+
+
+def test_h2x_if_given_dash_should_read_from_stdin(capsys):
+    content = "<html></html>"
+    with mock.patch("sys.stdin", StringIO(content)):
+        piculet.main(argv=["piculet", "--h2x", "-"])
+    out, err = capsys.readouterr()
+    assert out == content
