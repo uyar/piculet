@@ -32,6 +32,14 @@ def test_version_should_print_version_number_and_exit(capsys):
     assert "piculet " + get_distribution("piculet").version + "\n" in {out, err}
 
 
+def test_errors_should_be_caught_and_printed(capsys):
+    with pytest.raises(SystemExit):
+        with mock.patch("sys.stdin", StringIO("")):
+            piculet.main(argv=["piculet", "-s", "foo.json"])
+    out, err = capsys.readouterr()
+    assert "No such file or directory: 'foo.json'" in err
+
+
 def test_if_given_no_command_should_print_usage_and_exit(capsys):
     with pytest.raises(SystemExit):
         piculet.main(argv=["piculet"])
