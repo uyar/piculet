@@ -53,7 +53,7 @@ class HTMLNormalizer(HTMLParser):
     DOCTYPE declarations and comments are removed.
     """
 
-    VOID_ELEMENTS = frozenset(
+    VOID_ELEMENTS = frozenset(  # sig: FrozenSet[str]
         {
             "area",
             "base",
