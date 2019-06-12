@@ -42,7 +42,7 @@ def test_if_given_no_command_should_print_usage_and_exit(capsys):
 
 def test_if_given_conflicting_commands_should_print_usage_and_exit(capsys):
     with pytest.raises(SystemExit):
-        piculet.main(argv=["piculet", "-s", "foo.json", "--h2x"])
+        piculet.main(argv=["piculet", "-s", movie_spec, "--h2x"])
     out, err = capsys.readouterr()
     assert err.startswith("usage: ")
     assert "error: argument --h2x: not allowed with argument -s/--spec" in err
@@ -57,12 +57,21 @@ def test_scrape_should_print_data_extracted_from_stdin(capsys, shining_content):
 
 
 @pytest.mark.skipif(not piculet.YAML_AVAILABLE, reason="requires YAML support")
-def test_scrape_should_work_with_yaml_file(capsys, shining_content):
+def test_scrape_should_work_with_yaml_spec(capsys, shining_content):
     with mock.patch("sys.stdin", StringIO(shining_content)):
         piculet.main(argv=["piculet", "-s", movie_spec.with_suffix(".yaml")])
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data["title"] == "The Shining"
+
+
+@pytest.mark.skipif(piculet.YAML_AVAILABLE, reason="wants exception if no YAML support")
+def test_scrape_should_fail_with_yaml_spec_if_no_yaml_support(capsys):
+    with pytest.raises(SystemExit):
+        with mock.patch("sys.stdin", StringIO("")):
+            piculet.main(argv=["piculet", "-s", movie_spec.with_suffix(".yaml")])
+    out, err = capsys.readouterr()
+    assert "YAML support not available" in err
 
 
 def test_scrape_should_honor_html_setting(capsys, shining_content):
