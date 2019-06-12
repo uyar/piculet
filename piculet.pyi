@@ -25,7 +25,6 @@ Reducer = Callable[[Sequence[str]], str]
 PathTransformer = Callable[[str], Any]
 MapTransformer = Callable[[Mapping], Any]
 Transformer = Union[PathTransformer, MapTransformer]
-ExtractedItem = Union[str, Mapping]
 
 __version__ = ...  # type: str
 LXML_AVAILABLE = ...  # type: bool
@@ -64,7 +63,7 @@ class Extractor(ABC):
         transform: Optional[Transformer] = ...,
         foreach: Optional[str] = ...,
     ) -> None: ...
-    def apply(self, element: Element) -> ExtractedItem: ...
+    def apply(self, element: Element) -> Union[str, Mapping]: ...
     def extract(self, element: Element, *, transform: bool = ...) -> Any: ...
     @staticmethod
     def from_map(item: Mapping) -> Extractor: ...

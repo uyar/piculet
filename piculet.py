@@ -268,7 +268,6 @@ _EMPTY = {}  # sig: Dict
 # sigalias: PathTransformer = Callable[[str], Any]
 # sigalias: MapTransformer = Callable[[Mapping], Any]
 # sigalias: Transformer = Union[PathTransformer, MapTransformer]
-# sigalias: ExtractedItem = Union[str, Mapping]
 
 
 class Extractor(ABC):
@@ -291,7 +290,7 @@ class Extractor(ABC):
     def apply(self, element):
         """Get the raw data from an element using this extractor.
 
-        :sig: (Element) -> ExtractedItem
+        :sig: (Element) -> Union[str, Mapping]
         :param element: Element to apply this extractor to.
         :return: Extracted raw data.
         """
