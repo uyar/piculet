@@ -83,6 +83,13 @@ basepython = pypy3.6
 [testenv:pypy36-lxml]
 basepython = pypy3.6
 
+[testenv:coverage]
+deps =
+    strictyaml
+commands =
+    poetry install -v
+    {posargs:pytest} --cov-report term-missing --cov=piculet tests
+
 [testenv:style]
 commands =
     poetry install -v
