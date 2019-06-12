@@ -48,6 +48,15 @@ def test_scrape_should_print_data_extracted_from_stdin(capsys, shining_content):
     assert data["title"] == "The Shining"
 
 
+def test_scrape_should_honor_html_setting(capsys, shining_content):
+    content = shining_content.replace('<meta charset="utf-8"/>', '<meta charset="utf-8">')
+    with mock.patch("sys.stdin", StringIO(content)):
+        piculet.main(argv=["piculet", "-s", movie_spec, "--html"])
+    out, err = capsys.readouterr()
+    data = json.loads(out)
+    assert data["title"] == "The Shining"
+
+
 def test_h2x_should_convert_document_from_stdin(capsys):
     with mock.patch("sys.stdin", StringIO("<img>")):
         piculet.main(argv=["piculet", "--h2x"])
