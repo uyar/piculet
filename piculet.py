@@ -39,7 +39,7 @@ from pathlib import Path as FSPath
 from pkgutil import find_loader
 
 
-__version__ = "2.0.0.dev1"  # sig: str
+__version__ = "2.0.0.dev2"  # sig: str
 
 
 ###########################################################
