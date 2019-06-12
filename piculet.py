@@ -266,9 +266,9 @@ _EMPTY = {}  # sig: Dict
 
 # sigalias: Reducer = Callable[[Sequence[str]], str]
 # sigalias: PathTransformer = Callable[[str], Any]
-# sigalias: MapTransformer = Callable[[Mapping[str, Any]], Any]
+# sigalias: MapTransformer = Callable[[Mapping], Any]
 # sigalias: Transformer = Union[PathTransformer, MapTransformer]
-# sigalias: ExtractedItem = Union[str, Mapping[str, Any]]
+# sigalias: ExtractedItem = Union[str, Mapping]
 
 
 class Extractor(ABC):
@@ -313,7 +313,7 @@ class Extractor(ABC):
     def from_map(item):
         """Generate an extractor from a description map.
 
-        :sig: (Mapping[str, Any]) -> Extractor
+        :sig: (Mapping) -> Extractor
         :param item: Extractor description.
         :return: Extractor object.
         :raise ValueError: When reducer or transformer names are unknown.
@@ -416,7 +416,7 @@ class Rules(Extractor):
     def apply(self, element):
         """Apply this extractor to an element.
 
-        :sig: (Element) -> Mapping[str, Any]
+        :sig: (Element) -> Mapping
         :param element: Element to apply the extractor to.
         :return: Extracted mapping.
         """
@@ -461,7 +461,7 @@ class Rule:
     def from_map(item):
         """Generate a rule from a description map.
 
-        :sig: (Mapping[str, Any]) -> Rule
+        :sig: (Mapping) -> Rule
         :param item: Item description.
         :return: Rule object.
         """
@@ -473,7 +473,7 @@ class Rule:
     def extract(self, element):
         """Extract data out of an element using this rule.
 
-        :sig: (Element) -> Mapping[str, Any]
+        :sig: (Element) -> Mapping
         :param element: Element to extract the data from.
         :return: Extracted data.
         """
@@ -535,8 +535,8 @@ def set_element_attr(root, path, name, value):
         (
             Element,
             str,
-            Union[str, Mapping[str, Any]],
-            Union[str, Mapping[str, Any]]
+            Union[str, Mapping],
+            Union[str, Mapping]
         ) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to set attributes for.
@@ -561,7 +561,7 @@ def set_element_attr(root, path, name, value):
 def set_element_text(root, path, text):
     """Set the text for selected elements.
 
-    :sig: (Element, str, Union[str, Mapping[str, Any]]) -> None
+    :sig: (Element, str, Union[str, Mapping]) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to set attributes for.
     :param text: Description for text generation.
@@ -600,7 +600,7 @@ class Registry:
     def __init__(self, entries):
         """Initialize this registry.
 
-        :sig: (Mapping[str, Any]) -> None
+        :sig: (Mapping) -> None
         :param entries: Entries to add to this registry.
         """
         self.__dict__.update(entries)
@@ -665,7 +665,7 @@ transformers = Registry(_TRANSFORMERS)  # sig: Registry
 def preprocess(root, pre):
     """Process a tree before starting extraction.
 
-    :sig: (Element, Sequence[Mapping[str, Any]]) -> None
+    :sig: (Element, Sequence[Mapping]) -> None
     :param root: Root of tree to process.
     :param pre: Descriptions for processing operations.
     """
@@ -687,9 +687,9 @@ def extract(element, items, *, section=None):
     :sig:
         (
             Element,
-            Sequence[Mapping[str, Any]],
+            Sequence[Mapping],
             Optional[str]
-        ) -> Mapping[str, Any]
+        ) -> Mapping
     :param element: Element to extract the data from.
     :param items: Descriptions for extracting items.
     :param section: Path to select the root element for these items.
@@ -702,7 +702,7 @@ def extract(element, items, *, section=None):
 def scrape(document, spec, *, lxml_html=False):
     """Extract data from a document after optionally preprocessing it.
 
-    :sig: (str, Mapping[str, Any], bool) -> Mapping[str, Any]
+    :sig: (str, Mapping, bool) -> Mapping
     :param document: Document to scrape.
     :param spec: Extraction specification.
     :param lxml_html: Use the lxml.html builder if available.
@@ -727,7 +727,7 @@ YAML_AVAILABLE = find_loader("strictyaml") is not None  # sig: bool
 def load_spec(path):
     """Load an extraction specification from a file.
 
-    :sig: (FSPath) -> Mapping[str, Any]
+    :sig: (FSPath) -> Mapping
     :param path: Path of specification file.
     :return: Loaded specification.
     """
