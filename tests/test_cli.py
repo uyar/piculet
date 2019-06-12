@@ -40,6 +40,14 @@ def test_if_given_no_command_should_print_usage_and_exit(capsys):
     assert "error: one of the arguments -s/--spec --h2x is required" in err
 
 
+def test_if_given_conflicting_commands_should_print_usage_and_exit(capsys):
+    with pytest.raises(SystemExit):
+        piculet.main(argv=["piculet", "-s", "foo.json", "--h2x"])
+    out, err = capsys.readouterr()
+    assert err.startswith("usage: ")
+    assert "error: argument --h2x: not allowed with argument -s/--spec" in err
+
+
 def test_scrape_should_print_data_extracted_from_stdin(capsys, shining_content):
     with mock.patch("sys.stdin", StringIO(shining_content)):
         piculet.main(argv=["piculet", "-s", movie_spec])
