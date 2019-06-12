@@ -37,7 +37,6 @@ from io import StringIO
 from operator import itemgetter
 from pathlib import Path as FSPath
 from pkgutil import find_loader
-from urllib.request import urlopen
 
 
 __version__ = "2.0.0.dev1"  # sig: str
@@ -733,20 +732,6 @@ def scrape(document, spec, *, lxml_html=False):
 ###########################################################
 
 
-def h2x(source):
-    """Convert an HTML file into XHTML and print.
-
-    :sig: (str) -> None
-    :param source: Path of HTML file to convert.
-    """
-    if source == "-":
-        content = sys.stdin.read()
-    else:
-        with open(source) as f:
-            content = f.read()
-    print(html_to_xhtml(content), end="")
-
-
 def load_spec(path):
     """Load an extraction specification from a file.
 
@@ -767,38 +752,14 @@ def load_spec(path):
     return spec_loader(spec_content)
 
 
-def scrape_document(address, spec, *, html=False):
-    """Scrape data from a file path or a URL and print.
-
-    :sig: (str, Mapping[str, Any], bool) -> None
-    :param address: File path or URL of document to scrape.
-    :param spec: Path of spec file.
-    :param html: Whether the content is in HTML format.
-    """
-    if address.startswith(("http://", "https://")):
-        with urlopen(address) as f:
-            content = f.read()
-    else:
-        with open(address, "rb") as f:
-            content = f.read()
-    document = content.decode()
-
-    if html:
-        document = html_to_xhtml(document)
-
-    data = scrape(document, spec)
-    print(json.dumps(data, indent=2, sort_keys=True))
-
-
 def main(argv=None):
     """Entry point of the command line utility.
 
     :sig: (Optional[List[str]]) -> None
     :param argv: Command line arguments.
     """
-    parser = ArgumentParser(prog="piculet")
+    parser = ArgumentParser(prog="piculet", description="extract data from XML/HTML")
     parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
-    parser.add_argument("document", help="path or URL of document")
     parser.add_argument("--html", action="store_true", help="document is in HTML format")
 
     command = parser.add_mutually_exclusive_group(required=True)
@@ -809,11 +770,15 @@ def main(argv=None):
     arguments = parser.parse_args(argv[1:])
 
     try:
+        content = sys.stdin.read()
         if arguments.h2x:
-            h2x(arguments.document)
+            print(html_to_xhtml(content), end="")
         else:
             spec = load_spec(FSPath(arguments.spec))
-            scrape_document(arguments.document, spec, html=arguments.html)
+            if arguments.html:
+                content = html_to_xhtml(content)
+            data = scrape(content, spec)
+            print(json.dumps(data, indent=2, sort_keys=True))
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(1)
