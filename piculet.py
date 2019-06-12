@@ -598,11 +598,15 @@ def build_tree(document, *, lxml_html=False):
     :param lxml_html: Use the lxml.html builder if available.
     :return: Root element of the XML tree.
     """
-    if LXML_AVAILABLE and lxml_html:
+    if lxml_html:
+        if not LXML_AVAILABLE:
+            raise RuntimeError("LXML not available")
         import lxml.html
 
-        return lxml.html.fromstring(document)
-    return ElementTree.fromstring(document)
+        fromstring = lxml.html.fromstring
+    else:
+        fromstring = ElementTree.fromstring
+    return fromstring(document)
 
 
 class Registry:
