@@ -48,9 +48,11 @@ __version__ = "2.0.0.dev1"  # sig: str
 
 
 class HTMLNormalizer(HTMLParser):
-    """HTML cleaner and XHTML convertor.
+    """HTML to XHTML convertor.
 
-    DOCTYPE declarations and comments are removed.
+    Other than converting the document to valid XHTML, this will
+    remove unwanted tags and attributes, along with all comments
+    and DOCTYPE declarations.
     """
 
     VOID_ELEMENTS = frozenset(  # sig: FrozenSet[str]
@@ -86,7 +88,7 @@ class HTMLNormalizer(HTMLParser):
         """Initialize this normalizer.
 
         :sig: (Optional[Iterable[str]], Optional[Iterable[str]]) -> None
-        :param omit_tags: Tags to remove, along with all their content.
+        :param omit_tags: Tags to remove.
         :param omit_attrs: Attributes to remove.
         """
         super().__init__(convert_charrefs=True)
@@ -176,10 +178,10 @@ class HTMLNormalizer(HTMLParser):
 
 
 def html_to_xhtml(document, *, omit_tags=None, omit_attrs=None):
-    """Clean HTML and convert to XHTML.
+    """Convert an HTML document to XHTML.
 
     :sig: (str, Optional[Iterable[str]], Optional[Iterable[str]]) -> str
-    :param document: HTML document to clean and convert.
+    :param document: HTML document to convert.
     :param omit_tags: Tags to exclude from the output.
     :param omit_attrs: Attributes to exclude from the output.
     :return: Normalized XHTML content.
