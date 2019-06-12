@@ -20,7 +20,7 @@ from html.parser import HTMLParser
 from pathlib import Path as FSPath
 from xml.etree.ElementTree import Element
 
-XPathResult = Union[Sequence[str], Sequence[Element]]
+XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
 Reducer = Callable[[Sequence[str]], str]
 PathTransformer = Callable[[str], Any]
 MapTransformer = Callable[[Mapping[str, Any]], Any]
@@ -53,17 +53,11 @@ def html_to_xhtml(
     omit_tags: Optional[Iterable[str]] = ...,
     omit_attrs: Optional[Iterable[str]] = ...,
 ) -> str: ...
-
-class XPath:
-    _apply = ...  # type: Callable[[Element], XPathResult]
-    def __init__(self, path: str) -> None: ...
-    def __call__(self, element: Element) -> XPathResult: ...
-
-def xpath(path: str) -> XPath: ...
+def xpath(path: str) -> XPather: ...
 
 class Extractor(ABC):
     transform = ...  # type: Optional[Transformer]
-    foreach = ...  # type: Optional[XPath]
+    foreach = ...  # type: Optional[XPather]
     def __init__(
         self,
         *,
@@ -76,7 +70,7 @@ class Extractor(ABC):
     def from_map(item: Mapping[str, Any]) -> Extractor: ...
 
 class Path(Extractor):
-    path = ...  # type: XPath
+    path = ...  # type: XPather
     reduce = ...  # type: Reducer
     def __init__(
         self,
@@ -90,7 +84,7 @@ class Path(Extractor):
 
 class Rules(Extractor):
     rules = ...  # type: Sequence[Rule]
-    section = ...  # type: Optional[XPath]
+    section = ...  # type: Optional[XPather]
     def __init__(
         self,
         rules: Sequence[Rule],
@@ -104,7 +98,7 @@ class Rules(Extractor):
 class Rule:
     key = ...  # type: Union[str, Extractor]
     extractor = ...  # type: Extractor
-    foreach = ...  # type: Optional[XPath]
+    foreach = ...  # type: Optional[XPather]
     def __init__(
         self,
         key: Union[str, Extractor],

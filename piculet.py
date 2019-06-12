@@ -48,7 +48,7 @@ __version__ = "2.0.0.dev2"  # sig: str
 
 
 class HTMLNormalizer(HTMLParser):
-    """HTML to XHTML convertor.
+    """HTML to XHTML converter.
 
     Other than converting the document to valid XHTML, this will
     remove unwanted tags and attributes, along with all comments
@@ -198,84 +198,67 @@ def html_to_xhtml(document, *, omit_tags=None, omit_attrs=None):
 ###########################################################
 
 
-# sigalias: XPathResult = Union[Sequence[str], Sequence[Element]]
+# sigalias: XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
 
 
 LXML_AVAILABLE = find_loader("lxml") is not None  # sig: bool
 if LXML_AVAILABLE:
     from lxml import etree as ElementTree
     from lxml.etree import Element, XPath
+
+    @lru_cache(maxsize=None)
+    def xpath(path):
+        return XPath(path)
+
+
 else:
     from xml.etree import ElementTree
     from xml.etree.ElementTree import Element
 
-    class XPath:
-        """An XPath expression that can be applied to an element.
+    @lru_cache(maxsize=None)
+    def xpath(path):
+        """Get an XPath expression that can be applied to an element.
 
-        This class is mainly needed to compensate for the lack of ``text()``
+        This is mainly needed to compensate for the lack of ``text()``
         and ``@attr`` axis queries in ElementTree XPath support.
+
+        :sig: (str) -> XPather
+        :param path: XPath expression to compile.
         """
+        if path[0] == "/":
+            # ElementTree doesn't support absolute paths
+            # TODO: handle this properly, find root of tree
+            path = "." + path
 
-        def __init__(self, path):
-            """Initialize this expression.
+        def descendant(element):
+            # strip trailing '//text()'
+            return [t for e in element.findall(path[:-8]) for t in e.itertext() if t]
 
-            :sig: (str) -> None
-            :param path: XPath expression to compile.
-            """
-            if path[0] == "/":
-                # ElementTree doesn't support absolute paths
-                # TODO: handle this properly, find root of tree
-                path = "." + path
+        def child(element):
+            # strip trailing '/text()'
+            return [
+                t
+                for e in element.findall(path[:-7])
+                for t in ([e.text] + [c.tail if c.tail else "" for c in e])
+                if t
+            ]
 
-            def descendant(element):
-                # strip trailing '//text()'
-                return [t for e in element.findall(path[:-8]) for t in e.itertext() if t]
+        def attribute(element, subpath, attr):
+            result = [e.attrib.get(attr) for e in element.findall(subpath)]
+            return [r for r in result if r is not None]
 
-            def child(element):
-                # strip trailing '/text()'
-                return [
-                    t
-                    for e in element.findall(path[:-7])
-                    for t in ([e.text] + [c.tail if c.tail else "" for c in e])
-                    if t
-                ]
-
-            def attribute(element, subpath, attr):
-                result = [e.attrib.get(attr) for e in element.findall(subpath)]
-                return [r for r in result if r is not None]
-
-            if path.endswith("//text()"):
-                _apply = descendant
-            elif path.endswith("/text()"):
-                _apply = child
+        if path.endswith("//text()"):
+            _apply = descendant
+        elif path.endswith("/text()"):
+            _apply = child
+        else:
+            *front, last = path.split("/")
+            if last.startswith("@"):
+                _apply = partial(attribute, subpath="/".join(front), attr=last[1:])
             else:
-                *front, last = path.split("/")
-                if last.startswith("@"):
-                    _apply = partial(attribute, subpath="/".join(front), attr=last[1:])
-                else:
-                    _apply = partial(Element.findall, path=path)
+                _apply = partial(Element.findall, path=path)
 
-            self._apply = _apply  # sig: Callable[[Element], XPathResult]
-
-        def __call__(self, element):
-            """Apply this expression to an element.
-
-            :sig: (Element) -> XPathResult
-            :param element: Element to apply this expression to.
-            :return: Elements or strings resulting from the query.
-            """
-            return self._apply(element)
-
-
-@lru_cache(maxsize=None)
-def xpath(path):
-    """Get a compiled XPath expression that can be applied to an element.
-
-    :sig: (str) -> XPath
-    :param path: XPath expression to compile.
-    :return: Compiled expression.
-    """
-    return XPath(path)
+        return _apply
 
 
 _EMPTY = {}  # sig: Dict
@@ -301,7 +284,7 @@ class Extractor(ABC):
         self.transform = transform  # sig: Optional[Transformer]
         """Function to transform the extracted value."""
 
-        self.foreach = xpath(foreach) if foreach is not None else None  # sig: Optional[XPath]
+        self.foreach = xpath(foreach) if foreach is not None else None  # sig: Optional[XPather]
         """Path to apply for generating a collection of values."""
 
     @abstractmethod
@@ -384,7 +367,7 @@ class Path(Extractor):
         """
         super().__init__(transform=transform, foreach=foreach)
 
-        self.path = xpath(path)  # sig: XPath
+        self.path = xpath(path)  # sig: XPather
         """XPath evaluator to apply to get the data."""
 
         if reduce is None:
@@ -427,7 +410,7 @@ class Rules(Extractor):
         self.rules = rules  # sig: Sequence[Rule]
         """Rules for generating the data items."""
 
-        self.section = xpath(section) if section is not None else None  # sig: Optional[XPath]
+        self.section = xpath(section) if section is not None else None  # sig: Optional[XPather]
         """XPath expression for selecting a subroot for this section."""
 
     def apply(self, element):
@@ -471,7 +454,7 @@ class Rule:
         self.extractor = extractor  # sig: Extractor
         """Extractor that will generate this data item."""
 
-        self.foreach = xpath(foreach) if foreach is not None else None  # sig: Optional[XPath]
+        self.foreach = xpath(foreach) if foreach is not None else None  # sig: Optional[XPather]
         """XPath evaluator for generating multiple items."""
 
     @staticmethod
