@@ -732,6 +732,9 @@ def scrape(document, spec, *, lxml_html=False):
 ###########################################################
 
 
+YAML_AVAILABLE = find_loader("strictyaml") is not None  # sig: bool
+
+
 def load_spec(path):
     """Load an extraction specification from a file.
 
@@ -740,7 +743,7 @@ def load_spec(path):
     :return: Loaded specification.
     """
     if path.suffix in {".yaml", ".yml"}:
-        if find_loader("strictyaml") is None:
+        if not YAML_AVAILABLE:
             raise RuntimeError("YAML support not available")
         import strictyaml
 

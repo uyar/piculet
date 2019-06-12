@@ -31,6 +31,7 @@ _EMPTY = ...  # type: Dict
 preprocessors = ...  # type: Registry
 reducers = ...  # type: Registry
 transformers = ...  # type: Registry
+YAML_AVAILABLE = ...  # type: bool
 
 
 class HTMLNormalizer(HTMLParser):
