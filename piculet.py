@@ -55,7 +55,7 @@ class HTMLNormalizer(HTMLParser):
     and DOCTYPE declarations.
     """
 
-    VOID_ELEMENTS = frozenset(  # sig: FrozenSet[str]
+    VOID_ELEMENTS = frozenset(  # sig: ClassVar[FrozenSet[str]]
         {
             "area",
             "base",
@@ -130,17 +130,17 @@ class HTMLNormalizer(HTMLParser):
             line = "<%(tag)s%(attrs)s%(slash)s>" % {
                 "tag": tag,
                 "attrs": (" " + " ".join(attributes)) if len(attributes) > 0 else "",
-                "slash": "/" if tag in self.VOID_ELEMENTS else "",
+                "slash": "/" if tag in HTMLNormalizer.VOID_ELEMENTS else "",
             }
             print(line, end="")
-            if tag not in self.VOID_ELEMENTS:
+            if tag not in HTMLNormalizer.VOID_ELEMENTS:
                 self._open_tags.append(tag)
 
     def handle_endtag(self, tag):
         """Process the ending of an element."""
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
-            if tag not in self.VOID_ELEMENTS:
+            if tag not in HTMLNormalizer.VOID_ELEMENTS:
                 last = self._open_tags[-1]
                 if (tag == "ul") and (last == "li"):
                     # closing <ul> without closing last <li>, add </li>

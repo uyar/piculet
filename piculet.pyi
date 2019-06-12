@@ -3,6 +3,7 @@
 from typing import (
     Any,
     Callable,
+    ClassVar,
     Dict,
     FrozenSet,
     Iterable,
@@ -36,7 +37,7 @@ YAML_AVAILABLE = ...  # type: bool
 
 
 class HTMLNormalizer(HTMLParser):
-    VOID_ELEMENTS = ...  # type: FrozenSet[str]
+    VOID_ELEMENTS = ...  # type: ClassVar[FrozenSet[str]]
     omit_tags = ...  # type: Set[str]
     omit_attrs = ...  # type: Set[str]
     def __init__(
