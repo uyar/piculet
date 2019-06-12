@@ -22,6 +22,10 @@ jobs:
         imageName: 'ubuntu-latest'
         python.version: '3.7'
 
+      windows-py37:
+        imageName: 'vs2017-win2016'
+        python.version: '3.7'
+
   pool:
     vmImage: $(imageName)
 
