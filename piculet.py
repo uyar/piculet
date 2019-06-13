@@ -498,7 +498,7 @@ class Rule:
 ###########################################################
 
 
-def remove_elements(root, path):
+def remove_elements(root, *, path):
     """Remove selected elements from the tree.
 
     :sig: (Element, str) -> None
@@ -520,7 +520,7 @@ def remove_elements(root, path):
             get_parent(element).remove(element)
 
 
-def set_element_attr(root, path, name, value):
+def set_element_attr(root, *, path, name, value):
     """Set an attribute for selected elements.
 
     :sig: (Element, str, Union[str, Mapping], Union[str, Mapping]) -> None
@@ -544,7 +544,7 @@ def set_element_attr(root, path, name, value):
         element.attrib[attr_name] = attr_value
 
 
-def set_element_text(root, path, text):
+def set_element_text(root, *, path, text):
     """Set the text for selected elements.
 
     :sig: (Element, str, Union[str, Mapping]) -> None
@@ -567,7 +567,11 @@ def set_element_text(root, path, text):
 
 
 preprocessors = SimpleNamespace(  # sig: SimpleNamespace
-    remove=remove_elements, set_attr=set_element_attr, set_text=set_element_text
+    remove=lambda path: partial(remove_elements, path=path),
+    set_attr=lambda path, name, value: partial(
+        set_element_attr, path=path, name=name, value=value
+    ),
+    set_text=lambda path, text: partial(set_element_text, path=path, text=text),
 )
 """Predefined preprocessors."""
 
@@ -622,20 +626,22 @@ def build_tree(document, *, lxml_html=False):
 def preprocess(root, pre):
     """Process a tree before starting extraction.
 
+    This assumes that the root of the tree doesn't change.
+
     :sig: (Element, Sequence[Mapping]) -> None
     :param root: Root of tree to process.
     :param pre: Descriptions for processing operations.
+    :raise ValueError: When preprocessor name is unknown.
     """
+    processors = []
     for step in pre:
-        op = step["op"]
-        if op == "remove":
-            remove_elements(root, step["path"])
-        elif op == "set_attr":
-            set_element_attr(root, step["path"], name=step["name"], value=step["value"])
-        elif op == "set_text":
-            set_element_text(root, step["path"], text=step["text"])
-        else:
+        preprocessor = getattr(preprocessors, step["op"], None)
+        if preprocessor is None:
             raise ValueError("Unknown preprocessing operation")
+        args = {k: v for k, v in step.items() if k != "op"}
+        processors.append(preprocessor(**args))
+    for processor in processors:
+        processor(root)
 
 
 def extract(element, items, *, section=None):
