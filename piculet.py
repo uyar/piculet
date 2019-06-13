@@ -206,11 +206,7 @@ if LXML_AVAILABLE:
     from lxml import etree as ElementTree
     from lxml.etree import Element, XPath
 
-    @lru_cache(maxsize=None)
-    def xpath(path):
-        return XPath(path)
-
-
+    xpath = lru_cache(maxsize=None)(XPath)
 else:
     from xml.etree import ElementTree
     from xml.etree.ElementTree import Element
