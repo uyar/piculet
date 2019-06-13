@@ -195,7 +195,7 @@ def html_to_xhtml(document, *, omit_tags=None, omit_attrs=None):
 
 
 ###########################################################
-# DATA EXTRACTION OPERATIONS
+# DATA EXTRACTION CLASSES
 ###########################################################
 
 
@@ -503,6 +503,11 @@ class Rule:
         return data
 
 
+###########################################################
+# PREPROCESSING OPERATIONS
+###########################################################
+
+
 def remove_elements(root, path):
     """Remove selected elements from the tree.
 
@@ -572,23 +577,9 @@ def set_element_text(root, path, text):
         element.text = element_text
 
 
-def build_tree(document, *, lxml_html=False):
-    """Build a tree from an XML document.
-
-    :sig: (str, bool) -> Element
-    :param document: XML document to build the tree from.
-    :param lxml_html: Use the lxml.html builder if available.
-    :return: Root element of the XML tree.
-    """
-    if lxml_html:
-        if not LXML_AVAILABLE:
-            raise RuntimeError("LXML not available")
-        import lxml.html
-
-        fromstring = lxml.html.fromstring
-    else:
-        fromstring = ElementTree.fromstring
-    return fromstring(document)
+###########################################################
+# REGISTRIES
+###########################################################
 
 
 preprocessors = SimpleNamespace(  # sig: SimpleNamespace
@@ -618,6 +609,30 @@ transformers = SimpleNamespace(  # sig: SimpleNamespace
     strip=str.strip,
 )
 """Predefined transformers."""
+
+
+###########################################################
+# MAIN API
+###########################################################
+
+
+def build_tree(document, *, lxml_html=False):
+    """Build a tree from an XML document.
+
+    :sig: (str, bool) -> Element
+    :param document: XML document to build the tree from.
+    :param lxml_html: Use the lxml.html builder if available.
+    :return: Root element of the XML tree.
+    """
+    if lxml_html:
+        if not LXML_AVAILABLE:
+            raise RuntimeError("LXML not available")
+        import lxml.html
+
+        fromstring = lxml.html.fromstring
+    else:
+        fromstring = ElementTree.fromstring
+    return fromstring(document)
 
 
 def preprocess(root, pre):
