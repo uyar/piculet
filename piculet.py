@@ -37,6 +37,7 @@ from io import StringIO
 from operator import itemgetter
 from pathlib import Path as FSPath
 from pkgutil import find_loader
+from types import SimpleNamespace
 
 
 __version__ = "2.0.0.dev2"  # sig: str
@@ -318,7 +319,7 @@ class Extractor(ABC):
         if transformer is None:
             transform = None
         else:
-            transform = transformers.get(transformer)
+            transform = getattr(transformers, transformer, None)
             if transform is None:
                 raise ValueError("Unknown transformer")
 
@@ -330,7 +331,7 @@ class Extractor(ABC):
             if reducer is None:
                 reduce = None
             else:
-                reduce = reducers.get(reducer)
+                reduce = getattr(reducers, reducer, None)
                 if reduce is None:
                     raise ValueError("Unknown reducer")
             extractor = Path(path, reduce=reduce, transform=transform, foreach=foreach)
@@ -590,71 +591,32 @@ def build_tree(document, *, lxml_html=False):
     return fromstring(document)
 
 
-class Registry:
-    """A simple, attribute-based namespace."""
-
-    def __init__(self, entries):
-        """Initialize this registry.
-
-        :sig: (Mapping) -> None
-        :param entries: Entries to add to this registry.
-        """
-        self.__dict__.update(entries)
-
-    def get(self, item):
-        """Get the value of an entry from this registry.
-
-        :sig: (str) -> Any
-        :param item: Entry to get the value for.
-        :return: Value of entry.
-        """
-        return self.__dict__.get(item)
-
-    def register(self, key, value):
-        """Register a new entry in this registry.
-
-        :sig: (str, Any) -> None
-        :param key: Key to search the entry in this registry.
-        :param value: Value to store for the entry.
-        """
-        self.__dict__[key] = value
-
-
-_PREPROCESSORS = {
-    "remove": remove_elements,
-    "set_attr": set_element_attr,
-    "set_text": set_element_text,
-}
-
-preprocessors = Registry(_PREPROCESSORS)  # sig: Registry
+preprocessors = SimpleNamespace(  # sig: SimpleNamespace
+    remove=remove_elements, set_attr=set_element_attr, set_text=set_element_text
+)
 """Predefined preprocessors."""
 
 
-_REDUCERS = {
-    "first": itemgetter(0),
-    "concat": partial(str.join, ""),
-    "clean": lambda xs: re.sub(r"\s+", " ", "".join(xs).replace("\xa0", " ")).strip(),
-    "normalize": lambda xs: re.sub(r"[^a-z0-9_]", "", "".join(xs).lower().replace(" ", "_")),
-}
-
-reducers = Registry(_REDUCERS)  # sig: Registry
+reducers = SimpleNamespace(  # sig: SimpleNamespace
+    first=itemgetter(0),
+    concat=partial(str.join, ""),
+    clean=lambda xs: re.sub(r"\s+", " ", "".join(xs).replace("\xa0", " ")).strip(),
+    normalize=lambda xs: re.sub(r"[^a-z0-9_]", "", "".join(xs).lower().replace(" ", "_")),
+)
 """Predefined reducers."""
 
-
-_TRANSFORMERS = {
-    "int": int,
-    "float": float,
-    "bool": bool,
-    "len": len,
-    "lower": str.lower,
-    "upper": str.upper,
-    "capitalize": str.capitalize,
-    "lstrip": str.lstrip,
-    "rstrip": str.rstrip,
-    "strip": str.strip,
-}
-
-transformers = Registry(_TRANSFORMERS)  # sig: Registry
+transformers = SimpleNamespace(  # sig: SimpleNamespace
+    int=int,
+    float=float,
+    bool=bool,
+    len=len,
+    lower=str.lower,
+    upper=str.upper,
+    capitalize=str.capitalize,
+    lstrip=str.lstrip,
+    rstrip=str.rstrip,
+    strip=str.strip,
+)
 """Predefined transformers."""
 
 

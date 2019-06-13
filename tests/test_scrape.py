@@ -21,7 +21,7 @@ def test_default_reducer_should_be_concat(shining_content):
 
 
 def test_added_reducer_should_be_usable(shining_content):
-    reducers.register("second", lambda x: x[1])
+    reducers.second = lambda x: x[1]
     items = [{"key": "year", "value": {"path": "//h1//text()", "reduce": "second"}}]
     data = scrape(shining_content, {"items": items})
     assert data == {"year": "1980"}
@@ -42,7 +42,7 @@ def test_reduced_value_should_be_transformable(shining_content):
 
 
 def test_added_transformer_should_be_usable(shining_content):
-    transformers.register("year25", lambda x: int(x) + 25)
+    transformers.year25 = lambda x: int(x) + 25
     items = [
         {
             "key": "year",
@@ -152,7 +152,7 @@ def test_multivalued_subrules_should_generate_list_of_subitems(shining_content):
 
 
 def test_subitems_should_be_transformable(shining_content):
-    transformers.register("stars", lambda x: "%(name)s as %(character)s" % x)
+    transformers.stars = lambda x: "%(name)s as %(character)s" % x
     items = [
         {
             "key": "cast",

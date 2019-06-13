@@ -21,7 +21,7 @@ def test_default_reducer_should_be_concat(shining):
 
 
 def test_added_reducer_should_be_usable(shining):
-    reducers.register("second", lambda x: x[1])
+    reducers.second = lambda x: x[1]
     rules = [Rule(key="year", extractor=Path("//h1//text()", reduce=reducers.second))]
     data = Rules(rules).extract(shining)
     assert data == {"year": "1980"}
@@ -40,7 +40,7 @@ def test_reduced_value_should_be_transformable(shining):
 
 
 def test_added_transformer_should_be_usable(shining):
-    transformers.register("year25", lambda x: int(x) + 25)
+    transformers.year25 = lambda x: int(x) + 25
     rules = [
         Rule(
             key="year",
