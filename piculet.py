@@ -523,13 +523,7 @@ def remove_elements(root, path):
 def set_element_attr(root, path, name, value):
     """Set an attribute for selected elements.
 
-    :sig:
-        (
-            Element,
-            str,
-            Union[str, Mapping],
-            Union[str, Mapping]
-        ) -> None
+    :sig: (Element, str, Union[str, Mapping], Union[str, Mapping]) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to set attributes for.
     :param name: Description for name generation.
@@ -647,12 +641,7 @@ def preprocess(root, pre):
 def extract(element, items, *, section=None):
     """Extract data from an XML element.
 
-    :sig:
-        (
-            Element,
-            Sequence[Mapping],
-            Optional[str]
-        ) -> Mapping
+    :sig: (Element, Sequence[Mapping], Optional[str]) -> Mapping
     :param element: Element to extract the data from.
     :param items: Descriptions for extracting items.
     :param section: Path to select the root element for these items.
