@@ -351,12 +351,7 @@ class Path(Extractor):
     def __init__(self, path, reduce=None, *, transform=None, foreach=None):
         """Initialize this extractor.
 
-        :sig: (
-                str,
-                Optional[Reducer],
-                Optional[PathTransformer],
-                Optional[str]
-            ) -> None
+        :sig: (str, Optional[Reducer], Optional[PathTransformer], Optional[str]) -> None
         :param path: Path to apply to get the data.
         :param reduce: Function to reduce selected texts into a single string.
         :param transform: Function to transform extracted value.
@@ -390,13 +385,7 @@ class Rules(Extractor):
     def __init__(self, rules, *, section=None, transform=None, foreach=None):
         """Initialize this extractor.
 
-        :sig:
-            (
-                Sequence[Rule],
-                str,
-                Optional[MapTransformer],
-                Optional[str]
-            ) -> None
+        :sig: (Sequence[Rule], str, Optional[MapTransformer], Optional[str]) -> None
         :param rules: Rules for generating the data items.
         :param section: Path for setting the root of this section.
         :param transform: Function to transform extracted value.
@@ -416,6 +405,7 @@ class Rules(Extractor):
         :sig: (Element) -> Mapping
         :param element: Element to apply the extractor to.
         :return: Extracted mapping.
+        :raise ValueError: When section path selects multiple elements.
         """
         if self.section is None:
             subroot = element
