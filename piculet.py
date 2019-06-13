@@ -224,17 +224,18 @@ else:
 
         :sig: (str) -> XPather
         :param path: XPath expression to compile.
+        :return: Evaluator that can be applied to an element.
         """
         if path[0] == "/":
             # ElementTree doesn't support absolute paths
             # TODO: handle this properly, find root of tree
             path = "." + path
 
-        def descendant(element):
+        def descendant_text(element):
             # strip trailing '//text()'
             return [t for e in element.findall(path[:-8]) for t in e.itertext() if t]
 
-        def child(element):
+        def child_text(element):
             # strip trailing '/text()'
             return [
                 t
@@ -248,9 +249,9 @@ else:
             return [r for r in result if r is not None]
 
         if path.endswith("//text()"):
-            _apply = descendant
+            _apply = descendant_text
         elif path.endswith("/text()"):
-            _apply = child
+            _apply = child_text
         else:
             *front, last = path.split("/")
             if last.startswith("@"):
