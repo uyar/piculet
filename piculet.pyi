@@ -18,6 +18,7 @@ from typing import (
 from abc import ABC
 from html.parser import HTMLParser
 from pathlib import Path as FSPath
+from types import SimpleNamespace
 from xml.etree.ElementTree import Element
 
 XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
@@ -29,9 +30,9 @@ Transformer = Union[PathTransformer, MapTransformer]
 __version__ = ...  # type: str
 LXML_AVAILABLE = ...  # type: bool
 _EMPTY = ...  # type: Dict
-preprocessors = ...  # type: Registry
-reducers = ...  # type: Registry
-transformers = ...  # type: Registry
+preprocessors = ...  # type: SimpleNamespace
+reducers = ...  # type: SimpleNamespace
+transformers = ...  # type: SimpleNamespace
 YAML_AVAILABLE = ...  # type: bool
 
 
@@ -120,12 +121,6 @@ def set_element_text(
     root: Element, path: str, text: Union[str, Mapping]
 ) -> None: ...
 def build_tree(document: str, *, lxml_html: bool = ...) -> Element: ...
-
-class Registry:
-    def __init__(self, entries: Mapping) -> None: ...
-    def get(self, item: str) -> Any: ...
-    def register(self, key: str, value: Any) -> None: ...
-
 def preprocess(root: Element, pre: Sequence[Mapping]) -> None: ...
 def extract(
     element: Element, items: Sequence[Mapping], *, section: Optional[str] = ...
