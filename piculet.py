@@ -298,16 +298,16 @@ class Extractor(ABC):
         :return: Extracted raw data.
         """
 
-    def extract(self, element, *, transform=True):
+    def extract(self, element, *, disable_transform=False):
         """Get the processed data from an element using this extractor.
 
         :sig: (Element, bool) -> Any
         :param element: Element to extract the data from.
-        :param transform: Whether the transformation will be applied or not.
+        :param disable_transform: Whether the transformation will be disabled or not.
         :return: Extracted and optionally transformed data.
         """
         value = self.apply(element)
-        if (value is None) or (value is _EMPTY) or (not transform):
+        if (value is None) or (value is _EMPTY) or disable_transform:
             return value
         return value if self.transform is None else self.transform(value)
 
@@ -484,7 +484,7 @@ class Rule:
             else:
                 # don't try to transform list items by default, it might waste a lot of time
                 raw_values = [
-                    self.extractor.extract(r, transform=False)
+                    self.extractor.extract(r, disable_transform=True)
                     for r in self.extractor.foreach(subroot)
                 ]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
