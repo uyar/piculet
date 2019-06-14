@@ -256,7 +256,7 @@ else:
         return apply
 
 
-xpath = lru_cache(maxsize=None)(XPath)
+XPath = lru_cache(maxsize=None)(XPath)
 
 
 ###########################################################
