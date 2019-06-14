@@ -307,10 +307,17 @@ class Extractor(ABC):
         :param disable_transform: Whether the transformation will be disabled or not.
         :return: Extracted and optionally transformed data.
         """
-        value = self.apply(element)
-        if (value is None) or (value is _EMPTY) or disable_transform:
-            return value
-        return value if self.transform is None else self.transform(value)
+        if self.foreach is None:
+            value = self.apply(element)
+            if (value is None) or (value is _EMPTY):
+                return value
+            return value if self.transform is None else self.transform(value)
+        else:
+            raw_values = [self.apply(r) for r in self.foreach(element)]
+            values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
+            if len(values) == 0:
+                return []
+            return values if self.transform is None else list(map(self.transform, values))
 
 
 def make_extractor_from_map(desc):
@@ -449,24 +456,10 @@ def Rule(key, extractor, *, foreach=None):
             if key_ is None:
                 continue
 
-            if extractor.foreach is None:
-                value = extractor(subroot)
-                if (value is None) or (value is _EMPTY):
-                    continue
-                data[key_] = value
-            else:
-                # don't try to transform list items by default, it might waste a lot of time
-                raw_values = [
-                    extractor(r, disable_transform=True) for r in extractor.foreach(subroot)
-                ]
-                values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
-                if len(values) == 0:
-                    continue
-                data[key_] = (
-                    values
-                    if extractor.transform is None
-                    else list(map(extractor.transform, values))
-                )
+            value = extractor(subroot)
+            if (value is None) or (value is _EMPTY) or (value == []):
+                continue
+            data[key_] = value
         return data
 
     return apply
