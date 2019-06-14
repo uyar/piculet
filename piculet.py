@@ -195,7 +195,7 @@ def html_to_xhtml(document, *, omit_tags=None, omit_attrs=None):
 
 
 ###########################################################
-# DATA EXTRACTION CLASSES
+# ELEMENTTREE-LXML COMPATIBILITY
 ###########################################################
 
 
@@ -257,6 +257,11 @@ else:
                 apply = partial(Element.findall, path=path)
 
         return apply
+
+
+###########################################################
+# DATA EXTRACTION CLASSES
+###########################################################
 
 
 _EMPTY = {}  # sig: Dict
@@ -562,7 +567,7 @@ def set_element_text(root, *, path, text):
 
 
 ###########################################################
-# REGISTRIES
+# PREDEFINED HELPERS
 ###########################################################
 
 
