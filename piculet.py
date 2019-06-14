@@ -264,7 +264,7 @@ else:
 ###########################################################
 
 
-_EMPTY = {}  # sig: Dict
+_EMPTY = {}
 
 
 # sigalias: Reducer = Callable[[Sequence[str]], str]

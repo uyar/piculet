@@ -4,7 +4,6 @@ from typing import (
     Any,
     Callable,
     ClassVar,
-    Dict,
     FrozenSet,
     Iterable,
     List,
@@ -29,7 +28,6 @@ Transformer = Union[PathTransformer, MapTransformer]
 
 __version__ = ...  # type: str
 LXML_AVAILABLE = ...  # type: bool
-_EMPTY = ...  # type: Dict
 preprocessors = ...  # type: SimpleNamespace
 reducers = ...  # type: SimpleNamespace
 transformers = ...  # type: SimpleNamespace
