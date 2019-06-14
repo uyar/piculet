@@ -298,7 +298,7 @@ class Extractor(ABC):
         :return: Extracted raw data.
         """
 
-    def extract(self, element, *, disable_transform=False):
+    def __call__(self, element, *, disable_transform=False):
         """Get the processed data from an element using this extractor.
 
         :sig: (Element, bool) -> Any
@@ -472,19 +472,19 @@ class Rule:
         data = {}
         subroots = [element] if self.foreach is None else self.foreach(element)
         for subroot in subroots:
-            key = self.key if isinstance(self.key, str) else self.key.extract(subroot)
+            key = self.key if isinstance(self.key, str) else self.key(subroot)
             if key is None:
                 continue
 
             if self.extractor.foreach is None:
-                value = self.extractor.extract(subroot)
+                value = self.extractor(subroot)
                 if (value is None) or (value is _EMPTY):
                     continue
                 data[key] = value
             else:
                 # don't try to transform list items by default, it might waste a lot of time
                 raw_values = [
-                    self.extractor.extract(r, disable_transform=True)
+                    self.extractor(r, disable_transform=True)
                     for r in self.extractor.foreach(subroot)
                 ]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
@@ -536,13 +536,11 @@ def set_element_attr(root, *, path, name, value):
     """
     elements = XPath(path)(root)
     for element in elements:
-        attr_name = name if isinstance(name, str) else Extractor.from_map(name).extract(element)
+        attr_name = name if isinstance(name, str) else Extractor.from_map(name)(element)
         if attr_name is None:
             continue
 
-        attr_value = (
-            value if isinstance(value, str) else Extractor.from_map(value).extract(element)
-        )
+        attr_value = value if isinstance(value, str) else Extractor.from_map(value)(element)
         if attr_value is None:
             continue
 
@@ -559,9 +557,7 @@ def set_element_text(root, *, path, text):
     """
     elements = XPath(path)(root)
     for element in elements:
-        element_text = (
-            text if isinstance(text, str) else Extractor.from_map(text).extract(element)
-        )
+        element_text = text if isinstance(text, str) else Extractor.from_map(text)(element)
         # note that the text can be None in which case the existing text will be cleared
         element.text = element_text
 
@@ -659,7 +655,7 @@ def extract(element, items, *, section=None):
     :return: Extracted data.
     """
     rules = Rules([Rule.from_map(item) for item in items], section=section)
-    return rules.extract(element)
+    return rules(element)
 
 
 def scrape(document, spec, *, lxml_html=False):
