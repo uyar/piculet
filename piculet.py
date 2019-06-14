@@ -212,14 +212,14 @@ else:
     from xml.etree.ElementTree import Element
 
     def make_xpather(path):
-        """Get an XPath expression that can be applied to an element.
+        """Get an XPath evaluator that can be applied to an element.
 
         This is mainly needed to compensate for the lack of ``text()``
         and ``@attr`` axis queries in ElementTree XPath support.
 
         :sig: (str) -> XPather
-        :param path: XPath expression to prepare.
-        :return: Evaluator that can be applied to an element.
+        :param path: XPath expression to apply.
+        :return: Evaluator that applies the expression to an element.
         """
         if path[0] == "/":
             # ElementTree doesn't support absolute paths
