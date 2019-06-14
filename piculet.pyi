@@ -53,6 +53,13 @@ def html_to_xhtml(
     omit_attrs: Optional[Iterable[str]] = ...,
 ) -> str: ...
 def XPath(path: str) -> XPather: ...
+def Path(
+    path: Optional[str] = ...,
+    reduce: Optional[Reducer] = ...,
+    *,
+    transform: Optional[PathTransformer] = ...,
+    foreach: Optional[str] = ...,
+) -> Callable[[Element], Any]: ...
 
 class Extractor(ABC):
     transform = ...  # type: Optional[Transformer]
@@ -68,7 +75,7 @@ class Extractor(ABC):
 
 def make_extractor_from_map(desc: Mapping) -> Extractor: ...
 
-class Path(Extractor):
+class Path_(Extractor):
     path = ...  # type: XPather
     reduce = ...  # type: Reducer
     def __init__(

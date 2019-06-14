@@ -260,7 +260,7 @@ XPath = lru_cache(maxsize=None)(XPath)
 
 
 ###########################################################
-# DATA EXTRACTION CLASSES
+# DATA EXTRACTION OPERATIONS
 ###########################################################
 
 
@@ -274,49 +274,82 @@ _EMPTY = {}
 # sigalias: Ruler = Callable[[Element], Mapping]
 
 
-class Extractor(ABC):
-    """Abstract base extractor for getting data out of an XML element."""
+def Extractor(
+    type_, *, path=None, reduce=None, rules=None, section=None, transform=None, foreach=None
+):
+    """Get an extractor that can be applied to an element.
 
-    def __init__(self, *, transform=None, foreach=None):
-        """Initialize this extractor.
+    :sig:
+        (
+            str,
+            Optional[str],
+            Optional[Reducer],
+            Sequence[Ruler],
+            Optional[str],
+            Optional[Transformer],
+            Optional[str]
+        ) -> Callable[[Element], Any]
+    :param type: Type of extractor ('path' or 'rules').
+    :param path: Path to apply to get the data.
+    :param reduce: Function to reduce selected texts into a single string.
+    :param rules: Rules for generating the data items.
+    :param section: Path for setting the root of this section.
+    :param transform: Function to transform the extracted value.
+    :param foreach: Path to apply for generating a collection of data.
+    """
+    xpath = XPath(path) if path is not None else None
+    if reduce is None:
+        reduce = reducers.concat
 
-        :sig: (Optional[Transformer], Optional[str]) -> None
-        :param transform: Function to transform the extracted value.
-        :param foreach: Path to apply for generating a collection of values.
-        """
-        self.transform = transform  # sig: Optional[Transformer]
-        """Function to transform the extracted value."""
+    section_ = XPath(section) if section is not None else None
 
-        self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPather]
-        """Path to apply for generating a collection of values."""
+    foreach_ = XPath(foreach) if foreach is not None else None
 
-    @abstractmethod
-    def apply(self, element):
-        """Get the raw data from an element using this extractor.
+    def apply_xpath(element):
+        selected = xpath(element)
+        return reduce(selected) if len(selected) > 0 else None
 
-        :sig: (Element) -> Union[str, Mapping]
-        :param element: Element to apply this extractor to.
-        :return: Extracted raw data.
-        """
+    def apply_rules(element):
+        if section_ is None:
+            subroot = element
+        else:
+            subroots = section_(element)
+            if len(subroots) == 0:
+                return _EMPTY
+            if len(subroots) > 1:
+                raise ValueError("Section path should select exactly one element")
+            subroot = subroots[0]
 
-    def __call__(self, element):
-        """Get the processed data from an element using this extractor.
+        data = {}
+        for rule in rules:
+            extracted = rule(subroot)
+            data.update(extracted)
+        return data if len(data) > 0 else _EMPTY
 
-        :sig: (Element) -> Any
-        :param element: Element to extract the data from.
-        :return: Extracted and optionally transformed data.
-        """
-        if self.foreach is None:
-            value = self.apply(element)
+    apply_ = apply_xpath if type_ == "path" else apply_rules
+
+    def apply(element):
+        if foreach_ is None:
+            value = apply_(element)
             if (value is None) or (value is _EMPTY):
                 return value
-            return value if self.transform is None else self.transform(value)
+            return value if transform is None else transform(value)
         else:
-            raw_values = [self.apply(r) for r in self.foreach(element)]
+            raw_values = [apply_xpath(r) for r in foreach_(element)]
             values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
             if len(values) == 0:
                 return []
-            return values if self.transform is None else list(map(self.transform, values))
+            return values if transform is None else list(map(transform, values))
+
+    return apply
+
+
+def Path(**kwargs):
+    return Extractor("path", **kwargs)
+
+
+def Rules(**kwargs):
+    return Extractor("rules", **kwargs)
 
 
 def make_extractor_from_map(desc):
@@ -346,94 +379,21 @@ def make_extractor_from_map(desc):
             reduce = getattr(reducers, reducer, None)
             if reduce is None:
                 raise ValueError("Unknown reducer")
-        extractor = Path(path, reduce=reduce, transform=transform, foreach=foreach)
+        extractor = Extractor(
+            "path", path=path, reduce=reduce, transform=transform, foreach=foreach
+        )
     else:
         items = desc.get("items", [])
         rules = [make_rule_from_map(i) for i in items]
-        extractor = Rules(
-            rules, section=desc.get("section"), transform=transform, foreach=foreach
+        extractor = Extractor(
+            "rules",
+            rules=rules,
+            section=desc.get("section"),
+            transform=transform,
+            foreach=foreach,
         )
 
     return extractor
-
-
-class Path(Extractor):
-    """An extractor for getting text out of an XML element."""
-
-    def __init__(self, path, reduce=None, *, transform=None, foreach=None):
-        """Initialize this extractor.
-
-        :sig: (str, Optional[Reducer], Optional[PathTransformer], Optional[str]) -> None
-        :param path: Path to apply to get the data.
-        :param reduce: Function to reduce selected texts into a single string.
-        :param transform: Function to transform the extracted value.
-        :param foreach: Path to apply for generating a collection of data.
-        """
-        super().__init__(transform=transform, foreach=foreach)
-
-        self.path = XPath(path)  # sig: XPather
-        """XPath evaluator to apply to get the data."""
-
-        if reduce is None:
-            reduce = reducers.concat
-
-        self.reduce = reduce  # sig: Reducer
-        """Function to reduce selected texts into a single string."""
-
-    def apply(self, element):
-        """Apply this extractor to an element.
-
-        :sig: (Element) -> str
-        :param element: Element to apply this extractor to.
-        :return: Extracted text.
-        """
-        selected = self.path(element)
-        return self.reduce(selected) if len(selected) > 0 else None
-
-
-class Rules(Extractor):
-    """An extractor for getting data items out of an XML element."""
-
-    def __init__(self, rules, *, section=None, transform=None, foreach=None):
-        """Initialize this extractor.
-
-        :sig: (Sequence[Ruler], str, Optional[MapTransformer], Optional[str]) -> None
-        :param rules: Rules for generating the data items.
-        :param section: Path for setting the root of this section.
-        :param transform: Function to transform extracted value.
-        :param foreach: Path for generating multiple items.
-        """
-        super().__init__(transform=transform, foreach=foreach)
-
-        self.rules = rules  # sig: Sequence[Ruler]
-        """Rules for generating the data items."""
-
-        self.section = XPath(section) if section is not None else None  # sig: Optional[XPather]
-        """XPath expression for selecting a subroot for this section."""
-
-    def apply(self, element):
-        """Apply this extractor to an element.
-
-        :sig: (Element) -> Mapping
-        :param element: Element to apply the extractor to.
-        :return: Extracted mapping.
-        :raise ValueError: When section path selects multiple elements.
-        """
-        if self.section is None:
-            subroot = element
-        else:
-            subroots = self.section(element)
-            if len(subroots) == 0:
-                return _EMPTY
-            if len(subroots) > 1:
-                raise ValueError("Section path should select exactly one element")
-            subroot = subroots[0]
-
-        data = {}
-        for rule in self.rules:
-            extracted = rule(subroot)
-            data.update(extracted)
-        return data if len(data) > 0 else _EMPTY
 
 
 def Rule(key, extractor, *, foreach=None):
@@ -635,7 +595,7 @@ def extract(element, items, *, section=None):
     :param section: Path to select the root element for these items.
     :return: Extracted data.
     """
-    rules = Rules([make_rule_from_map(item) for item in items], section=section)
+    rules = Rules(rules=[make_rule_from_map(item) for item in items], section=section)
     return rules(element)
 
 
