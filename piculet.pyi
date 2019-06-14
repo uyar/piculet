@@ -19,13 +19,8 @@ from pathlib import Path as FSPath
 from types import SimpleNamespace
 from xml.etree.ElementTree import Element
 
-XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
 Extractor = Callable[[Element], Any]
-Reducer = Callable[[Sequence[str]], str]
-PathTransformer = Callable[[str], Any]
-MapTransformer = Callable[[Mapping], Any]
-Transformer = Union[PathTransformer, MapTransformer]
-Ruler = Callable[[Element], Mapping]
+Rule = Callable[[Element], Mapping]
 
 __version__ = ...  # type: str
 LXML_AVAILABLE = ...  # type: bool
@@ -52,15 +47,17 @@ def html_to_xhtml(
     omit_tags: Optional[Iterable[str]] = ...,
     omit_attrs: Optional[Iterable[str]] = ...,
 ) -> str: ...
-def make_xpather(path: str) -> XPather: ...
+def make_xpather(
+    path: str
+) -> Callable[[Element], Union[Sequence[str], Sequence[Element]]]: ...
 def make_extractor(
     type_: str,
     *,
     path: Optional[str] = ...,
-    reduce: Optional[Reducer] = ...,
-    rules: Sequence[Ruler] = ...,
+    reduce: Optional[Callable[[Sequence[str]], str]] = ...,
+    rules: Optional[Sequence[Rule]] = ...,
     section: Optional[str] = ...,
-    transform: Optional[Transformer] = ...,
+    transform: Optional[Callable[[Union[str, Mapping]], Any]] = ...,
     foreach: Optional[str] = ...,
 ) -> Callable[[Element], Any]: ...
 def make_extractor_from_map(desc: Mapping) -> Extractor: ...
@@ -69,8 +66,8 @@ def Rule(
     extractor: Extractor,
     *,
     foreach: Optional[str] = ...,
-) -> Ruler: ...
-def make_rule_from_map(desc: Mapping) -> Ruler: ...
+) -> Rule: ...
+def make_rule_from_map(desc: Mapping) -> Rule: ...
 def remove_elements(root: Element, *, path: str) -> None: ...
 def set_element_attr(
     root: Element,

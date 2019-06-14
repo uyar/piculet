@@ -199,9 +199,6 @@ def html_to_xhtml(document, *, omit_tags=None, omit_attrs=None):
 ###########################################################
 
 
-# sigalias: XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
-
-
 LXML_AVAILABLE = find_loader("lxml") is not None  # sig: bool
 if LXML_AVAILABLE:
     from lxml import etree as ElementTree
@@ -217,7 +214,7 @@ else:
         This is mainly needed to compensate for the lack of ``text()``
         and ``@attr`` axis queries in ElementTree XPath support.
 
-        :sig: (str) -> XPather
+        :sig: (str) -> Callable[[Element], Union[Sequence[str], Sequence[Element]]]
         :param path: XPath expression to apply.
         :return: Evaluator that applies the expression to an element.
         """
@@ -269,11 +266,7 @@ _EMPTY = {}
 
 
 # sigalias: Extractor = Callable[[Element], Any]
-# sigalias: Reducer = Callable[[Sequence[str]], str]
 # sigalias: Rule = Callable[[Element], Mapping]
-# sigalias: PathTransformer = Callable[[str], Any]
-# sigalias: MapTransformer = Callable[[Mapping], Any]
-# sigalias: Transformer = Union[PathTransformer, MapTransformer]
 
 
 def make_extractor(
@@ -285,10 +278,10 @@ def make_extractor(
         (
             str,
             Optional[str],
-            Optional[Reducer],
+            Optional[Callable[[Sequence[str]], str]],
             Optional[Sequence[Rule]],
             Optional[str],
-            Optional[Transformer],
+            Optional[Callable[[Union[str, Mapping]], Any]],
             Optional[str]
         ) -> Callable[[Element], Any]
     :param type: Type of extractor ('path' or 'rules').
@@ -400,7 +393,7 @@ def make_extractor_from_map(desc):
 def Rule(key, extractor, *, foreach=None):
     """Get a rule that can be applied to an XML element to extract data.
 
-    :sig: (Union[str, Extractor], Extractor, Optional[str]) -> Ruler
+    :sig: (Union[str, Extractor], Extractor, Optional[str]) -> Rule
     :param key: Name to distinguish the data.
     :param extractor: Extractor that will generate the data.
     :param foreach: XPath expression for generating multiple data items.
@@ -428,7 +421,7 @@ def Rule(key, extractor, *, foreach=None):
 def make_rule_from_map(desc):
     """Generate a rule from a description.
 
-    :sig: (Mapping) -> Ruler
+    :sig: (Mapping) -> Rule
     :param desc: Description of rule to generate.
     :return: Generated rule.
     """
