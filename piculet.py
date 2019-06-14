@@ -342,7 +342,7 @@ def make_extractor_from_map(desc):
         extractor = Path(path, reduce=reduce, transform=transform, foreach=foreach)
     else:
         items = desc.get("items", [])
-        rules = [Rule.from_map(i) for i in items]
+        rules = [make_rule_from_map(i) for i in items]
         extractor = Rules(
             rules, section=desc.get("section"), transform=transform, foreach=foreach
         )
@@ -449,19 +449,6 @@ class Rule:
         self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPather]
         """XPath evaluator for generating multiple items."""
 
-    @staticmethod
-    def from_map(desc):
-        """Generate a rule from a description.
-
-        :sig: (Mapping) -> Rule
-        :param desc: Description of rule to generate.
-        :return: Generated rule.
-        """
-        item_key = desc["key"]
-        key = item_key if isinstance(item_key, str) else make_extractor_from_map(item_key)
-        value = make_extractor_from_map(desc["value"])
-        return Rule(key=key, extractor=value, foreach=desc.get("foreach"))
-
     def __call__(self, element):
         """Extract data out of an element using this rule.
 
@@ -496,6 +483,19 @@ class Rule:
                     else list(map(self.extractor.transform, values))
                 )
         return data
+
+
+def make_rule_from_map(desc):
+    """Generate a rule from a description.
+
+    :sig: (Mapping) -> Rule
+    :param desc: Description of rule to generate.
+    :return: Generated rule.
+    """
+    item_key = desc["key"]
+    key = item_key if isinstance(item_key, str) else make_extractor_from_map(item_key)
+    value = make_extractor_from_map(desc["value"])
+    return Rule(key=key, extractor=value, foreach=desc.get("foreach"))
 
 
 ###########################################################
@@ -656,7 +656,7 @@ def extract(element, items, *, section=None):
     :param section: Path to select the root element for these items.
     :return: Extracted data.
     """
-    rules = Rules([Rule.from_map(item) for item in items], section=section)
+    rules = Rules([make_rule_from_map(item) for item in items], section=section)
     return rules(element)
 
 
