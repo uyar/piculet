@@ -205,12 +205,13 @@ def html_to_xhtml(document, *, omit_tags=None, omit_attrs=None):
 LXML_AVAILABLE = find_loader("lxml") is not None  # sig: bool
 if LXML_AVAILABLE:
     from lxml import etree as ElementTree
-    from lxml.etree import Element, XPath
+    from lxml.etree import Element
+    from lxml.etree import XPath as make_xpather
 else:
     from xml.etree import ElementTree
     from xml.etree.ElementTree import Element
 
-    def XPath(path):
+    def make_xpather(path):
         """Get an XPath expression that can be applied to an element.
 
         This is mainly needed to compensate for the lack of ``text()``
@@ -256,7 +257,7 @@ else:
         return apply
 
 
-XPath = lru_cache(maxsize=None)(XPath)
+make_xpather = lru_cache(maxsize=None)(make_xpather)
 
 
 ###########################################################
@@ -297,13 +298,13 @@ def Extractor(
     :param transform: Function to transform the extracted value.
     :param foreach: Path to apply for generating a collection of data.
     """
-    xpath = XPath(path) if path is not None else None
+    xpath = make_xpather(path) if path is not None else None
     if reduce is None:
         reduce = reducers.concat
 
-    section_ = XPath(section) if section is not None else None
+    section_ = make_xpather(section) if section is not None else None
 
-    foreach_ = XPath(foreach) if foreach is not None else None
+    foreach_ = make_xpather(foreach) if foreach is not None else None
 
     def apply_xpath(element):
         selected = xpath(element)
@@ -405,7 +406,7 @@ def Rule(key, extractor, *, foreach=None):
     :param foreach: XPath expression for generating multiple data items.
     :return: Generated rule.
     """
-    foreach_ = XPath(foreach) if foreach is not None else None
+    foreach_ = make_xpather(foreach) if foreach is not None else None
 
     def apply(element):
         data = {}
@@ -457,7 +458,7 @@ def remove_elements(root, *, path):
         if get_parent is None:
             get_parent = {e: p for p in root.iter() for e in p}.get
             root.attrib["_get_parent"] = get_parent
-    elements = XPath(path)(root)
+    elements = make_xpather(path)(root)
     if len(elements) > 0:
         for element in elements:
             # XXX: could this be hazardous? parent removed in earlier iteration?
@@ -473,7 +474,7 @@ def set_element_attr(root, *, path, name, value):
     :param name: Description for name generation.
     :param value: Description for value generation.
     """
-    elements = XPath(path)(root)
+    elements = make_xpather(path)(root)
     for element in elements:
         attr_name = name if isinstance(name, str) else make_extractor_from_map(name)(element)
         if attr_name is None:
@@ -496,7 +497,7 @@ def set_element_text(root, *, path, text):
     :param path: XPath to select the elements to set attributes for.
     :param text: Description for text generation.
     """
-    elements = XPath(path)(root)
+    elements = make_xpather(path)(root)
     for element in elements:
         element_text = text if isinstance(text, str) else make_extractor_from_map(text)(element)
         # note that the text can be None in which case the existing text will be cleared
