@@ -206,14 +206,11 @@ LXML_AVAILABLE = find_loader("lxml") is not None  # sig: bool
 if LXML_AVAILABLE:
     from lxml import etree as ElementTree
     from lxml.etree import Element, XPath
-
-    xpath = lru_cache(maxsize=None)(XPath)
 else:
     from xml.etree import ElementTree
     from xml.etree.ElementTree import Element
 
-    @lru_cache(maxsize=None)
-    def xpath(path):
+    def XPath(path):
         """Get an XPath expression that can be applied to an element.
 
         This is mainly needed to compensate for the lack of ``text()``
@@ -259,6 +256,9 @@ else:
         return apply
 
 
+xpath = lru_cache(maxsize=None)(XPath)
+
+
 ###########################################################
 # DATA EXTRACTION CLASSES
 ###########################################################
@@ -286,7 +286,7 @@ class Extractor(ABC):
         self.transform = transform  # sig: Optional[Transformer]
         """Function to transform the extracted value."""
 
-        self.foreach = xpath(foreach) if foreach is not None else None  # sig: Optional[XPather]
+        self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPather]
         """Path to apply for generating a collection of values."""
 
     @abstractmethod
@@ -364,7 +364,7 @@ class Path(Extractor):
         """
         super().__init__(transform=transform, foreach=foreach)
 
-        self.path = xpath(path)  # sig: XPather
+        self.path = XPath(path)  # sig: XPather
         """XPath evaluator to apply to get the data."""
 
         if reduce is None:
@@ -401,7 +401,7 @@ class Rules(Extractor):
         self.rules = rules  # sig: Sequence[Rule]
         """Rules for generating the data items."""
 
-        self.section = xpath(section) if section is not None else None  # sig: Optional[XPather]
+        self.section = XPath(section) if section is not None else None  # sig: Optional[XPather]
         """XPath expression for selecting a subroot for this section."""
 
     def apply(self, element):
@@ -446,7 +446,7 @@ class Rule:
         self.extractor = extractor  # sig: Extractor
         """Extractor that will generate this data item."""
 
-        self.foreach = xpath(foreach) if foreach is not None else None  # sig: Optional[XPather]
+        self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPather]
         """XPath evaluator for generating multiple items."""
 
     @staticmethod
@@ -518,7 +518,7 @@ def remove_elements(root, *, path):
         if get_parent is None:
             get_parent = {e: p for p in root.iter() for e in p}.get
             root.attrib["_get_parent"] = get_parent
-    elements = xpath(path)(root)
+    elements = XPath(path)(root)
     if len(elements) > 0:
         for element in elements:
             # XXX: could this be hazardous? parent removed in earlier iteration?
@@ -534,7 +534,7 @@ def set_element_attr(root, *, path, name, value):
     :param name: Description for name generation.
     :param value: Description for value generation.
     """
-    elements = xpath(path)(root)
+    elements = XPath(path)(root)
     for element in elements:
         attr_name = name if isinstance(name, str) else Extractor.from_map(name).extract(element)
         if attr_name is None:
@@ -557,7 +557,7 @@ def set_element_text(root, *, path, text):
     :param path: XPath to select the elements to set attributes for.
     :param text: Description for text generation.
     """
-    elements = xpath(path)(root)
+    elements = XPath(path)(root)
     for element in elements:
         element_text = (
             text if isinstance(text, str) else Extractor.from_map(text).extract(element)
