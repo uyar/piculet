@@ -424,7 +424,7 @@ class Rules(Extractor):
 
         data = {}
         for rule in self.rules:
-            extracted = rule.extract(subroot)
+            extracted = rule(subroot)
             data.update(extracted)
         return data if len(data) > 0 else _EMPTY
 
@@ -462,7 +462,7 @@ class Rule:
         value = Extractor.from_map(desc["value"])
         return Rule(key=key, extractor=value, foreach=desc.get("foreach"))
 
-    def extract(self, element):
+    def __call__(self, element):
         """Extract data out of an element using this rule.
 
         :sig: (Element) -> Mapping
