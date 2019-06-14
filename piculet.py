@@ -268,6 +268,7 @@ make_xpather = lru_cache(maxsize=None)(make_xpather)
 _EMPTY = {}
 
 
+# sigalias: Extractor = Callable[[Element], Any]
 # sigalias: Reducer = Callable[[Sequence[str]], str]
 # sigalias: PathTransformer = Callable[[str], Any]
 # sigalias: MapTransformer = Callable[[Mapping], Any]
@@ -275,7 +276,7 @@ _EMPTY = {}
 # sigalias: Ruler = Callable[[Element], Mapping]
 
 
-def Extractor(
+def make_extractor(
     type_, *, path=None, reduce=None, rules=None, section=None, transform=None, foreach=None
 ):
     """Get an extractor that can be applied to an element.
@@ -346,11 +347,11 @@ def Extractor(
 
 
 def Path(**kwargs):
-    return Extractor("path", **kwargs)
+    return make_extractor("path", **kwargs)
 
 
 def Rules(**kwargs):
-    return Extractor("rules", **kwargs)
+    return make_extractor("rules", **kwargs)
 
 
 def make_extractor_from_map(desc):
@@ -380,13 +381,13 @@ def make_extractor_from_map(desc):
             reduce = getattr(reducers, reducer, None)
             if reduce is None:
                 raise ValueError("Unknown reducer")
-        extractor = Extractor(
+        extractor = make_extractor(
             "path", path=path, reduce=reduce, transform=transform, foreach=foreach
         )
     else:
         items = desc.get("items", [])
         rules = [make_rule_from_map(i) for i in items]
-        extractor = Extractor(
+        extractor = make_extractor(
             "rules",
             rules=rules,
             section=desc.get("section"),

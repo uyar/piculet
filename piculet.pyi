@@ -14,13 +14,13 @@ from typing import (
     Union,
 )
 
-from abc import ABC
 from html.parser import HTMLParser
 from pathlib import Path as FSPath
 from types import SimpleNamespace
 from xml.etree.ElementTree import Element
 
 XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
+Extractor = Callable[[Element], Any]
 Reducer = Callable[[Sequence[str]], str]
 PathTransformer = Callable[[str], Any]
 MapTransformer = Callable[[Mapping], Any]
@@ -52,55 +52,18 @@ def html_to_xhtml(
     omit_tags: Optional[Iterable[str]] = ...,
     omit_attrs: Optional[Iterable[str]] = ...,
 ) -> str: ...
-def XPath(path: str) -> XPather: ...
-def Path(
+def make_xpather(path: str) -> XPather: ...
+def make_extractor(
+    type_: str,
+    *,
     path: Optional[str] = ...,
     reduce: Optional[Reducer] = ...,
-    *,
-    transform: Optional[PathTransformer] = ...,
+    rules: Sequence[Ruler] = ...,
+    section: Optional[str] = ...,
+    transform: Optional[Transformer] = ...,
     foreach: Optional[str] = ...,
 ) -> Callable[[Element], Any]: ...
-
-class Extractor(ABC):
-    transform = ...  # type: Optional[Transformer]
-    foreach = ...  # type: Optional[XPather]
-    def __init__(
-        self,
-        *,
-        transform: Optional[Transformer] = ...,
-        foreach: Optional[str] = ...,
-    ) -> None: ...
-    def apply(self, element: Element) -> Union[str, Mapping]: ...
-    def __call__(self, element: Element) -> Any: ...
-
 def make_extractor_from_map(desc: Mapping) -> Extractor: ...
-
-class Path_(Extractor):
-    path = ...  # type: XPather
-    reduce = ...  # type: Reducer
-    def __init__(
-        self,
-        path: str,
-        reduce: Optional[Reducer] = ...,
-        *,
-        transform: Optional[PathTransformer] = ...,
-        foreach: Optional[str] = ...,
-    ) -> None: ...
-    def apply(self, element: Element) -> str: ...
-
-class Rules(Extractor):
-    rules = ...  # type: Sequence[Ruler]
-    section = ...  # type: Optional[XPather]
-    def __init__(
-        self,
-        rules: Sequence[Ruler],
-        *,
-        section: str = ...,
-        transform: Optional[MapTransformer] = ...,
-        foreach: Optional[str] = ...,
-    ) -> None: ...
-    def apply(self, element: Element) -> Mapping: ...
-
 def Rule(
     key: Union[str, Extractor],
     extractor: Extractor,
