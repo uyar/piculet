@@ -299,12 +299,11 @@ class Extractor(ABC):
         :return: Extracted raw data.
         """
 
-    def __call__(self, element, *, disable_transform=False):
+    def __call__(self, element):
         """Get the processed data from an element using this extractor.
 
-        :sig: (Element, bool) -> Any
+        :sig: (Element) -> Any
         :param element: Element to extract the data from.
-        :param disable_transform: Whether the transformation will be disabled or not.
         :return: Extracted and optionally transformed data.
         """
         if self.foreach is None:
