@@ -271,6 +271,7 @@ _EMPTY = {}
 # sigalias: PathTransformer = Callable[[str], Any]
 # sigalias: MapTransformer = Callable[[Mapping], Any]
 # sigalias: Transformer = Union[PathTransformer, MapTransformer]
+# sigalias: Ruler = Callable[[Element], Mapping]
 
 
 class Extractor(ABC):
@@ -390,7 +391,7 @@ class Rules(Extractor):
     def __init__(self, rules, *, section=None, transform=None, foreach=None):
         """Initialize this extractor.
 
-        :sig: (Sequence[Rule], str, Optional[MapTransformer], Optional[str]) -> None
+        :sig: (Sequence[Ruler], str, Optional[MapTransformer], Optional[str]) -> None
         :param rules: Rules for generating the data items.
         :param section: Path for setting the root of this section.
         :param transform: Function to transform extracted value.
@@ -398,7 +399,7 @@ class Rules(Extractor):
         """
         super().__init__(transform=transform, foreach=foreach)
 
-        self.rules = rules  # sig: Sequence[Rule]
+        self.rules = rules  # sig: Sequence[Ruler]
         """Rules for generating the data items."""
 
         self.section = XPath(section) if section is not None else None  # sig: Optional[XPather]
@@ -429,66 +430,52 @@ class Rules(Extractor):
         return data if len(data) > 0 else _EMPTY
 
 
-class Rule:
-    """A rule describing how to get a data item out of an XML element."""
+def Rule(key, extractor, *, foreach=None):
+    """Get a rule that can be applied to an XML element to extract data.
 
-    def __init__(self, key, extractor, *, foreach=None):
-        """Initialize this rule.
+    :sig: (Union[str, Extractor], Extractor, Optional[str]) -> Ruler
+    :param key: Name to distinguish the data.
+    :param extractor: Extractor that will generate the data.
+    :param foreach: XPath expression for generating multiple data items.
+    :return: Generated rule.
+    """
+    foreach_ = XPath(foreach) if foreach is not None else None
 
-        :sig: (Union[str, Extractor], Extractor, Optional[str]) -> None
-        :param key: Name to distinguish this data item.
-        :param extractor: Extractor that will generate this data item.
-        :param foreach: Path for generating multiple items.
-        """
-        self.key = key  # sig: Union[str, Extractor]
-        """Name to distinguish this data item."""
-
-        self.extractor = extractor  # sig: Extractor
-        """Extractor that will generate this data item."""
-
-        self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPather]
-        """XPath evaluator for generating multiple items."""
-
-    def __call__(self, element):
-        """Extract data out of an element using this rule.
-
-        :sig: (Element) -> Mapping
-        :param element: Element to extract the data from.
-        :return: Extracted data.
-        """
+    def apply(element):
         data = {}
-        subroots = [element] if self.foreach is None else self.foreach(element)
+        subroots = [element] if foreach_ is None else foreach_(element)
         for subroot in subroots:
-            key = self.key if isinstance(self.key, str) else self.key(subroot)
-            if key is None:
+            key_ = key if isinstance(key, str) else key(subroot)
+            if key_ is None:
                 continue
 
-            if self.extractor.foreach is None:
-                value = self.extractor(subroot)
+            if extractor.foreach is None:
+                value = extractor(subroot)
                 if (value is None) or (value is _EMPTY):
                     continue
-                data[key] = value
+                data[key_] = value
             else:
                 # don't try to transform list items by default, it might waste a lot of time
                 raw_values = [
-                    self.extractor(r, disable_transform=True)
-                    for r in self.extractor.foreach(subroot)
+                    extractor(r, disable_transform=True) for r in extractor.foreach(subroot)
                 ]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
                 if len(values) == 0:
                     continue
-                data[key] = (
+                data[key_] = (
                     values
-                    if self.extractor.transform is None
-                    else list(map(self.extractor.transform, values))
+                    if extractor.transform is None
+                    else list(map(extractor.transform, values))
                 )
         return data
+
+    return apply
 
 
 def make_rule_from_map(desc):
     """Generate a rule from a description.
 
-    :sig: (Mapping) -> Rule
+    :sig: (Mapping) -> Ruler
     :param desc: Description of rule to generate.
     :return: Generated rule.
     """

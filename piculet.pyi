@@ -25,6 +25,7 @@ Reducer = Callable[[Sequence[str]], str]
 PathTransformer = Callable[[str], Any]
 MapTransformer = Callable[[Mapping], Any]
 Transformer = Union[PathTransformer, MapTransformer]
+Ruler = Callable[[Element], Mapping]
 
 __version__ = ...  # type: str
 LXML_AVAILABLE = ...  # type: bool
@@ -83,11 +84,11 @@ class Path(Extractor):
     def apply(self, element: Element) -> str: ...
 
 class Rules(Extractor):
-    rules = ...  # type: Sequence[Rule]
+    rules = ...  # type: Sequence[Ruler]
     section = ...  # type: Optional[XPather]
     def __init__(
         self,
-        rules: Sequence[Rule],
+        rules: Sequence[Ruler],
         *,
         section: str = ...,
         transform: Optional[MapTransformer] = ...,
@@ -95,20 +96,13 @@ class Rules(Extractor):
     ) -> None: ...
     def apply(self, element: Element) -> Mapping: ...
 
-class Rule:
-    key = ...  # type: Union[str, Extractor]
-    extractor = ...  # type: Extractor
-    foreach = ...  # type: Optional[XPather]
-    def __init__(
-        self,
-        key: Union[str, Extractor],
-        extractor: Extractor,
-        *,
-        foreach: Optional[str] = ...,
-    ) -> None: ...
-    def __call__(self, element: Element) -> Mapping: ...
-
-def make_rule_from_map(desc: Mapping) -> Rule: ...
+def Rule(
+    key: Union[str, Extractor],
+    extractor: Extractor,
+    *,
+    foreach: Optional[str] = ...,
+) -> Ruler: ...
+def make_rule_from_map(desc: Mapping) -> Ruler: ...
 def remove_elements(root: Element, *, path: str) -> None: ...
 def set_element_attr(
     root: Element,
