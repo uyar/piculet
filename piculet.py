@@ -270,10 +270,10 @@ _EMPTY = {}
 
 # sigalias: Extractor = Callable[[Element], Any]
 # sigalias: Reducer = Callable[[Sequence[str]], str]
+# sigalias: Rule = Callable[[Element], Mapping]
 # sigalias: PathTransformer = Callable[[str], Any]
 # sigalias: MapTransformer = Callable[[Mapping], Any]
 # sigalias: Transformer = Union[PathTransformer, MapTransformer]
-# sigalias: Ruler = Callable[[Element], Mapping]
 
 
 def make_extractor(
@@ -286,30 +286,29 @@ def make_extractor(
             str,
             Optional[str],
             Optional[Reducer],
-            Sequence[Ruler],
+            Optional[Sequence[Rule]],
             Optional[str],
             Optional[Transformer],
             Optional[str]
         ) -> Callable[[Element], Any]
     :param type: Type of extractor ('path' or 'rules').
-    :param path: Path to apply to get the data.
+    :param path: XPath expression to apply.
     :param reduce: Function to reduce selected texts into a single string.
     :param rules: Rules for generating the data items.
-    :param section: Path for setting the root of this section.
-    :param transform: Function to transform the extracted value.
+    :param section: XPath expression for setting the root of a section.
+    :param transform: Function to transform the extracted data.
     :param foreach: Path to apply for generating a collection of data.
     """
-    xpath = make_xpather(path) if path is not None else None
-    if reduce is None:
-        reduce = reducers.concat
-
-    section_ = make_xpather(section) if section is not None else None
-
+    path_ = make_xpather(path) if path is not None else None
+    reduce_ = reducers.concat if (path is not None) and (reduce is None) else reduce
+    rules_ = rules
+    section_ = make_xpather(section) if (rules is not None) and (section is not None) else None
+    transform_ = transform
     foreach_ = make_xpather(foreach) if foreach is not None else None
 
-    def apply_xpath(element):
-        selected = xpath(element)
-        return reduce(selected) if len(selected) > 0 else None
+    def apply_path(element):
+        selected = path_(element)
+        return reduce_(selected) if len(selected) > 0 else None
 
     def apply_rules(element):
         if section_ is None:
@@ -323,35 +322,35 @@ def make_extractor(
             subroot = subroots[0]
 
         data = {}
-        for rule in rules:
+        for rule in rules_:
             extracted = rule(subroot)
             data.update(extracted)
         return data if len(data) > 0 else _EMPTY
 
-    apply_ = apply_xpath if type_ == "path" else apply_rules
+    apply_ = apply_path if type_ == "path" else apply_rules
 
     def apply(element):
         if foreach_ is None:
             value = apply_(element)
             if (value is None) or (value is _EMPTY):
                 return value
-            return value if transform is None else transform(value)
+            return value if transform_ is None else transform_(value)
         else:
-            raw_values = [apply_xpath(r) for r in foreach_(element)]
+            raw_values = [apply_(r) for r in foreach_(element)]
             values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
             if len(values) == 0:
                 return []
-            return values if transform is None else list(map(transform, values))
+            return values if transform_ is None else list(map(transform_, values))
 
     return apply
 
 
-def Path(**kwargs):
-    return make_extractor("path", **kwargs)
+def Path(path, **kwargs):
+    return make_extractor("path", path=path, **kwargs)
 
 
-def Rules(**kwargs):
-    return make_extractor("rules", **kwargs)
+def Rules(rules, **kwargs):
+    return make_extractor("rules", rules=rules, **kwargs)
 
 
 def make_extractor_from_map(desc):
