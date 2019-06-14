@@ -311,43 +311,43 @@ class Extractor(ABC):
             return value
         return value if self.transform is None else self.transform(value)
 
-    @staticmethod
-    def from_map(desc):
-        """Generate an extractor from a description.
 
-        :sig: (Mapping) -> Extractor
-        :param desc: Description of the extractor to generate.
-        :return: Generated extractor.
-        :raise ValueError: When reducer or transformer names are unknown.
-        """
-        transformer = desc.get("transform")
-        if transformer is None:
-            transform = None
+def make_extractor_from_map(desc):
+    """Generate an extractor from a description.
+
+    :sig: (Mapping) -> Extractor
+    :param desc: Description of the extractor to generate.
+    :return: Generated extractor.
+    :raise ValueError: When reducer or transformer names are unknown.
+    """
+    transformer = desc.get("transform")
+    if transformer is None:
+        transform = None
+    else:
+        transform = getattr(transformers, transformer, None)
+        if transform is None:
+            raise ValueError("Unknown transformer")
+
+    foreach = desc.get("foreach")
+
+    path = desc.get("path")
+    if path is not None:
+        reducer = desc.get("reduce")
+        if reducer is None:
+            reduce = None
         else:
-            transform = getattr(transformers, transformer, None)
-            if transform is None:
-                raise ValueError("Unknown transformer")
+            reduce = getattr(reducers, reducer, None)
+            if reduce is None:
+                raise ValueError("Unknown reducer")
+        extractor = Path(path, reduce=reduce, transform=transform, foreach=foreach)
+    else:
+        items = desc.get("items", [])
+        rules = [Rule.from_map(i) for i in items]
+        extractor = Rules(
+            rules, section=desc.get("section"), transform=transform, foreach=foreach
+        )
 
-        foreach = desc.get("foreach")
-
-        path = desc.get("path")
-        if path is not None:
-            reducer = desc.get("reduce")
-            if reducer is None:
-                reduce = None
-            else:
-                reduce = getattr(reducers, reducer, None)
-                if reduce is None:
-                    raise ValueError("Unknown reducer")
-            extractor = Path(path, reduce=reduce, transform=transform, foreach=foreach)
-        else:
-            items = desc.get("items", [])
-            rules = [Rule.from_map(i) for i in items]
-            extractor = Rules(
-                rules, section=desc.get("section"), transform=transform, foreach=foreach
-            )
-
-        return extractor
+    return extractor
 
 
 class Path(Extractor):
@@ -458,8 +458,8 @@ class Rule:
         :return: Generated rule.
         """
         item_key = desc["key"]
-        key = item_key if isinstance(item_key, str) else Extractor.from_map(item_key)
-        value = Extractor.from_map(desc["value"])
+        key = item_key if isinstance(item_key, str) else make_extractor_from_map(item_key)
+        value = make_extractor_from_map(desc["value"])
         return Rule(key=key, extractor=value, foreach=desc.get("foreach"))
 
     def __call__(self, element):
@@ -536,11 +536,13 @@ def set_element_attr(root, *, path, name, value):
     """
     elements = XPath(path)(root)
     for element in elements:
-        attr_name = name if isinstance(name, str) else Extractor.from_map(name)(element)
+        attr_name = name if isinstance(name, str) else make_extractor_from_map(name)(element)
         if attr_name is None:
             continue
 
-        attr_value = value if isinstance(value, str) else Extractor.from_map(value)(element)
+        attr_value = (
+            value if isinstance(value, str) else make_extractor_from_map(value)(element)
+        )
         if attr_value is None:
             continue
 
@@ -557,7 +559,7 @@ def set_element_text(root, *, path, text):
     """
     elements = XPath(path)(root)
     for element in elements:
-        element_text = text if isinstance(text, str) else Extractor.from_map(text)(element)
+        element_text = text if isinstance(text, str) else make_extractor_from_map(text)(element)
         # note that the text can be None in which case the existing text will be cleared
         element.text = element_text
 
