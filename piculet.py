@@ -246,17 +246,17 @@ else:
             return [r for r in result if r is not None]
 
         if path.endswith("//text()"):
-            _apply = descendant_text
+            apply = descendant_text
         elif path.endswith("/text()"):
-            _apply = child_text
+            apply = child_text
         else:
             *front, last = path.split("/")
             if last.startswith("@"):
-                _apply = partial(attribute, subpath="/".join(front), attr=last[1:])
+                apply = partial(attribute, subpath="/".join(front), attr=last[1:])
             else:
-                _apply = partial(Element.findall, path=path)
+                apply = partial(Element.findall, path=path)
 
-        return _apply
+        return apply
 
 
 _EMPTY = {}  # sig: Dict
