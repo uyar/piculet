@@ -220,7 +220,7 @@ else:
         and ``@attr`` axis queries in ElementTree XPath support.
 
         :sig: (str) -> XPather
-        :param path: XPath expression to compile.
+        :param path: XPath expression to prepare.
         :return: Evaluator that can be applied to an element.
         """
         if path[0] == "/":
@@ -312,15 +312,15 @@ class Extractor(ABC):
         return value if self.transform is None else self.transform(value)
 
     @staticmethod
-    def from_map(item):
-        """Generate an extractor from a description map.
+    def from_map(desc):
+        """Generate an extractor from a description.
 
         :sig: (Mapping) -> Extractor
-        :param item: Extractor description.
-        :return: Extractor object.
+        :param desc: Description of the extractor to generate.
+        :return: Generated extractor.
         :raise ValueError: When reducer or transformer names are unknown.
         """
-        transformer = item.get("transform")
+        transformer = desc.get("transform")
         if transformer is None:
             transform = None
         else:
@@ -328,11 +328,11 @@ class Extractor(ABC):
             if transform is None:
                 raise ValueError("Unknown transformer")
 
-        foreach = item.get("foreach")
+        foreach = desc.get("foreach")
 
-        path = item.get("path")
+        path = desc.get("path")
         if path is not None:
-            reducer = item.get("reduce")
+            reducer = desc.get("reduce")
             if reducer is None:
                 reduce = None
             else:
@@ -341,10 +341,10 @@ class Extractor(ABC):
                     raise ValueError("Unknown reducer")
             extractor = Path(path, reduce=reduce, transform=transform, foreach=foreach)
         else:
-            items = item.get("items", [])
+            items = desc.get("items", [])
             rules = [Rule.from_map(i) for i in items]
             extractor = Rules(
-                rules, section=item.get("section"), transform=transform, foreach=foreach
+                rules, section=desc.get("section"), transform=transform, foreach=foreach
             )
 
         return extractor
@@ -359,7 +359,7 @@ class Path(Extractor):
         :sig: (str, Optional[Reducer], Optional[PathTransformer], Optional[str]) -> None
         :param path: Path to apply to get the data.
         :param reduce: Function to reduce selected texts into a single string.
-        :param transform: Function to transform extracted value.
+        :param transform: Function to transform the extracted value.
         :param foreach: Path to apply for generating a collection of data.
         """
         super().__init__(transform=transform, foreach=foreach)
@@ -450,17 +450,17 @@ class Rule:
         """XPath evaluator for generating multiple items."""
 
     @staticmethod
-    def from_map(item):
-        """Generate a rule from a description map.
+    def from_map(desc):
+        """Generate a rule from a description.
 
         :sig: (Mapping) -> Rule
-        :param item: Item description.
-        :return: Rule object.
+        :param desc: Description of rule to generate.
+        :return: Generated rule.
         """
-        item_key = item["key"]
+        item_key = desc["key"]
         key = item_key if isinstance(item_key, str) else Extractor.from_map(item_key)
-        value = Extractor.from_map(item["value"])
-        return Rule(key=key, extractor=value, foreach=item.get("foreach"))
+        value = Extractor.from_map(desc["value"])
+        return Rule(key=key, extractor=value, foreach=desc.get("foreach"))
 
     def extract(self, element):
         """Extract data out of an element using this rule.
