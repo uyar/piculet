@@ -236,7 +236,7 @@ else:
             ]
 
         def attribute(element, subpath, attr):
-            result = [e.attrib.get(attr) for e in element.findall(subpath)]
+            result = [e.get(attr) for e in element.findall(subpath)]
             return [r for r in result if r is not None]
 
         if path.endswith("//text()"):
@@ -446,10 +446,10 @@ def remove_elements(root, *, path):
         get_parent = ElementTree._Element.getparent
     else:
         # ElementTree doesn't support parent queries, so we'll build a map for it
-        get_parent = root.attrib.get("_get_parent")
+        get_parent = root.get("_get_parent")
         if get_parent is None:
             get_parent = {e: p for p in root.iter() for e in p}.get
-            root.attrib["_get_parent"] = get_parent
+            root.set("_get_parent", get_parent)
     elements = make_xpather(path)(root)
     if len(elements) > 0:
         for element in elements:
@@ -478,7 +478,7 @@ def set_element_attr(root, *, path, name, value):
         if attr_value is None:
             continue
 
-        element.attrib[attr_name] = attr_value
+        element.set(attr_name, attr_value)
 
 
 def set_element_text(root, *, path, text):
