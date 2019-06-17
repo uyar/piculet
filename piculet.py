@@ -268,40 +268,40 @@ _EMPTY = {}
 # sigalias: Rule = Callable[[Element], Mapping]
 
 
-def make_extractor(extractor, transform=None, foreach=None):
-    """Get an extractor that can be applied to an element.
+def make_extractor(get_raw, transform=None, foreach=None):
+    """Create an extractor that can get data from an element.
 
     :sig:
         (
-            Extractor,
+            Callable[[Element], Union[str, Mapping]],
             Optional[Callable[[Union[str, Mapping]], Any]],
             Optional[str]
         ) -> Callable[[Element], Any]
-    :param extractor: Rules for generating the data items.
-    :param transform: Function to transform the extracted data.
-    :param foreach: Path to apply for generating a collection of data.
+    :param get_raw: Function for getting raw data from the document.
+    :param transform: Function for transforming the raw data.
+    :param foreach: XPath expression for generating multiple values for data.
+    :return: Function to apply this extractor to an element.
     """
-    transform_ = transform
     foreach_ = make_xpather(foreach) if foreach is not None else None
 
     def apply(element):
         if foreach_ is None:
-            value = extractor(element)
-            if (value is None) or (value is _EMPTY):
-                return value
-            return value if transform_ is None else transform_(value)
+            raw_value = get_raw(element)
+            if (raw_value is None) or (raw_value is _EMPTY):
+                return raw_value
+            return raw_value if transform is None else transform(raw_value)
         else:
-            raw_values = [extractor(r) for r in foreach_(element)]
-            values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
-            if len(values) == 0:
-                return []
-            return values if transform_ is None else list(map(transform_, values))
+            raw_values = [get_raw(r) for r in foreach_(element)]
+            raw_values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
+            if len(raw_values) == 0:
+                return raw_values
+            return raw_values if transform is None else list(map(transform, raw_values))
 
     return apply
 
 
 def make_path_extractor(path, reduce=None, transform=None, foreach=None):
-    """Get an extractor that will apply a path-reducer to an element.
+    """Create an extractor that can get data from an element using XPath.
 
     :sig:
         (
@@ -311,41 +311,40 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
             Optional[str]
         ) -> Callable[[Element], Any]
     :param path: XPath expression to apply.
-    :param reduce: Function to reduce selected texts into a single string.
-    :param transform: Function to transform the extracted data.
-    :param foreach: Path to apply for generating a collection of data.
-    :return: A function that will apply this extractor to an element.
+    :param reduce: Function for reducing selected strings into a single string.
+    :param transform: Function for transforming the raw data.
+    :param foreach: XPath expression for generating multiple values for data.
+    :return: Function to apply this extractor to an element.
     """
     path_ = make_xpather(path)
-    reduce_ = reducers.concat if (path is not None) and (reduce is None) else reduce
+    reduce_ = reducers.concat if reduce is None else reduce
 
-    def apply_path(element):
+    def get_raw(element):
         selected = path_(element)
         return reduce_(selected) if len(selected) > 0 else None
 
-    return make_extractor(apply_path, transform=transform, foreach=foreach)
+    return make_extractor(get_raw, transform=transform, foreach=foreach)
 
 
 def make_rules_extractor(rules, section=None, transform=None, foreach=None):
-    """Get an extractor that will apply subrules to an element.
+    """Create an extractor that can get data from an element using subrules.
 
     :sig:
         (
-            Optional[Sequence[Rule]],
+            Sequence[Rule],
             Optional[str],
-            Optional[Callable[[str], Any]],
+            Optional[Callable[[Mapping], Any]],
             Optional[str]
         ) -> Callable[[Element], Any]
     :param rules: Rules for generating the data items.
     :param section: XPath expression for setting the root of a section.
-    :param transform: Function to transform the extracted data.
-    :param foreach: Path to apply for generating a collection of data.
-    :return: A function that will apply this extractor to an element.
+    :param transform: Function for transforming the raw data.
+    :param foreach: XPath expression for generating multiple values for data.
+    :return: Function to apply this extractor to an element.
     """
-    rules_ = rules
     section_ = make_xpather(section) if section is not None else None
 
-    def apply_rules(element):
+    def get_raw(element):
         if section_ is None:
             subroot = element
         else:
@@ -357,12 +356,12 @@ def make_rules_extractor(rules, section=None, transform=None, foreach=None):
             subroot = subroots[0]
 
         data = {}
-        for rule in rules_:
+        for rule in rules:
             extracted = rule(subroot)
             data.update(extracted)
         return data if len(data) > 0 else _EMPTY
 
-    return make_extractor(apply_rules, transform=transform, foreach=foreach)
+    return make_extractor(get_raw, transform=transform, foreach=foreach)
 
 
 def make_extractor_from_map(desc):

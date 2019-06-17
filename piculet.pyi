@@ -51,7 +51,7 @@ def make_xpather(
     path: str
 ) -> Callable[[Element], Union[Sequence[str], Sequence[Element]]]: ...
 def make_extractor(
-    extractor: Extractor,
+    get_raw: Callable[[Element], Union[str, Mapping]],
     transform: Optional[Callable[[Union[str, Mapping]], Any]] = ...,
     foreach: Optional[str] = ...,
 ) -> Callable[[Element], Any]: ...
@@ -62,9 +62,9 @@ def make_path_extractor(
     foreach: Optional[str] = ...,
 ) -> Callable[[Element], Any]: ...
 def make_rules_extractor(
-    rules: Optional[Sequence[Rule]],
+    rules: Sequence[Rule],
     section: Optional[str] = ...,
-    transform: Optional[Callable[[str], Any]] = ...,
+    transform: Optional[Callable[[Mapping], Any]] = ...,
     foreach: Optional[str] = ...,
 ) -> Callable[[Element], Any]: ...
 def make_extractor_from_map(desc: Mapping) -> Extractor: ...
