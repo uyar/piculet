@@ -1,6 +1,7 @@
 import pytest
 
-from piculet import Path, Rule, Rules, build_tree, reducers, transformers
+from piculet import Rule, Rules, build_tree, reducers, transformers
+from piculet import make_path_extractor as Path
 
 
 def test_no_rules_should_return_empty_result(shining):

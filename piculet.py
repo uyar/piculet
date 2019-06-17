@@ -337,8 +337,25 @@ def make_extractor(
     return apply
 
 
-def Path(path, **kwargs):
-    return make_extractor("path", path=path, **kwargs)
+def make_path_extractor(path, reduce=None, transform=None, foreach=None):
+    """Get an extractor that will apply a path-reducer to an element.
+
+    :sig:
+        (
+            str,
+            Optional[Callable[[Sequence[str]], str]],
+            Optional[Callable[[str], Any]],
+            Optional[str]
+        ) -> Callable[[Element], Any]
+    :param path: XPath expression to apply.
+    :param reduce: Function to reduce selected texts into a single string.
+    :param transform: Function to transform the extracted data.
+    :param foreach: Path to apply for generating a collection of data.
+    :return: A function that will apply this extractor to an element.
+    """
+    return make_extractor(
+        "path", path=path, reduce=reduce, transform=transform, foreach=foreach
+    )
 
 
 def Rules(rules, **kwargs):
