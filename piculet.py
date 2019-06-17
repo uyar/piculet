@@ -265,7 +265,7 @@ _EMPTY = {}
 
 
 # sigalias: Extractor = Callable[[Element], Any]
-# sigalias: Rule = Callable[[Element], Mapping]
+# sigalias: ItemMaker = Callable[[Element], Mapping]
 
 
 def make_extractor(get_raw, transform=None, foreach=None):
@@ -326,19 +326,19 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
     return make_extractor(get_raw, transform=transform, foreach=foreach)
 
 
-def make_items_extractor(rules, section=None, transform=None, foreach=None):
-    """Create an extractor that can get data from an element using subrules.
+def make_items_extractor(items, section=None, transform=None, foreach=None):
+    """Create an extractor that can get multiple data from an element.
 
     :sig:
         (
-            Sequence[Rule],
+            Sequence[ItemMaker],
             Optional[str],
             Optional[Callable[[Mapping], Any]],
             Optional[str]
         ) -> Callable[[Element], Any]
-    :param rules: Rules for generating the data items.
+    :param items: Functions for generating the items from elements.
     :param section: XPath expression for setting the root of a section.
-    :param transform: Function for transforming the raw data.
+    :param transform: Function for transforming the raw data items.
     :param foreach: XPath expression for generating multiple values for data.
     :return: Function to apply this extractor to an element.
     """
@@ -356,9 +356,9 @@ def make_items_extractor(rules, section=None, transform=None, foreach=None):
             subroot = subroots[0]
 
         data = {}
-        for rule in rules:
-            extracted = rule(subroot)
-            data.update(extracted)
+        for make_item in items:
+            item = make_item(subroot)
+            data.update(item)
         return data if len(data) > 0 else _EMPTY
 
     return make_extractor(get_raw, transform=transform, foreach=foreach)
@@ -396,18 +396,18 @@ def make_extractor_from_map(desc):
         )
     else:
         items = desc.get("items", [])
-        rules = [make_rule_from_map(i) for i in items]
+        rules = [make_item_maker_from_map(i) for i in items]
         extractor = make_items_extractor(
-            rules=rules, section=desc.get("section"), transform=transform, foreach=foreach
+            items=rules, section=desc.get("section"), transform=transform, foreach=foreach
         )
 
     return extractor
 
 
-def make_rule(key, extractor, *, foreach=None):
+def make_item_maker(key, extractor, *, foreach=None):
     """Get a rule that can be applied to an XML element to extract data.
 
-    :sig: (Union[str, Extractor], Extractor, Optional[str]) -> Rule
+    :sig: (Union[str, Extractor], Extractor, Optional[str]) -> ItemMaker
     :param key: Name to distinguish the data.
     :param extractor: Extractor that will generate the data.
     :param foreach: XPath expression for generating multiple data items.
@@ -432,17 +432,17 @@ def make_rule(key, extractor, *, foreach=None):
     return apply
 
 
-def make_rule_from_map(desc):
+def make_item_maker_from_map(desc):
     """Generate a rule from a description.
 
-    :sig: (Mapping) -> Rule
+    :sig: (Mapping) -> ItemMaker
     :param desc: Description of rule to generate.
     :return: Generated rule.
     """
     item_key = desc["key"]
     key = item_key if isinstance(item_key, str) else make_extractor_from_map(item_key)
     value = make_extractor_from_map(desc["value"])
-    return make_rule(key=key, extractor=value, foreach=desc.get("foreach"))
+    return make_item_maker(key=key, extractor=value, foreach=desc.get("foreach"))
 
 
 ###########################################################
@@ -604,7 +604,7 @@ def extract(element, items, *, section=None):
     :return: Extracted data.
     """
     rules = make_items_extractor(
-        rules=[make_rule_from_map(item) for item in items], section=section
+        items=[make_item_maker_from_map(item) for item in items], section=section
     )
     return rules(element)
 

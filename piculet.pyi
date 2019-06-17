@@ -20,7 +20,7 @@ from types import SimpleNamespace
 from xml.etree.ElementTree import Element
 
 Extractor = Callable[[Element], Any]
-Rule = Callable[[Element], Mapping]
+ItemMaker = Callable[[Element], Mapping]
 
 __version__ = ...  # type: str
 LXML_AVAILABLE = ...  # type: bool
@@ -62,19 +62,19 @@ def make_path_extractor(
     foreach: Optional[str] = ...,
 ) -> Callable[[Element], Any]: ...
 def make_items_extractor(
-    rules: Sequence[Rule],
+    items: Sequence[ItemMaker],
     section: Optional[str] = ...,
     transform: Optional[Callable[[Mapping], Any]] = ...,
     foreach: Optional[str] = ...,
 ) -> Callable[[Element], Any]: ...
 def make_extractor_from_map(desc: Mapping) -> Extractor: ...
-def make_rule(
+def make_item_maker(
     key: Union[str, Extractor],
     extractor: Extractor,
     *,
     foreach: Optional[str] = ...,
-) -> Rule: ...
-def make_rule_from_map(desc: Mapping) -> Rule: ...
+) -> ItemMaker: ...
+def make_item_maker_from_map(desc: Mapping) -> ItemMaker: ...
 def remove_elements(root: Element, *, path: str) -> None: ...
 def set_element_attr(
     root: Element,

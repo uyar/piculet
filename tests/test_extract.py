@@ -2,8 +2,8 @@ import pytest
 
 from piculet import build_tree, reducers, transformers
 from piculet import make_items_extractor as Rules
+from piculet import make_item_maker as Rule
 from piculet import make_path_extractor as Path
-from piculet import make_rule as Rule
 
 
 def test_no_rules_should_return_empty_result(shining):
@@ -129,7 +129,7 @@ def test_subrules_should_generate_subitems(shining):
         Rule(
             key="director",
             extractor=Rules(
-                rules=[
+                items=[
                     Rule(key="name", extractor=Path('//div[@class="director"]//a/text()')),
                     Rule(key="link", extractor=Path('//div[@class="director"]//a/@href')),
                 ]
@@ -146,7 +146,7 @@ def test_multivalued_subrules_should_generate_list_of_subitems(shining):
             key="cast",
             extractor=Rules(
                 foreach='//table[@class="cast"]/tr',
-                rules=[
+                items=[
                     Rule(key="name", extractor=Path("./td[1]/a/text()")),
                     Rule(key="character", extractor=Path("./td[2]/text()")),
                 ],
@@ -168,7 +168,7 @@ def test_subitems_should_be_transformable(shining):
             key="cast",
             extractor=Rules(
                 foreach='//table[@class="cast"]/tr',
-                rules=[
+                items=[
                     Rule(key="name", extractor=Path("./td[1]/a/text()")),
                     Rule(key="character", extractor=Path("./td[2]/text()")),
                 ],
@@ -236,7 +236,7 @@ def test_section_should_set_root_for_queries(shining):
             key="director",
             extractor=Rules(
                 section='//div[@class="director"]//a',
-                rules=[
+                items=[
                     Rule(key="name", extractor=Path("./text()")),
                     Rule(key="link", extractor=Path("./@href")),
                 ],
@@ -252,7 +252,7 @@ def test_section_no_roots_should_return_empty_result(shining):
         Rule(
             key="director",
             extractor=Rules(
-                section="//foo", rules=[Rule(key="name", extractor=Path("./text()"))]
+                section="//foo", items=[Rule(key="name", extractor=Path("./text()"))]
             ),
         )
     ]
@@ -266,7 +266,7 @@ def test_section_multiple_roots_should_raise_error(shining):
             Rule(
                 key="director",
                 extractor=Rules(
-                    section="//div", rules=[Rule(key="name", extractor=Path("./text()"))]
+                    section="//div", items=[Rule(key="name", extractor=Path("./text()"))]
                 ),
             )
         ]
