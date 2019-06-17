@@ -268,67 +268,30 @@ _EMPTY = {}
 # sigalias: Rule = Callable[[Element], Mapping]
 
 
-def make_extractor(
-    type_, *, path=None, reduce=None, rules=None, section=None, transform=None, foreach=None
-):
+def make_extractor(extractor, transform=None, foreach=None):
     """Get an extractor that can be applied to an element.
 
     :sig:
         (
-            str,
-            Optional[str],
-            Optional[Callable[[Sequence[str]], str]],
-            Optional[Sequence[Rule]],
-            Optional[str],
+            Extractor,
             Optional[Callable[[Union[str, Mapping]], Any]],
             Optional[str]
         ) -> Callable[[Element], Any]
-    :param type: Type of extractor ('path' or 'rules').
-    :param path: XPath expression to apply.
-    :param reduce: Function to reduce selected texts into a single string.
-    :param rules: Rules for generating the data items.
-    :param section: XPath expression for setting the root of a section.
+    :param extractor: Rules for generating the data items.
     :param transform: Function to transform the extracted data.
     :param foreach: Path to apply for generating a collection of data.
     """
-    path_ = make_xpather(path) if path is not None else None
-    reduce_ = reducers.concat if (path is not None) and (reduce is None) else reduce
-    rules_ = rules
-    section_ = make_xpather(section) if (rules is not None) and (section is not None) else None
     transform_ = transform
     foreach_ = make_xpather(foreach) if foreach is not None else None
 
-    def apply_path(element):
-        selected = path_(element)
-        return reduce_(selected) if len(selected) > 0 else None
-
-    def apply_rules(element):
-        if section_ is None:
-            subroot = element
-        else:
-            subroots = section_(element)
-            if len(subroots) == 0:
-                return _EMPTY
-            if len(subroots) > 1:
-                raise ValueError("Section path should select exactly one element")
-            subroot = subroots[0]
-
-        data = {}
-        for rule in rules_:
-            extracted = rule(subroot)
-            data.update(extracted)
-        return data if len(data) > 0 else _EMPTY
-
-    apply_ = apply_path if type_ == "path" else apply_rules
-
     def apply(element):
         if foreach_ is None:
-            value = apply_(element)
+            value = extractor(element)
             if (value is None) or (value is _EMPTY):
                 return value
             return value if transform_ is None else transform_(value)
         else:
-            raw_values = [apply_(r) for r in foreach_(element)]
+            raw_values = [extractor(r) for r in foreach_(element)]
             values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
             if len(values) == 0:
                 return []
@@ -353,9 +316,14 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
     :param foreach: Path to apply for generating a collection of data.
     :return: A function that will apply this extractor to an element.
     """
-    return make_extractor(
-        "path", path=path, reduce=reduce, transform=transform, foreach=foreach
-    )
+    path_ = make_xpather(path)
+    reduce_ = reducers.concat if (path is not None) and (reduce is None) else reduce
+
+    def apply_path(element):
+        selected = path_(element)
+        return reduce_(selected) if len(selected) > 0 else None
+
+    return make_extractor(apply_path, transform=transform, foreach=foreach)
 
 
 def make_rules_extractor(rules, section=None, transform=None, foreach=None):
@@ -374,9 +342,27 @@ def make_rules_extractor(rules, section=None, transform=None, foreach=None):
     :param foreach: Path to apply for generating a collection of data.
     :return: A function that will apply this extractor to an element.
     """
-    return make_extractor(
-        "rules", rules=rules, section=section, transform=transform, foreach=foreach
-    )
+    rules_ = rules
+    section_ = make_xpather(section) if section is not None else None
+
+    def apply_rules(element):
+        if section_ is None:
+            subroot = element
+        else:
+            subroots = section_(element)
+            if len(subroots) == 0:
+                return _EMPTY
+            if len(subroots) > 1:
+                raise ValueError("Section path should select exactly one element")
+            subroot = subroots[0]
+
+        data = {}
+        for rule in rules_:
+            extracted = rule(subroot)
+            data.update(extracted)
+        return data if len(data) > 0 else _EMPTY
+
+    return make_extractor(apply_rules, transform=transform, foreach=foreach)
 
 
 def make_extractor_from_map(desc):
@@ -406,24 +392,20 @@ def make_extractor_from_map(desc):
             reduce = getattr(reducers, reducer, None)
             if reduce is None:
                 raise ValueError("Unknown reducer")
-        extractor = make_extractor(
-            "path", path=path, reduce=reduce, transform=transform, foreach=foreach
+        extractor = make_path_extractor(
+            path=path, reduce=reduce, transform=transform, foreach=foreach
         )
     else:
         items = desc.get("items", [])
         rules = [make_rule_from_map(i) for i in items]
-        extractor = make_extractor(
-            "rules",
-            rules=rules,
-            section=desc.get("section"),
-            transform=transform,
-            foreach=foreach,
+        extractor = make_rules_extractor(
+            rules=rules, section=desc.get("section"), transform=transform, foreach=foreach
         )
 
     return extractor
 
 
-def Rule(key, extractor, *, foreach=None):
+def make_rule(key, extractor, *, foreach=None):
     """Get a rule that can be applied to an XML element to extract data.
 
     :sig: (Union[str, Extractor], Extractor, Optional[str]) -> Rule
@@ -461,7 +443,7 @@ def make_rule_from_map(desc):
     item_key = desc["key"]
     key = item_key if isinstance(item_key, str) else make_extractor_from_map(item_key)
     value = make_extractor_from_map(desc["value"])
-    return Rule(key=key, extractor=value, foreach=desc.get("foreach"))
+    return make_rule(key=key, extractor=value, foreach=desc.get("foreach"))
 
 
 ###########################################################
