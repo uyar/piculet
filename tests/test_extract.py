@@ -12,32 +12,32 @@ def test_no_rules_should_return_empty_result(shining):
 
 
 def test_extracted_value_should_be_reduced(shining):
-    rules = [Rule(key="title", extractor=Path("//title/text()", reduce=reducers.first))]
+    rules = [Rule(key="title", value=Path("//title/text()", reduce=reducers.first))]
     data = Rules(rules)(shining)
     assert data == {"title": "The Shining"}
 
 
 def test_default_reducer_should_be_concat(shining):
-    rules = [Rule(key="full_title", extractor=Path("//h1//text()"))]
+    rules = [Rule(key="full_title", value=Path("//h1//text()"))]
     data = Rules(rules)(shining)
     assert data == {"full_title": "The Shining (1980)"}
 
 
 def test_added_reducer_should_be_usable(shining):
     reducers.second = lambda x: x[1]
-    rules = [Rule(key="year", extractor=Path("//h1//text()", reduce=reducers.second))]
+    rules = [Rule(key="year", value=Path("//h1//text()", reduce=reducers.second))]
     data = Rules(rules)(shining)
     assert data == {"year": "1980"}
 
 
 def test_reduce_by_lambda_should_be_ok(shining):
-    rules = [Rule(key="title", extractor=Path("//title/text()", reduce=lambda xs: xs[0]))]
+    rules = [Rule(key="title", value=Path("//title/text()", reduce=lambda xs: xs[0]))]
     data = Rules(rules)(shining)
     assert data == {"title": "The Shining"}
 
 
 def test_reduced_value_should_be_transformable(shining):
-    rules = [Rule(key="year", extractor=Path('//span[@class="year"]/text()', transform=int))]
+    rules = [Rule(key="year", value=Path('//span[@class="year"]/text()', transform=int))]
     data = Rules(rules)(shining)
     assert data == {"year": 1980}
 
@@ -47,7 +47,7 @@ def test_added_transformer_should_be_usable(shining):
     rules = [
         Rule(
             key="year",
-            extractor=Path('//span[@class="year"]/text()', transform=transformers.year25),
+            value=Path('//span[@class="year"]/text()', transform=transformers.year25),
         )
     ]
     data = Rules(rules)(shining)
@@ -56,8 +56,8 @@ def test_added_transformer_should_be_usable(shining):
 
 def test_multiple_rules_should_generate_multiple_items(shining):
     rules = [
-        Rule(key="title", extractor=Path("//title/text()")),
-        Rule("year", extractor=Path('//span[@class="year"]/text()', transform=int)),
+        Rule(key="title", value=Path("//title/text()")),
+        Rule("year", value=Path('//span[@class="year"]/text()', transform=int)),
     ]
     data = Rules(rules)(shining)
     assert data == {"title": "The Shining", "year": 1980}
@@ -65,8 +65,8 @@ def test_multiple_rules_should_generate_multiple_items(shining):
 
 def test_item_with_no_data_should_be_excluded(shining):
     rules = [
-        Rule(key="title", extractor=Path("//title/text()")),
-        Rule(key="foo", extractor=Path("//foo/text()")),
+        Rule(key="title", value=Path("//title/text()")),
+        Rule(key="foo", value=Path("//foo/text()")),
     ]
     data = Rules(rules)(shining)
     assert data == {"title": "The Shining"}
@@ -74,28 +74,28 @@ def test_item_with_no_data_should_be_excluded(shining):
 
 def test_item_with_empty_str_value_should_be_included():
     content = '<root><foo val=""/></root>'
-    rules = [Rule(key="foo", extractor=Path("//foo/@val"))]
+    rules = [Rule(key="foo", value=Path("//foo/@val"))]
     data = Rules(rules)(build_tree(content))
     assert data == {"foo": ""}
 
 
 def test_item_with_zero_value_should_be_included():
     content = '<root><foo val="0"/></root>'
-    rules = [Rule(key="foo", extractor=Path("//foo/@val", transform=int))]
+    rules = [Rule(key="foo", value=Path("//foo/@val", transform=int))]
     data = Rules(rules)(build_tree(content))
     assert data == {"foo": 0}
 
 
 def test_item_with_false_value_should_be_included():
     content = '<root><foo val=""/></root>'
-    rules = [Rule(key="foo", extractor=Path("//foo/@val", transform=bool))]
+    rules = [Rule(key="foo", value=Path("//foo/@val", transform=bool))]
     data = Rules(rules)(build_tree(content))
     assert data == {"foo": False}
 
 
 def test_multivalued_item_should_be_list(shining):
     rules = [
-        Rule(key="genres", extractor=Path(foreach='//ul[@class="genres"]/li', path="./text()"))
+        Rule(key="genres", value=Path(foreach='//ul[@class="genres"]/li', path="./text()"))
     ]
     data = Rules(rules)(shining)
     assert data == {"genres": ["Horror", "Drama"]}
@@ -105,7 +105,7 @@ def test_multivalued_items_should_be_transformable(shining):
     rules = [
         Rule(
             key="genres",
-            extractor=Path(
+            value=Path(
                 foreach='//ul[@class="genres"]/li',
                 path="./text()",
                 transform=transformers.lower,
@@ -117,9 +117,7 @@ def test_multivalued_items_should_be_transformable(shining):
 
 
 def test_empty_values_should_be_excluded_from_multivalued_item_list(shining):
-    rules = [
-        Rule(key="foos", extractor=Path(foreach='//ul[@class="foos"]/li', path="./text()"))
-    ]
+    rules = [Rule(key="foos", value=Path(foreach='//ul[@class="foos"]/li', path="./text()"))]
     data = Rules(rules)(shining)
     assert data == {}
 
@@ -128,10 +126,10 @@ def test_subrules_should_generate_subitems(shining):
     rules = [
         Rule(
             key="director",
-            extractor=Rules(
+            value=Rules(
                 items=[
-                    Rule(key="name", extractor=Path('//div[@class="director"]//a/text()')),
-                    Rule(key="link", extractor=Path('//div[@class="director"]//a/@href')),
+                    Rule(key="name", value=Path('//div[@class="director"]//a/text()')),
+                    Rule(key="link", value=Path('//div[@class="director"]//a/@href')),
                 ]
             ),
         )
@@ -144,11 +142,11 @@ def test_multivalued_subrules_should_generate_list_of_subitems(shining):
     rules = [
         Rule(
             key="cast",
-            extractor=Rules(
+            value=Rules(
                 foreach='//table[@class="cast"]/tr',
                 items=[
-                    Rule(key="name", extractor=Path("./td[1]/a/text()")),
-                    Rule(key="character", extractor=Path("./td[2]/text()")),
+                    Rule(key="name", value=Path("./td[1]/a/text()")),
+                    Rule(key="character", value=Path("./td[2]/text()")),
                 ],
             ),
         )
@@ -166,11 +164,11 @@ def test_subitems_should_be_transformable(shining):
     rules = [
         Rule(
             key="cast",
-            extractor=Rules(
+            value=Rules(
                 foreach='//table[@class="cast"]/tr',
                 items=[
-                    Rule(key="name", extractor=Path("./td[1]/a/text()")),
-                    Rule(key="character", extractor=Path("./td[2]/text()")),
+                    Rule(key="name", value=Path("./td[1]/a/text()")),
+                    Rule(key="character", value=Path("./td[2]/text()")),
                 ],
                 transform=lambda x: "%(name)s as %(character)s" % x,
             ),
@@ -184,11 +182,7 @@ def test_subitems_should_be_transformable(shining):
 
 def test_key_should_be_generatable_using_path(shining):
     rules = [
-        Rule(
-            foreach='//div[@class="info"]',
-            key=Path("./h3/text()"),
-            extractor=Path("./p/text()"),
-        )
+        Rule(foreach='//div[@class="info"]', key=Path("./h3/text()"), value=Path("./p/text()"))
     ]
     data = Rules(rules)(shining)
     assert data == {"Language:": "English", "Runtime:": "144 minutes"}
@@ -199,7 +193,7 @@ def test_generated_key_should_be_normalizable(shining):
         Rule(
             foreach='//div[@class="info"]',
             key=Path("./h3/text()", reduce=reducers.normalize),
-            extractor=Path("./p/text()"),
+            value=Path("./p/text()"),
         )
     ]
     data = Rules(rules)(shining)
@@ -211,7 +205,7 @@ def test_generated_key_should_be_transformable(shining):
         Rule(
             foreach='//div[@class="info"]',
             key=Path("./h3/text()", reduce=reducers.normalize, transform=lambda x: x.upper()),
-            extractor=Path("./p/text()"),
+            value=Path("./p/text()"),
         )
     ]
     data = Rules(rules)(shining)
@@ -220,11 +214,7 @@ def test_generated_key_should_be_transformable(shining):
 
 def test_generated_key_none_should_be_excluded(shining):
     rules = [
-        Rule(
-            foreach='//div[@class="info"]',
-            key=Path("./foo/text()"),
-            extractor=Path("./p/text()"),
-        )
+        Rule(foreach='//div[@class="info"]', key=Path("./foo/text()"), value=Path("./p/text()"))
     ]
     data = Rules(rules)(shining)
     assert data == {}
@@ -234,11 +224,11 @@ def test_section_should_set_root_for_queries(shining):
     rules = [
         Rule(
             key="director",
-            extractor=Rules(
+            value=Rules(
                 section='//div[@class="director"]//a',
                 items=[
-                    Rule(key="name", extractor=Path("./text()")),
-                    Rule(key="link", extractor=Path("./@href")),
+                    Rule(key="name", value=Path("./text()")),
+                    Rule(key="link", value=Path("./@href")),
                 ],
             ),
         )
@@ -251,9 +241,7 @@ def test_section_no_roots_should_return_empty_result(shining):
     rules = [
         Rule(
             key="director",
-            extractor=Rules(
-                section="//foo", items=[Rule(key="name", extractor=Path("./text()"))]
-            ),
+            value=Rules(section="//foo", items=[Rule(key="name", value=Path("./text()"))]),
         )
     ]
     data = Rules(rules)(shining)
@@ -265,9 +253,7 @@ def test_section_multiple_roots_should_raise_error(shining):
         rules = [
             Rule(
                 key="director",
-                extractor=Rules(
-                    section="//div", items=[Rule(key="name", extractor=Path("./text()"))]
-                ),
+                value=Rules(section="//div", items=[Rule(key="name", value=Path("./text()"))]),
             )
         ]
         Rules(rules)(shining)

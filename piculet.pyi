@@ -70,7 +70,7 @@ def make_items_extractor(
 def make_extractor_from_map(desc: Mapping) -> Extractor: ...
 def make_item_maker(
     key: Union[str, Extractor],
-    extractor: Extractor,
+    value: Extractor,
     *,
     foreach: Optional[str] = ...,
 ) -> ItemMaker: ...

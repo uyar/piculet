@@ -404,12 +404,12 @@ def make_extractor_from_map(desc):
     return extractor
 
 
-def make_item_maker(key, extractor, *, foreach=None):
-    """Get a rule that can be applied to an XML element to extract data.
+def make_item_maker(key, value, *, foreach=None):
+    """Create a data item generator that can be applied to an element.
 
     :sig: (Union[str, Extractor], Extractor, Optional[str]) -> ItemMaker
     :param key: Name to distinguish the data.
-    :param extractor: Extractor that will generate the data.
+    :param value: Extractor that will generate the data.
     :param foreach: XPath expression for generating multiple data items.
     :return: Generated rule.
     """
@@ -423,10 +423,10 @@ def make_item_maker(key, extractor, *, foreach=None):
             if key_ is None:
                 continue
 
-            value = extractor(subroot)
-            if (value is None) or (value is _EMPTY) or (value == []):
+            value_ = value(subroot)
+            if (value_ is None) or (value_ is _EMPTY) or (value_ == []):
                 continue
-            data[key_] = value
+            data[key_] = value_
         return data
 
     return apply
@@ -442,7 +442,7 @@ def make_item_maker_from_map(desc):
     item_key = desc["key"]
     key = item_key if isinstance(item_key, str) else make_extractor_from_map(item_key)
     value = make_extractor_from_map(desc["value"])
-    return make_item_maker(key=key, extractor=value, foreach=desc.get("foreach"))
+    return make_item_maker(key=key, value=value, foreach=desc.get("foreach"))
 
 
 ###########################################################
