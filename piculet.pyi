@@ -61,7 +61,7 @@ def make_path_extractor(
     transform: Optional[Callable[[str], Any]] = ...,
     foreach: Optional[str] = ...,
 ) -> Callable[[Element], Any]: ...
-def make_rules_extractor(
+def make_items_extractor(
     rules: Sequence[Rule],
     section: Optional[str] = ...,
     transform: Optional[Callable[[Mapping], Any]] = ...,

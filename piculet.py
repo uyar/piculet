@@ -326,7 +326,7 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
     return make_extractor(get_raw, transform=transform, foreach=foreach)
 
 
-def make_rules_extractor(rules, section=None, transform=None, foreach=None):
+def make_items_extractor(rules, section=None, transform=None, foreach=None):
     """Create an extractor that can get data from an element using subrules.
 
     :sig:
@@ -397,7 +397,7 @@ def make_extractor_from_map(desc):
     else:
         items = desc.get("items", [])
         rules = [make_rule_from_map(i) for i in items]
-        extractor = make_rules_extractor(
+        extractor = make_items_extractor(
             rules=rules, section=desc.get("section"), transform=transform, foreach=foreach
         )
 
@@ -603,7 +603,7 @@ def extract(element, items, *, section=None):
     :param section: Path to select the root element for these items.
     :return: Extracted data.
     """
-    rules = make_rules_extractor(
+    rules = make_items_extractor(
         rules=[make_rule_from_map(item) for item in items], section=section
     )
     return rules(element)
