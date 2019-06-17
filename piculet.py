@@ -26,7 +26,6 @@ https://piculet.tekir.org/
 import json
 import re
 import sys
-from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from collections import deque
 from contextlib import redirect_stdout
