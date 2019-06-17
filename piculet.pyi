@@ -66,6 +66,12 @@ def make_path_extractor(
     transform: Optional[Callable[[str], Any]] = ...,
     foreach: Optional[str] = ...,
 ) -> Callable[[Element], Any]: ...
+def make_rules_extractor(
+    rules: Optional[Sequence[Rule]],
+    section: Optional[str] = ...,
+    transform: Optional[Callable[[str], Any]] = ...,
+    foreach: Optional[str] = ...,
+) -> Callable[[Element], Any]: ...
 def make_extractor_from_map(desc: Mapping) -> Extractor: ...
 def Rule(
     key: Union[str, Extractor],

@@ -358,8 +358,25 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
     )
 
 
-def Rules(rules, **kwargs):
-    return make_extractor("rules", rules=rules, **kwargs)
+def make_rules_extractor(rules, section=None, transform=None, foreach=None):
+    """Get an extractor that will apply subrules to an element.
+
+    :sig:
+        (
+            Optional[Sequence[Rule]],
+            Optional[str],
+            Optional[Callable[[str], Any]],
+            Optional[str]
+        ) -> Callable[[Element], Any]
+    :param rules: Rules for generating the data items.
+    :param section: XPath expression for setting the root of a section.
+    :param transform: Function to transform the extracted data.
+    :param foreach: Path to apply for generating a collection of data.
+    :return: A function that will apply this extractor to an element.
+    """
+    return make_extractor(
+        "rules", rules=rules, section=section, transform=transform, foreach=foreach
+    )
 
 
 def make_extractor_from_map(desc):
@@ -605,7 +622,9 @@ def extract(element, items, *, section=None):
     :param section: Path to select the root element for these items.
     :return: Extracted data.
     """
-    rules = Rules(rules=[make_rule_from_map(item) for item in items], section=section)
+    rules = make_rules_extractor(
+        rules=[make_rule_from_map(item) for item in items], section=section
+    )
     return rules(element)
 
 
