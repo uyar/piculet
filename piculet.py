@@ -261,6 +261,7 @@ make_xpather = lru_cache(maxsize=None)(make_xpather)
 ###########################################################
 
 
+_EMPTY_VAL = None
 _EMPTY_MAP = {}
 _EMPTY_SEQ = []
 
@@ -279,12 +280,14 @@ def _make_extractor(raw, transform=None, foreach=None):
     def apply(element):
         if foreach_ is None:
             raw_value = raw(element)
-            if (raw_value is None) or (raw_value is _EMPTY_MAP):
+            if (raw_value is _EMPTY_VAL) or (raw_value is _EMPTY_MAP):
                 return raw_value
             return raw_value if transform is None else transform(raw_value)
         else:
             raw_values = [raw(r) for r in foreach_(element)]
-            raw_values = [v for v in raw_values if (v is not None) and (v is not _EMPTY_MAP)]
+            raw_values = [
+                v for v in raw_values if (v is not _EMPTY_VAL) and (v is not _EMPTY_MAP)
+            ]
             if len(raw_values) == 0:
                 return _EMPTY_SEQ
             return raw_values if transform is None else list(map(transform, raw_values))
@@ -313,7 +316,7 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
 
     def raw(element):
         selected = path_(element)
-        return reduce_(selected) if len(selected) > 0 else None
+        return reduce_(selected) if len(selected) > 0 else _EMPTY_VAL
 
     return _make_extractor(raw, transform=transform, foreach=foreach)
 
@@ -376,7 +379,7 @@ def make_item_maker(key, value, *, foreach=None):
                 continue
 
             value_ = value(subroot)
-            if (value_ is None) or (value_ is _EMPTY_MAP) or (value_ is _EMPTY_SEQ):
+            if (value_ is _EMPTY_VAL) or (value_ is _EMPTY_MAP) or (value_ is _EMPTY_SEQ):
                 continue
             data[key_] = value_
         return data
