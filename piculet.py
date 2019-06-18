@@ -519,11 +519,9 @@ def set_element_text(root, *, path, text):
 
 
 preprocessors = SimpleNamespace(  # sig: SimpleNamespace
-    remove=lambda path: partial(remove_elements, path=path),
-    set_attr=lambda path, name, value: partial(
-        set_element_attr, path=path, name=name, value=value
-    ),
-    set_text=lambda path, text: partial(set_element_text, path=path, text=text),
+    remove=lambda **kwargs: partial(remove_elements, **kwargs),
+    set_attr=lambda **kwargs: partial(set_element_attr, **kwargs),
+    set_text=lambda **kwargs: partial(set_element_text, **kwargs),
 )
 """Predefined preprocessors."""
 
@@ -561,7 +559,7 @@ def build_tree(document, *, lxml_html=False):
 
     :sig: (str, bool) -> Element
     :param document: XML document to build the tree from.
-    :param lxml_html: Use the lxml.html builder if available.
+    :param lxml_html: Whether to use the lxml.html builder.
     :return: Root element of the XML tree.
     """
     if lxml_html:
@@ -615,7 +613,7 @@ def scrape(document, spec, *, lxml_html=False):
     :sig: (str, Mapping, bool) -> Mapping
     :param document: Document to scrape.
     :param spec: Extraction specification.
-    :param lxml_html: Use the lxml.html builder if available.
+    :param lxml_html: Whether to use the lxml.html builder.
     :return: Extracted data.
     """
     root = build_tree(document, lxml_html=lxml_html)
