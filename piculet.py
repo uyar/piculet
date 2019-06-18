@@ -404,31 +404,31 @@ def make_extractor_from_map(desc):
     :return: Generated extractor.
     :raise ValueError: When reducer or transformer names are unknown.
     """
-    transformer = desc.get("transform")
-    if transformer is None:
-        transform = None
+    transform = desc.get("transform")
+    if transform is None:
+        transform_ = None
     else:
-        transform = getattr(transformers, transformer, None)
-        if transform is None:
+        transform_ = getattr(transformers, transform, None)
+        if transform_ is None:
             raise ValueError("Unknown transformer")
 
     foreach = desc.get("foreach")
 
     path = desc.get("path")
     if path is not None:
-        reducer = desc.get("reduce")
-        if reducer is None:
-            reduce = None
+        reduce = desc.get("reduce")
+        if reduce is None:
+            reduce_ = None
         else:
-            reduce = getattr(reducers, reducer, None)
-            if reduce is None:
+            reduce_ = getattr(reducers, reduce, None)
+            if reduce_ is None:
                 raise ValueError("Unknown reducer")
-        extractor = make_path(path=path, reduce=reduce, transform=transform, foreach=foreach)
+        extractor = make_path(path=path, reduce=reduce_, transform=transform_, foreach=foreach)
     else:
         items = desc.get("items", [])
         rules = [make_rule_from_map(i) for i in items]
         extractor = make_rules(
-            items=rules, section=desc.get("section"), transform=transform, foreach=foreach
+            items=rules, section=desc.get("section"), transform=transform_, foreach=foreach
         )
 
     return extractor
@@ -441,10 +441,10 @@ def make_rule_from_map(desc):
     :param desc: Description of rule to generate.
     :return: Generated rule.
     """
-    item_key = desc["key"]
-    key = item_key if isinstance(item_key, str) else make_extractor_from_map(item_key)
-    value = make_extractor_from_map(desc["value"])
-    return make_rule(key=key, value=value, foreach=desc.get("foreach"))
+    key = desc["key"]
+    key_ = key if isinstance(key, str) else make_extractor_from_map(key)
+    value_ = make_extractor_from_map(desc["value"])
+    return make_rule(key=key_, value=value_, foreach=desc.get("foreach"))
 
 
 ###########################################################
