@@ -273,16 +273,16 @@ _EMPTY = {}
 
 
 def _make_extractor(raw, transform=None, foreach=None):
-    foreach_ = make_xpather(foreach) if foreach is not None else None
+    iterate = make_xpather(foreach) if foreach is not None else None
 
     def apply(element):
-        if foreach_ is None:
+        if iterate is None:
             raw_value = raw(element)
             if raw_value is _EMPTY:
                 return raw_value
             return raw_value if transform is None else transform(raw_value)
         else:
-            raw_values = [raw(r) for r in foreach_(element)]
+            raw_values = [raw(r) for r in iterate(element)]
             raw_values = [v for v in raw_values if v is not _EMPTY]
             if len(raw_values) == 0:
                 return _EMPTY
