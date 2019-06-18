@@ -266,9 +266,9 @@ _EMPTY = {}
 
 # sigalias: Extractor = Callable[[Element], Any]
 # sigalias: Reducer = Callable[[Sequence[str]], str]
-# sigalias: PathTransformer = Callable[[str], Any]
+# sigalias: StrTransformer = Callable[[str], Any]
 # sigalias: MapTransformer = Callable[[Mapping], Any]
-# sigalias: Transformer = Union[PathTransformer, MapTransformer]
+# sigalias: Transformer = Union[StrTransformer, MapTransformer]
 # sigalias: ItemMaker = Callable[[Element], Mapping]
 
 
@@ -298,7 +298,7 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
         (
             str,
             Optional[Reducer],
-            Optional[PathTransformer],
+            Optional[StrTransformer],
             Optional[str]
         ) -> Extractor
     :param path: XPath expression for getting the raw data as strings.

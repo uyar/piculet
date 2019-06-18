@@ -21,9 +21,9 @@ from xml.etree.ElementTree import Element
 
 Extractor = Callable[[Element], Any]
 Reducer = Callable[[Sequence[str]], str]
-PathTransformer = Callable[[str], Any]
+StrTransformer = Callable[[str], Any]
 MapTransformer = Callable[[Mapping], Any]
-Transformer = Union[PathTransformer, MapTransformer]
+Transformer = Union[StrTransformer, MapTransformer]
 ItemMaker = Callable[[Element], Mapping]
 
 __version__ = ...  # type: str
@@ -57,7 +57,7 @@ def make_xpather(
 def make_path_extractor(
     path: str,
     reduce: Optional[Reducer] = ...,
-    transform: Optional[PathTransformer] = ...,
+    transform: Optional[StrTransformer] = ...,
     foreach: Optional[str] = ...,
 ) -> Extractor: ...
 def make_items_extractor(
