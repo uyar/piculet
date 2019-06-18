@@ -353,7 +353,7 @@ def test_set_attr_value_from_path_should_set_attribute_for_selected_elements(shi
     assert data == {"genres": ["Horror", "Drama"]}
 
 
-def test_set_attr_value_from_path_no_value_should_be_ignored(shining_content):
+def test_set_attr_value_from_path_empty_value_should_be_ignored(shining_content):
     pre = [
         {
             "op": "set_attr",
@@ -381,7 +381,7 @@ def test_set_attr_name_from_path_should_set_attribute_for_selected_elements(shin
     assert data == {"genres": ["bar"]}
 
 
-def test_set_attr_name_from_path_no_value_should_be_ignored(shining_content):
+def test_set_attr_name_from_path_empty_value_should_be_ignored(shining_content):
     pre = [
         {
             "op": "set_attr",
@@ -426,7 +426,7 @@ def test_set_text_value_from_path_should_set_text_for_selected_elements(shining_
     assert data == {"genres": ["horror", "drama"]}
 
 
-def test_set_text_no_value_should_be_ignored(shining_content):
+def test_set_text_empty_value_should_be_ignored(shining_content):
     pre = [{"op": "set_text", "path": '//ul[@class="genres"]/li', "text": {"path": "./@foo"}}]
     items = [
         {"key": "genres", "value": {"foreach": '//ul[@class="genres"]/li', "path": "./text()"}}

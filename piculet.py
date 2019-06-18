@@ -424,7 +424,7 @@ def remove_elements(root, *, path):
 
     :sig: (Element, str) -> None
     :param root: Root element of the tree.
-    :param path: XPath to select the elements to remove.
+    :param path: XPath expression to select the elements to remove.
     """
     if LXML_AVAILABLE:
         get_parent = ElementTree._Element.getparent
@@ -444,40 +444,38 @@ def remove_elements(root, *, path):
 def set_element_attr(root, *, path, name, value):
     """Set an attribute for selected elements.
 
-    :sig: (Element, str, Union[str, Mapping], Union[str, Mapping]) -> None
+    :sig: (Element, str, Union[str, Extractor], Union[str, Extractor]) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to set attributes for.
-    :param name: Description for name generation.
-    :param value: Description for value generation.
+    :param name: Name of attribute to set.
+    :param value: Value of attribute to set.
     """
     elements = make_xpather(path)(root)
     for element in elements:
-        attr_name = name if isinstance(name, str) else make_extractor_from_map(name)(element)
-        if attr_name is _EMPTY:
+        name_ = name if isinstance(name, str) else name(element)
+        if name_ is _EMPTY:
             continue
 
-        attr_value = (
-            value if isinstance(value, str) else make_extractor_from_map(value)(element)
-        )
-        if attr_value is _EMPTY:
+        value_ = value if isinstance(value, str) else value(element)
+        if value_ is _EMPTY:
             continue
 
-        element.set(attr_name, attr_value)
+        element.set(name_, value_)
 
 
 def set_element_text(root, *, path, text):
     """Set the text for selected elements.
 
-    :sig: (Element, str, Union[str, Mapping]) -> None
+    :sig: (Element, str, Union[str, Extractor]) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to set attributes for.
-    :param text: Description for text generation.
+    :param text: Value of text to set.
     """
     elements = make_xpather(path)(root)
     for element in elements:
-        element_text = text if isinstance(text, str) else make_extractor_from_map(text)(element)
+        text_ = text if isinstance(text, str) else text(element)
         # note that the text can be empty in which case the existing text will be cleared
-        element.text = element_text if element_text is not _EMPTY else None
+        element.text = text_ if text_ is not _EMPTY else None
 
 
 ###########################################################
@@ -518,18 +516,11 @@ transformers = SimpleNamespace(  # sig: SimpleNamespace
 
 
 ###########################################################
-# SPECIFICATION MAP OPERATIONS
+# SPECIFICATION DESCRIPTION OPERATIONS
 ###########################################################
 
 
-def make_extractor_from_map(desc):
-    """Generate an extractor from a description.
-
-    :sig: (Mapping) -> Extractor
-    :param desc: Description of the extractor to generate.
-    :return: Generated extractor.
-    :raise ValueError: When reducer or transformer names are unknown.
-    """
+def _make_extractor_from_desc(desc):
     transform = desc.get("transform")
     if transform is None:
         transform_ = None
@@ -552,7 +543,7 @@ def make_extractor_from_map(desc):
         extractor = make_path(path=path, reduce=reduce_, transform=transform_, foreach=foreach)
     else:
         items = desc.get("items", [])
-        rules = [make_rule_from_map(i) for i in items]
+        rules = [_make_rule_from_desc(i) for i in items]
         extractor = make_items(
             rules=rules, section=desc.get("section"), transform=transform_, foreach=foreach
         )
@@ -560,31 +551,23 @@ def make_extractor_from_map(desc):
     return extractor
 
 
-def make_rule_from_map(desc):
-    """Generate a rule from a description.
-
-    :sig: (Mapping) -> Rule
-    :param desc: Description of rule to generate.
-    :return: Generated rule.
-    """
+def _make_rule_from_desc(desc):
     key = desc["key"]
-    key_ = key if isinstance(key, str) else make_extractor_from_map(key)
-    value_ = make_extractor_from_map(desc["value"])
+    key_ = key if isinstance(key, str) else _make_extractor_from_desc(key)
+    value_ = _make_extractor_from_desc(desc["value"])
     return make_rule(key=key_, value=value_, foreach=desc.get("foreach"))
 
 
-def make_preprocessor_from_map(desc):
-    """Generate a preprocessor from a description.
-
-    :sig: (Mapping) -> Callable[[Element], None]
-    :param desc: Description of preprocessor to generate.
-    :return: Generated preprocessor.
-    """
+def _make_preprocessor_from_desc(desc):
     preprocessor = getattr(preprocessors, desc["op"], None)
     if preprocessor is None:
         raise ValueError("Unknown preprocessing operation")
-    args = {k: v for k, v in desc.items() if k != "op"}
-    return preprocessor(**args)
+    args = {
+        k: v if isinstance(v, str) else _make_extractor_from_desc(v)
+        for k, v in desc.items()
+        if k not in {"op", "path"}
+    }
+    return preprocessor(path=desc["path"], **args)
 
 
 ###########################################################
@@ -605,13 +588,13 @@ def scrape(document, spec, *, lxml_html=False):
 
     pre = spec.get("pre")
     if pre is not None:
-        steps = [make_preprocessor_from_map(step) for step in pre]
+        steps = [_make_preprocessor_from_desc(step) for step in pre]
         for preprocess in steps:
             preprocess(root)
 
     items = spec.get("items", [])
     section = spec.get("section")
-    rules = make_items(rules=[make_rule_from_map(item) for item in items], section=section)
+    rules = make_items(rules=[_make_rule_from_desc(item) for item in items], section=section)
     data = rules(root)
 
     return data
