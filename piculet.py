@@ -392,62 +392,6 @@ def make_rule(key, value, *, foreach=None):
 
 
 ###########################################################
-# SPECIFICATION MAP OPERATIONS
-###########################################################
-
-
-def make_extractor_from_map(desc):
-    """Generate an extractor from a description.
-
-    :sig: (Mapping) -> Extractor
-    :param desc: Description of the extractor to generate.
-    :return: Generated extractor.
-    :raise ValueError: When reducer or transformer names are unknown.
-    """
-    transform = desc.get("transform")
-    if transform is None:
-        transform_ = None
-    else:
-        transform_ = getattr(transformers, transform, None)
-        if transform_ is None:
-            raise ValueError("Unknown transformer")
-
-    foreach = desc.get("foreach")
-
-    path = desc.get("path")
-    if path is not None:
-        reduce = desc.get("reduce")
-        if reduce is None:
-            reduce_ = None
-        else:
-            reduce_ = getattr(reducers, reduce, None)
-            if reduce_ is None:
-                raise ValueError("Unknown reducer")
-        extractor = make_path(path=path, reduce=reduce_, transform=transform_, foreach=foreach)
-    else:
-        items = desc.get("items", [])
-        rules = [make_rule_from_map(i) for i in items]
-        extractor = make_items(
-            rules=rules, section=desc.get("section"), transform=transform_, foreach=foreach
-        )
-
-    return extractor
-
-
-def make_rule_from_map(desc):
-    """Generate a rule from a description.
-
-    :sig: (Mapping) -> Rule
-    :param desc: Description of rule to generate.
-    :return: Generated rule.
-    """
-    key = desc["key"]
-    key_ = key if isinstance(key, str) else make_extractor_from_map(key)
-    value_ = make_extractor_from_map(desc["value"])
-    return make_rule(key=key_, value=value_, foreach=desc.get("foreach"))
-
-
-###########################################################
 # PREPROCESSING OPERATIONS
 ###########################################################
 
@@ -547,6 +491,62 @@ transformers = SimpleNamespace(  # sig: SimpleNamespace
     strip=str.strip,
 )
 """Predefined transformers."""
+
+
+###########################################################
+# SPECIFICATION MAP OPERATIONS
+###########################################################
+
+
+def make_extractor_from_map(desc):
+    """Generate an extractor from a description.
+
+    :sig: (Mapping) -> Extractor
+    :param desc: Description of the extractor to generate.
+    :return: Generated extractor.
+    :raise ValueError: When reducer or transformer names are unknown.
+    """
+    transform = desc.get("transform")
+    if transform is None:
+        transform_ = None
+    else:
+        transform_ = getattr(transformers, transform, None)
+        if transform_ is None:
+            raise ValueError("Unknown transformer")
+
+    foreach = desc.get("foreach")
+
+    path = desc.get("path")
+    if path is not None:
+        reduce = desc.get("reduce")
+        if reduce is None:
+            reduce_ = None
+        else:
+            reduce_ = getattr(reducers, reduce, None)
+            if reduce_ is None:
+                raise ValueError("Unknown reducer")
+        extractor = make_path(path=path, reduce=reduce_, transform=transform_, foreach=foreach)
+    else:
+        items = desc.get("items", [])
+        rules = [make_rule_from_map(i) for i in items]
+        extractor = make_items(
+            rules=rules, section=desc.get("section"), transform=transform_, foreach=foreach
+        )
+
+    return extractor
+
+
+def make_rule_from_map(desc):
+    """Generate a rule from a description.
+
+    :sig: (Mapping) -> Rule
+    :param desc: Description of rule to generate.
+    :return: Generated rule.
+    """
+    key = desc["key"]
+    key_ = key if isinstance(key, str) else make_extractor_from_map(key)
+    value_ = make_extractor_from_map(desc["value"])
+    return make_rule(key=key_, value=value_, foreach=desc.get("foreach"))
 
 
 ###########################################################
