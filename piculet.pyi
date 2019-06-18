@@ -68,7 +68,7 @@ def make_items_extractor(
 ) -> Extractor: ...
 def make_item_maker(
     key: Union[str, Extractor],
-    value: Extractor,
+    value: Union[str, Extractor],
     *,
     foreach: Optional[str] = ...,
 ) -> ItemMaker: ...
