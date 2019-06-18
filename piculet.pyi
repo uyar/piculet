@@ -23,7 +23,7 @@ Reducer = Callable[[Sequence[str]], str]
 StrTransformer = Callable[[str], Any]
 MapTransformer = Callable[[Mapping], Any]
 Transformer = Union[StrTransformer, MapTransformer]
-ItemMaker = Callable[[Element], Mapping]
+Rule = Callable[[Element], Mapping]
 
 __version__ = ...  # type: str
 preprocessors = ...  # type: SimpleNamespace
@@ -46,26 +46,26 @@ def html_to_xhtml(
     omit_attrs: Iterable[str] = ...,
 ) -> str: ...
 def make_xpather(path: str) -> XPather: ...
-def make_path_extractor(
+def make_path(
     path: str,
     reduce: Optional[Reducer] = ...,
     transform: Optional[StrTransformer] = ...,
     foreach: Optional[str] = ...,
 ) -> Extractor: ...
-def make_items_extractor(
-    items: Sequence[ItemMaker],
+def make_rules(
+    items: Sequence[Rule],
     section: Optional[str] = ...,
     transform: Optional[MapTransformer] = ...,
     foreach: Optional[str] = ...,
 ) -> Extractor: ...
-def make_item_maker(
+def make_rule(
     key: Union[str, Callable[[Element], str]],
     value: Extractor,
     *,
     foreach: Optional[str] = ...,
-) -> ItemMaker: ...
+) -> Rule: ...
 def make_extractor_from_map(desc: Mapping) -> Extractor: ...
-def make_item_maker_from_map(desc: Mapping) -> ItemMaker: ...
+def make_rule_from_map(desc: Mapping) -> Rule: ...
 def remove_elements(root: Element, *, path: str) -> None: ...
 def set_element_attr(
     root: Element,

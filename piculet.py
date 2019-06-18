@@ -272,7 +272,7 @@ _EMPTY = {}
 # sigalias: StrTransformer = Callable[[str], Any]
 # sigalias: MapTransformer = Callable[[Mapping], Any]
 # sigalias: Transformer = Union[StrTransformer, MapTransformer]
-# sigalias: ItemMaker = Callable[[Element], Mapping]
+# sigalias: Rule = Callable[[Element], Mapping]
 
 
 def _make_extractor(raw, transform=None, foreach=None):
@@ -294,7 +294,7 @@ def _make_extractor(raw, transform=None, foreach=None):
     return apply
 
 
-def make_path_extractor(path, reduce=None, transform=None, foreach=None):
+def make_path(path, reduce=None, transform=None, foreach=None):
     """Create an extractor that can get a single piece of data from an element.
 
     :sig:
@@ -320,12 +320,12 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
     return _make_extractor(get_raw, transform=transform, foreach=foreach)
 
 
-def make_items_extractor(items, section=None, transform=None, foreach=None):
+def make_rules(items, section=None, transform=None, foreach=None):
     """Create an extractor that can get multiple pieces of data from an element.
 
     :sig:
         (
-            Sequence[ItemMaker],
+            Sequence[Rule],
             Optional[str],
             Optional[MapTransformer],
             Optional[str]
@@ -350,15 +350,15 @@ def make_items_extractor(items, section=None, transform=None, foreach=None):
             subroot = subroots[0]
 
         data = {}
-        for make_item in items:
-            item = make_item(subroot)
+        for rule in items:
+            item = rule(subroot)
             data.update(item)
         return data if len(data) > 0 else _EMPTY
 
     return _make_extractor(get_raw, transform=transform, foreach=foreach)
 
 
-def make_item_maker(key, value, *, foreach=None):
+def make_rule(key, value, *, foreach=None):
     """Create a data item generator that can be applied to an element.
 
     :sig:
@@ -366,7 +366,7 @@ def make_item_maker(key, value, *, foreach=None):
             Union[str, Callable[[Element], str]],
             Extractor,
             Optional[str]
-        ) -> ItemMaker
+        ) -> Rule
     :param key: Name to distinguish the data.
     :param value: Extractor that will generate the data.
     :param foreach: XPath expression for generating multiple data items.
@@ -423,30 +423,28 @@ def make_extractor_from_map(desc):
             reduce = getattr(reducers, reducer, None)
             if reduce is None:
                 raise ValueError("Unknown reducer")
-        extractor = make_path_extractor(
-            path=path, reduce=reduce, transform=transform, foreach=foreach
-        )
+        extractor = make_path(path=path, reduce=reduce, transform=transform, foreach=foreach)
     else:
         items = desc.get("items", [])
-        rules = [make_item_maker_from_map(i) for i in items]
-        extractor = make_items_extractor(
+        rules = [make_rule_from_map(i) for i in items]
+        extractor = make_rules(
             items=rules, section=desc.get("section"), transform=transform, foreach=foreach
         )
 
     return extractor
 
 
-def make_item_maker_from_map(desc):
+def make_rule_from_map(desc):
     """Generate a rule from a description.
 
-    :sig: (Mapping) -> ItemMaker
+    :sig: (Mapping) -> Rule
     :param desc: Description of rule to generate.
     :return: Generated rule.
     """
     item_key = desc["key"]
     key = item_key if isinstance(item_key, str) else make_extractor_from_map(item_key)
     value = make_extractor_from_map(desc["value"])
-    return make_item_maker(key=key, value=value, foreach=desc.get("foreach"))
+    return make_rule(key=key, value=value, foreach=desc.get("foreach"))
 
 
 ###########################################################
@@ -607,9 +605,7 @@ def extract(element, items, *, section=None):
     :param section: Path to select the root element for these items.
     :return: Extracted data.
     """
-    rules = make_items_extractor(
-        items=[make_item_maker_from_map(item) for item in items], section=section
-    )
+    rules = make_rules(items=[make_rule_from_map(item) for item in items], section=section)
     return rules(element)
 
 
