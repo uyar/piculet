@@ -355,6 +355,39 @@ def make_items_extractor(items, section=None, transform=None, foreach=None):
     return _make_extractor(raw, transform=transform, foreach=foreach)
 
 
+def make_item_maker(key, value, *, foreach=None):
+    """Create a data item generator that can be applied to an element.
+
+    :sig: (Union[str, Extractor], Extractor, Optional[str]) -> ItemMaker
+    :param key: Name to distinguish the data.
+    :param value: Extractor that will generate the data.
+    :param foreach: XPath expression for generating multiple data items.
+    :return: Generated rule.
+    """
+    foreach_ = make_xpather(foreach) if foreach is not None else None
+
+    def apply(element):
+        data = {}
+        subroots = [element] if foreach_ is None else foreach_(element)
+        for subroot in subroots:
+            key_ = key if isinstance(key, str) else key(subroot)
+            if key_ is None:
+                continue
+
+            value_ = value(subroot)
+            if (value_ is None) or (value_ is _EMPTY) or (value_ == []):
+                continue
+            data[key_] = value_
+        return data
+
+    return apply
+
+
+###########################################################
+# SPECIFICATION MAP OPERATIONS
+###########################################################
+
+
 def make_extractor_from_map(desc):
     """Generate an extractor from a description.
 
@@ -393,34 +426,6 @@ def make_extractor_from_map(desc):
         )
 
     return extractor
-
-
-def make_item_maker(key, value, *, foreach=None):
-    """Create a data item generator that can be applied to an element.
-
-    :sig: (Union[str, Extractor], Extractor, Optional[str]) -> ItemMaker
-    :param key: Name to distinguish the data.
-    :param value: Extractor that will generate the data.
-    :param foreach: XPath expression for generating multiple data items.
-    :return: Generated rule.
-    """
-    foreach_ = make_xpather(foreach) if foreach is not None else None
-
-    def apply(element):
-        data = {}
-        subroots = [element] if foreach_ is None else foreach_(element)
-        for subroot in subroots:
-            key_ = key if isinstance(key, str) else key(subroot)
-            if key_ is None:
-                continue
-
-            value_ = value(subroot)
-            if (value_ is None) or (value_ is _EMPTY) or (value_ == []):
-                continue
-            data[key_] = value_
-        return data
-
-    return apply
 
 
 def make_item_maker_from_map(desc):
