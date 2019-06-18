@@ -590,34 +590,6 @@ def build_tree(document, *, lxml_html=False):
     return fromstring(document)
 
 
-def preprocess(root, pre):
-    """Process a tree before starting extraction.
-
-    This assumes that the root of the tree doesn't change.
-
-    :sig: (Element, Sequence[Mapping]) -> None
-    :param root: Root of tree to process.
-    :param pre: Descriptions for processing operations.
-    :raise ValueError: When preprocessor name is unknown.
-    """
-    processors = [make_preprocessor_from_map(step) for step in pre]
-    for process in processors:
-        process(root)
-
-
-def extract(element, items, *, section=None):
-    """Extract data from an XML element.
-
-    :sig: (Element, Sequence[Mapping], Optional[str]) -> Mapping
-    :param element: Element to extract the data from.
-    :param items: Descriptions for extracting items.
-    :param section: Path to select the root element for these items.
-    :return: Extracted data.
-    """
-    rules = make_items(rules=[make_rule_from_map(item) for item in items], section=section)
-    return rules(element)
-
-
 def scrape(document, spec, *, lxml_html=False):
     """Extract data from a document after optionally preprocessing it.
 
@@ -628,8 +600,18 @@ def scrape(document, spec, *, lxml_html=False):
     :return: Extracted data.
     """
     root = build_tree(document, lxml_html=lxml_html)
-    preprocess(root, spec.get("pre", []))
-    data = extract(root, spec.get("items", []), section=spec.get("section"))
+
+    pre = spec.get("pre")
+    if pre is not None:
+        steps = [make_preprocessor_from_map(step) for step in pre]
+        for preprocess in steps:
+            preprocess(root)
+
+    items = spec.get("items", [])
+    section = spec.get("section")
+    rules = make_items(rules=[make_rule_from_map(item) for item in items], section=section)
+    data = rules(root)
+
     return data
 
 
