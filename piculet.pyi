@@ -17,6 +17,7 @@ from html.parser import HTMLParser
 from types import SimpleNamespace
 from xml.etree.ElementTree import Element
 
+XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
 Extractor = Callable[[Element], Any]
 Reducer = Callable[[Sequence[str]], str]
 StrTransformer = Callable[[str], Any]
@@ -44,9 +45,7 @@ def html_to_xhtml(
     omit_tags: Iterable[str] = ...,
     omit_attrs: Iterable[str] = ...,
 ) -> str: ...
-def make_xpather(
-    path: str
-) -> Callable[[Element], Union[Sequence[str], Sequence[Element]]]: ...
+def make_xpather(path: str) -> XPather: ...
 def make_path_extractor(
     path: str,
     reduce: Optional[Reducer] = ...,

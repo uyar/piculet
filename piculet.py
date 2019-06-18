@@ -198,6 +198,9 @@ def html_to_xhtml(document, *, omit_tags=(), omit_attrs=()):
 ###########################################################
 
 
+# sigalias: XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
+
+
 LXML_AVAILABLE = find_loader("lxml") is not None
 if LXML_AVAILABLE:
     from lxml import etree as ElementTree
@@ -213,7 +216,7 @@ else:
         This is mainly needed to compensate for the lack of ``text()``
         and ``@attr`` axis queries in ElementTree XPath support.
 
-        :sig: (str) -> Callable[[Element], Union[Sequence[str], Sequence[Element]]]
+        :sig: (str) -> XPather
         :param path: XPath expression to apply.
         :return: Evaluator that applies the expression to an element.
         """
