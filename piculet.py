@@ -261,9 +261,7 @@ make_xpather = lru_cache(maxsize=None)(make_xpather)
 ###########################################################
 
 
-_EMPTY_VAL = object()
-_EMPTY_MAP = dict()
-_EMPTY_SEQ = tuple()
+_EMPTY = {}
 
 
 # sigalias: Extractor = Callable[[Element], Any]
@@ -280,16 +278,14 @@ def _make_extractor(raw, transform=None, foreach=None):
     def apply(element):
         if foreach_ is None:
             raw_value = raw(element)
-            if (raw_value is _EMPTY_VAL) or (raw_value is _EMPTY_MAP):
+            if raw_value is _EMPTY:
                 return raw_value
             return raw_value if transform is None else transform(raw_value)
         else:
             raw_values = [raw(r) for r in foreach_(element)]
-            raw_values = [
-                v for v in raw_values if (v is not _EMPTY_VAL) and (v is not _EMPTY_MAP)
-            ]
+            raw_values = [v for v in raw_values if v is not _EMPTY]
             if len(raw_values) == 0:
-                return _EMPTY_SEQ
+                return _EMPTY
             return raw_values if transform is None else list(map(transform, raw_values))
 
     return apply
@@ -316,7 +312,7 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
 
     def raw(element):
         selected = path_(element)
-        return reduce_(selected) if len(selected) > 0 else _EMPTY_VAL
+        return reduce_(selected) if len(selected) > 0 else _EMPTY
 
     return _make_extractor(raw, transform=transform, foreach=foreach)
 
@@ -345,7 +341,7 @@ def make_items_extractor(items, section=None, transform=None, foreach=None):
         else:
             subroots = section_(element)
             if len(subroots) == 0:
-                return _EMPTY_MAP
+                return _EMPTY
             if len(subroots) > 1:
                 raise ValueError("Section path should select exactly one element")
             subroot = subroots[0]
@@ -354,7 +350,7 @@ def make_items_extractor(items, section=None, transform=None, foreach=None):
         for make_item in items:
             item = make_item(subroot)
             data.update(item)
-        return data if len(data) > 0 else _EMPTY_MAP
+        return data if len(data) > 0 else _EMPTY
 
     return _make_extractor(raw, transform=transform, foreach=foreach)
 
@@ -375,11 +371,11 @@ def make_item_maker(key, value, *, foreach=None):
         subroots = [element] if foreach_ is None else foreach_(element)
         for subroot in subroots:
             key_ = key if isinstance(key, str) else key(subroot)
-            if key_ is _EMPTY_VAL:
+            if key_ is _EMPTY:
                 continue
 
             value_ = value(subroot)
-            if (value_ is _EMPTY_VAL) or (value_ is _EMPTY_MAP) or (value_ is _EMPTY_SEQ):
+            if value_ is _EMPTY:
                 continue
             data[key_] = value_
         return data
@@ -484,13 +480,13 @@ def set_element_attr(root, *, path, name, value):
     elements = make_xpather(path)(root)
     for element in elements:
         attr_name = name if isinstance(name, str) else make_extractor_from_map(name)(element)
-        if attr_name is _EMPTY_VAL:
+        if attr_name is _EMPTY:
             continue
 
         attr_value = (
             value if isinstance(value, str) else make_extractor_from_map(value)(element)
         )
-        if attr_value is _EMPTY_VAL:
+        if attr_value is _EMPTY:
             continue
 
         element.set(attr_name, attr_value)
@@ -508,7 +504,7 @@ def set_element_text(root, *, path, text):
     for element in elements:
         element_text = text if isinstance(text, str) else make_extractor_from_map(text)(element)
         # note that the text can be empty in which case the existing text will be cleared
-        element.text = element_text if element_text is not _EMPTY_VAL else None
+        element.text = element_text if element_text is not _EMPTY else None
 
 
 ###########################################################
