@@ -363,8 +363,8 @@ def make_item_maker(key, value, *, foreach=None):
 
     :sig:
         (
-            Union[str, Extractor],
-            Union[str, Extractor],
+            Union[str, Callable[[Element], str]],
+            Extractor,
             Optional[str]
         ) -> ItemMaker
     :param key: Name to distinguish the data.
@@ -372,15 +372,20 @@ def make_item_maker(key, value, *, foreach=None):
     :param foreach: XPath expression for generating multiple data items.
     :return: Generated rule.
     """
-    get_key = (lambda _: key) if isinstance(key, str) else key
-    get_value = (lambda _: value) if isinstance(value, str) else value
     iterate = make_xpather(foreach) if foreach is not None else None
 
     def apply(element):
+        data = {}
         subroots = [element] if iterate is None else iterate(element)
-        keys = [(r, get_key(r)) for r in subroots]
-        values = [(r, k, get_value(r)) for r, k in keys if k is not _EMPTY]
-        data = {k: v for r, k, v in values if v is not _EMPTY}
+        for subroot in subroots:
+            key_ = key if isinstance(key, str) else key(subroot)
+            if key_ is _EMPTY:
+                continue
+
+            value_ = value(subroot)
+            if value_ is _EMPTY:
+                continue
+            data[key_] = value_
         return data if len(data) > 0 else _EMPTY
 
     return apply
