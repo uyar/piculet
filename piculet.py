@@ -301,10 +301,10 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
             Optional[PathTransformer],
             Optional[str]
         ) -> Extractor
-    :param path: XPath expression to apply.
-    :param reduce: Function for reducing selected strings into a single string.
-    :param transform: Function for transforming the raw data.
-    :param foreach: XPath expression for generating multiple values for data.
+    :param path: XPath expression for getting the raw data as strings.
+    :param reduce: Function for reducing the selected strings into a single string.
+    :param transform: Function for transforming the reduced string.
+    :param foreach: XPath expression for selecting multiple elements to extract data from.
     :return: Function to apply to an element to extract the data.
     """
     path_ = make_xpather(path)
@@ -318,7 +318,7 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
 
 
 def make_items_extractor(items, section=None, transform=None, foreach=None):
-    """Create an extractor that can get multiple data from an element.
+    """Create an extractor that can get multiple pieces of data from an element.
 
     :sig:
         (
@@ -327,10 +327,10 @@ def make_items_extractor(items, section=None, transform=None, foreach=None):
             Optional[MapTransformer],
             Optional[str]
         ) -> Extractor
-    :param items: Functions for generating the items from elements.
-    :param section: XPath expression for setting the root of a section.
-    :param transform: Function for transforming the raw data items.
-    :param foreach: XPath expression for generating multiple values for data.
+    :param items: Functions for generating the items from the element.
+    :param section: XPath expression for selecting the root elements of sections.
+    :param transform: Function for transforming the extracted data items.
+    :param foreach: XPath expression for selecting multiple elements to extract data from.
     :return: Function to apply to an element to extract the data.
     """
     section_ = make_xpather(section) if section is not None else None
