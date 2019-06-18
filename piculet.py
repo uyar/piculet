@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Piculet.  If not, see <http://www.gnu.org/licenses/>.
 
+
 """Module for scraping XML and HTML documents using XPath queries.
 
 It consists of this single source file with no dependencies
@@ -22,6 +23,7 @@ to integrate into applications.
 For more information, please refer to the documentation:
 https://piculet.tekir.org/
 """
+
 
 import json
 import re
@@ -478,6 +480,7 @@ reducers = SimpleNamespace(  # sig: SimpleNamespace
 )
 """Predefined reducers."""
 
+
 transformers = SimpleNamespace(  # sig: SimpleNamespace
     int=int,
     float=float,
@@ -549,6 +552,20 @@ def make_rule_from_map(desc):
     return make_rule(key=key_, value=value_, foreach=desc.get("foreach"))
 
 
+def make_preprocessor_from_map(desc):
+    """Generate a preprocessor from a description.
+
+    :sig: (Mapping) -> Callable[[Element], None]
+    :param desc: Description of preprocessor to generate.
+    :return: Generated preprocessor.
+    """
+    preprocessor = getattr(preprocessors, desc["op"], None)
+    if preprocessor is None:
+        raise ValueError("Unknown preprocessing operation")
+    args = {k: v for k, v in desc.items() if k != "op"}
+    return preprocessor(**args)
+
+
 ###########################################################
 # MAIN API
 ###########################################################
@@ -583,15 +600,9 @@ def preprocess(root, pre):
     :param pre: Descriptions for processing operations.
     :raise ValueError: When preprocessor name is unknown.
     """
-    processors = []
-    for step in pre:
-        preprocessor = getattr(preprocessors, step["op"], None)
-        if preprocessor is None:
-            raise ValueError("Unknown preprocessing operation")
-        args = {k: v for k, v in step.items() if k != "op"}
-        processors.append(preprocessor(**args))
-    for processor in processors:
-        processor(root)
+    processors = [make_preprocessor_from_map(step) for step in pre]
+    for process in processors:
+        process(root)
 
 
 def extract(element, items, *, section=None):
@@ -617,10 +628,8 @@ def scrape(document, spec, *, lxml_html=False):
     :return: Extracted data.
     """
     root = build_tree(document, lxml_html=lxml_html)
-    pre = spec.get("pre")
-    if pre is not None:
-        preprocess(root, pre)
-    data = extract(root, spec.get("items"), section=spec.get("section"))
+    preprocess(root, spec.get("pre", []))
+    data = extract(root, spec.get("items", []), section=spec.get("section"))
     return data
 
 
