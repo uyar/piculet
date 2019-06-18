@@ -19,7 +19,12 @@ from pathlib import Path as FSPath
 from types import SimpleNamespace
 from xml.etree.ElementTree import Element
 
+RawExtractor = Callable[[Element], Union[str, Mapping]]
 Extractor = Callable[[Element], Any]
+Reducer = Callable[[Sequence[str]], str]
+PathTransformer = Callable[[str], Any]
+MapTransformer = Callable[[Mapping], Any]
+Transformer = Union[PathTransformer, MapTransformer]
 ItemMaker = Callable[[Element], Mapping]
 
 __version__ = ...  # type: str
@@ -51,22 +56,22 @@ def make_xpather(
     path: str
 ) -> Callable[[Element], Union[Sequence[str], Sequence[Element]]]: ...
 def make_extractor(
-    get_raw: Callable[[Element], Union[str, Mapping]],
-    transform: Optional[Callable[[Union[str, Mapping]], Any]] = ...,
+    raw: RawExtractor,
+    transform: Optional[Transformer] = ...,
     foreach: Optional[str] = ...,
-) -> Callable[[Element], Any]: ...
+) -> Extractor: ...
 def make_path_extractor(
     path: str,
-    reduce: Optional[Callable[[Sequence[str]], str]] = ...,
-    transform: Optional[Callable[[str], Any]] = ...,
+    reduce: Optional[Reducer] = ...,
+    transform: Optional[PathTransformer] = ...,
     foreach: Optional[str] = ...,
-) -> Callable[[Element], Any]: ...
+) -> Extractor: ...
 def make_items_extractor(
     items: Sequence[ItemMaker],
     section: Optional[str] = ...,
-    transform: Optional[Callable[[Mapping], Any]] = ...,
+    transform: Optional[MapTransformer] = ...,
     foreach: Optional[str] = ...,
-) -> Callable[[Element], Any]: ...
+) -> Extractor: ...
 def make_extractor_from_map(desc: Mapping) -> Extractor: ...
 def make_item_maker(
     key: Union[str, Extractor],
