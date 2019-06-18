@@ -208,9 +208,30 @@ if LXML_AVAILABLE:
     from lxml import etree as ElementTree
     from lxml.etree import Element
     from lxml.etree import XPath as make_xpather
+
+    def build_tree(document, *, lxml_html=False):
+        if lxml_html:
+            import lxml.html
+
+            return lxml.html.fromstring(document)
+        return ElementTree.fromstring(document)
+
+
 else:
     from xml.etree import ElementTree
     from xml.etree.ElementTree import Element
+
+    def build_tree(document, *, lxml_html=False):
+        """Build a tree from an XML document.
+
+        :sig: (str, bool) -> Element
+        :param document: XML document to build the tree from.
+        :param lxml_html: Whether to use the lxml.html builder.
+        :return: Root element of the XML tree.
+        """
+        if lxml_html:
+            raise RuntimeError("LXML not available")
+        return ElementTree.fromstring(document)
 
     def make_xpather(path):
         """Get an XPath evaluator that can be applied to an element.
@@ -569,25 +590,6 @@ def make_preprocessor_from_map(desc):
 ###########################################################
 # MAIN API
 ###########################################################
-
-
-def build_tree(document, *, lxml_html=False):
-    """Build a tree from an XML document.
-
-    :sig: (str, bool) -> Element
-    :param document: XML document to build the tree from.
-    :param lxml_html: Whether to use the lxml.html builder.
-    :return: Root element of the XML tree.
-    """
-    if lxml_html:
-        if not LXML_AVAILABLE:
-            raise RuntimeError("LXML not available")
-        import lxml.html
-
-        fromstring = lxml.html.fromstring
-    else:
-        fromstring = ElementTree.fromstring
-    return fromstring(document)
 
 
 def scrape(document, spec, *, lxml_html=False):
