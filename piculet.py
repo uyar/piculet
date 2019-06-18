@@ -320,7 +320,7 @@ def make_path(path, reduce=None, transform=None, foreach=None):
     return _make_extractor(get_raw, transform=transform, foreach=foreach)
 
 
-def make_rules(items, section=None, transform=None, foreach=None):
+def make_items(rules, section=None, transform=None, foreach=None):
     """Create an extractor that can get multiple pieces of data from an element.
 
     :sig:
@@ -330,7 +330,7 @@ def make_rules(items, section=None, transform=None, foreach=None):
             Optional[MapTransformer],
             Optional[str]
         ) -> Extractor
-    :param items: Functions for generating the items from the element.
+    :param rules: Functions for generating the items from the element.
     :param section: XPath expression for selecting the root element for queries.
     :param transform: Function for transforming the extracted data items.
     :param foreach: XPath expression for selecting multiple subelements to extract data from.
@@ -350,7 +350,7 @@ def make_rules(items, section=None, transform=None, foreach=None):
             subroot = subroots[0]
 
         data = {}
-        for rule in items:
+        for rule in rules:
             item = rule(subroot)
             data.update(item)
         return data if len(data) > 0 else _EMPTY
@@ -427,8 +427,8 @@ def make_extractor_from_map(desc):
     else:
         items = desc.get("items", [])
         rules = [make_rule_from_map(i) for i in items]
-        extractor = make_rules(
-            items=rules, section=desc.get("section"), transform=transform_, foreach=foreach
+        extractor = make_items(
+            rules=rules, section=desc.get("section"), transform=transform_, foreach=foreach
         )
 
     return extractor
@@ -605,7 +605,7 @@ def extract(element, items, *, section=None):
     :param section: Path to select the root element for these items.
     :return: Extracted data.
     """
-    rules = make_rules(items=[make_rule_from_map(item) for item in items], section=section)
+    rules = make_items(rules=[make_rule_from_map(item) for item in items], section=section)
     return rules(element)
 
 

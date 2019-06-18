@@ -52,8 +52,8 @@ def make_path(
     transform: Optional[StrTransformer] = ...,
     foreach: Optional[str] = ...,
 ) -> Extractor: ...
-def make_rules(
-    items: Sequence[Rule],
+def make_items(
+    rules: Sequence[Rule],
     section: Optional[str] = ...,
     transform: Optional[MapTransformer] = ...,
     foreach: Optional[str] = ...,
