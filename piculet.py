@@ -264,7 +264,6 @@ make_xpather = lru_cache(maxsize=None)(make_xpather)
 _EMPTY = {}
 
 
-# sigalias: RawExtractor = Callable[[Element], Union[str, Mapping]]
 # sigalias: Extractor = Callable[[Element], Any]
 # sigalias: Reducer = Callable[[Sequence[str]], str]
 # sigalias: PathTransformer = Callable[[str], Any]
@@ -273,15 +272,7 @@ _EMPTY = {}
 # sigalias: ItemMaker = Callable[[Element], Mapping]
 
 
-def make_extractor(raw, transform=None, foreach=None):
-    """Create an extractor that can get data from an element.
-
-    :sig: (RawExtractor, Optional[Transformer], Optional[str] ) -> Extractor
-    :param raw: Function for getting raw data from the element.
-    :param transform: Function for transforming the raw data.
-    :param foreach: XPath expression for generating multiple values for data.
-    :return: Function to apply to an element to extract the data.
-    """
+def _make_extractor(raw, transform=None, foreach=None):
     foreach_ = make_xpather(foreach) if foreach is not None else None
 
     def apply(element):
@@ -323,7 +314,7 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
         selected = path_(element)
         return reduce_(selected) if len(selected) > 0 else None
 
-    return make_extractor(raw, transform=transform, foreach=foreach)
+    return _make_extractor(raw, transform=transform, foreach=foreach)
 
 
 def make_items_extractor(items, section=None, transform=None, foreach=None):
@@ -361,7 +352,7 @@ def make_items_extractor(items, section=None, transform=None, foreach=None):
             data.update(item)
         return data if len(data) > 0 else _EMPTY
 
-    return make_extractor(raw, transform=transform, foreach=foreach)
+    return _make_extractor(raw, transform=transform, foreach=foreach)
 
 
 def make_extractor_from_map(desc):

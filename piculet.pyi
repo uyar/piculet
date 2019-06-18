@@ -19,7 +19,6 @@ from pathlib import Path as FSPath
 from types import SimpleNamespace
 from xml.etree.ElementTree import Element
 
-RawExtractor = Callable[[Element], Union[str, Mapping]]
 Extractor = Callable[[Element], Any]
 Reducer = Callable[[Sequence[str]], str]
 PathTransformer = Callable[[str], Any]
@@ -55,11 +54,6 @@ def html_to_xhtml(
 def make_xpather(
     path: str
 ) -> Callable[[Element], Union[Sequence[str], Sequence[Element]]]: ...
-def make_extractor(
-    raw: RawExtractor,
-    transform: Optional[Transformer] = ...,
-    foreach: Optional[str] = ...,
-) -> Extractor: ...
 def make_path_extractor(
     path: str,
     reduce: Optional[Reducer] = ...,
