@@ -272,17 +272,17 @@ _EMPTY = {}
 # sigalias: ItemMaker = Callable[[Element], Mapping]
 
 
-def _make_extractor(raw, transform=None, foreach=None):
+def _make_extractor(get_raw, transform=None, foreach=None):
     iterate = make_xpather(foreach) if foreach is not None else None
 
     def apply(element):
         if iterate is None:
-            raw_value = raw(element)
+            raw_value = get_raw(element)
             if raw_value is _EMPTY:
                 return raw_value
             return raw_value if transform is None else transform(raw_value)
         else:
-            raw_values = [raw(r) for r in iterate(element)]
+            raw_values = [get_raw(r) for r in iterate(element)]
             raw_values = [v for v in raw_values if v is not _EMPTY]
             if len(raw_values) == 0:
                 return _EMPTY
@@ -307,14 +307,14 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
     :param foreach: XPath expression for selecting multiple elements to extract data from.
     :return: Function to apply to an element to extract the data.
     """
-    xpath = make_xpather(path)
+    apply_xpath = make_xpather(path)
     reduce = reducers.concat if reduce is None else reduce
 
-    def raw(element):
-        selected = xpath(element)
+    def get_raw(element):
+        selected = apply_xpath(element)
         return reduce(selected) if len(selected) > 0 else _EMPTY
 
-    return _make_extractor(raw, transform=transform, foreach=foreach)
+    return _make_extractor(get_raw, transform=transform, foreach=foreach)
 
 
 def make_items_extractor(items, section=None, transform=None, foreach=None):
@@ -333,13 +333,13 @@ def make_items_extractor(items, section=None, transform=None, foreach=None):
     :param foreach: XPath expression for selecting multiple elements to extract data from.
     :return: Function to apply to an element to extract the data.
     """
-    sections = make_xpather(section) if section is not None else None
+    get_sections = make_xpather(section) if section is not None else None
 
-    def raw(element):
-        if sections is None:
+    def get_raw(element):
+        if get_sections is None:
             subroot = element
         else:
-            subroots = sections(element)
+            subroots = get_sections(element)
             if len(subroots) == 0:
                 return _EMPTY
             if len(subroots) > 1:
@@ -352,7 +352,7 @@ def make_items_extractor(items, section=None, transform=None, foreach=None):
             data.update(item)
         return data if len(data) > 0 else _EMPTY
 
-    return _make_extractor(raw, transform=transform, foreach=foreach)
+    return _make_extractor(get_raw, transform=transform, foreach=foreach)
 
 
 def make_item_maker(key, value, *, foreach=None):
