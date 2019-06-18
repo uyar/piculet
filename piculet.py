@@ -34,7 +34,7 @@ from html import escape as html_escape
 from html.parser import HTMLParser
 from io import StringIO
 from operator import itemgetter
-from pathlib import Path as FSPath
+from pathlib import Path
 from pkgutil import find_loader
 from types import SimpleNamespace
 
@@ -630,13 +630,14 @@ def scrape(document, spec, *, lxml_html=False):
 YAML_AVAILABLE = find_loader("strictyaml") is not None  # sig: bool
 
 
-def load_spec(path):
+def load_spec(filepath):
     """Load an extraction specification from a file.
 
-    :sig: (FSPath) -> Mapping
-    :param path: Path of specification file.
+    :sig: (str) -> Mapping
+    :param filepath: Path of specification file.
     :return: Loaded specification.
     """
+    path = Path(filepath)
     if path.suffix in {".yaml", ".yml"}:
         if not YAML_AVAILABLE:
             raise RuntimeError("YAML support not available")
@@ -672,7 +673,7 @@ def main(argv=None):
         if arguments.h2x:
             print(html_to_xhtml(content), end="")
         else:
-            spec = load_spec(FSPath(arguments.spec))
+            spec = load_spec(arguments.spec)
             if arguments.html:
                 content = html_to_xhtml(content)
             data = scrape(content, spec)
