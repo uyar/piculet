@@ -261,7 +261,7 @@ make_xpather = lru_cache(maxsize=None)(make_xpather)
 ###########################################################
 
 
-_EMPTY_VAL = None
+_EMPTY_VAL = object()
 _EMPTY_MAP = {}
 _EMPTY_SEQ = []
 
@@ -375,7 +375,7 @@ def make_item_maker(key, value, *, foreach=None):
         subroots = [element] if foreach_ is None else foreach_(element)
         for subroot in subroots:
             key_ = key if isinstance(key, str) else key(subroot)
-            if key_ is None:
+            if key_ is _EMPTY_VAL:
                 continue
 
             value_ = value(subroot)
@@ -484,13 +484,13 @@ def set_element_attr(root, *, path, name, value):
     elements = make_xpather(path)(root)
     for element in elements:
         attr_name = name if isinstance(name, str) else make_extractor_from_map(name)(element)
-        if attr_name is None:
+        if attr_name is _EMPTY_VAL:
             continue
 
         attr_value = (
             value if isinstance(value, str) else make_extractor_from_map(value)(element)
         )
-        if attr_value is None:
+        if attr_value is _EMPTY_VAL:
             continue
 
         element.set(attr_name, attr_value)
@@ -507,8 +507,8 @@ def set_element_text(root, *, path, text):
     elements = make_xpather(path)(root)
     for element in elements:
         element_text = text if isinstance(text, str) else make_extractor_from_map(text)(element)
-        # note that the text can be None in which case the existing text will be cleared
-        element.text = element_text
+        # note that the text can be empty in which case the existing text will be cleared
+        element.text = element_text if element_text is not _EMPTY_VAL else None
 
 
 ###########################################################
