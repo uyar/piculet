@@ -359,7 +359,7 @@ def make_items(rules, section=None, transform=None, foreach=None):
 
 
 def make_rule(key, value, *, foreach=None):
-    """Create a data item generator that can be applied to an element.
+    """Create a data generator that can be applied to an element.
 
     :sig:
         (
@@ -370,7 +370,7 @@ def make_rule(key, value, *, foreach=None):
     :param key: Name to distinguish the data.
     :param value: Extractor that will generate the data.
     :param foreach: XPath expression for generating multiple data items.
-    :return: Generated rule.
+    :return: Function to apply to an element to generate the data as specified.
     """
     iterate = make_xpather(foreach) if foreach is not None else None
 
