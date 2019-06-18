@@ -261,7 +261,8 @@ make_xpather = lru_cache(maxsize=None)(make_xpather)
 ###########################################################
 
 
-_EMPTY = {}
+_EMPTY_MAP = {}
+_EMPTY_SEQ = []
 
 
 # sigalias: Extractor = Callable[[Element], Any]
@@ -278,14 +279,14 @@ def _make_extractor(raw, transform=None, foreach=None):
     def apply(element):
         if foreach_ is None:
             raw_value = raw(element)
-            if (raw_value is None) or (raw_value is _EMPTY):
+            if (raw_value is None) or (raw_value is _EMPTY_MAP):
                 return raw_value
             return raw_value if transform is None else transform(raw_value)
         else:
             raw_values = [raw(r) for r in foreach_(element)]
-            raw_values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
+            raw_values = [v for v in raw_values if (v is not None) and (v is not _EMPTY_MAP)]
             if len(raw_values) == 0:
-                return raw_values
+                return _EMPTY_SEQ
             return raw_values if transform is None else list(map(transform, raw_values))
 
     return apply
@@ -341,7 +342,7 @@ def make_items_extractor(items, section=None, transform=None, foreach=None):
         else:
             subroots = section_(element)
             if len(subroots) == 0:
-                return _EMPTY
+                return _EMPTY_MAP
             if len(subroots) > 1:
                 raise ValueError("Section path should select exactly one element")
             subroot = subroots[0]
@@ -350,7 +351,7 @@ def make_items_extractor(items, section=None, transform=None, foreach=None):
         for make_item in items:
             item = make_item(subroot)
             data.update(item)
-        return data if len(data) > 0 else _EMPTY
+        return data if len(data) > 0 else _EMPTY_MAP
 
     return _make_extractor(raw, transform=transform, foreach=foreach)
 
@@ -375,7 +376,7 @@ def make_item_maker(key, value, *, foreach=None):
                 continue
 
             value_ = value(subroot)
-            if (value_ is None) or (value_ is _EMPTY) or (value_ == []):
+            if (value_ is None) or (value_ is _EMPTY_MAP) or (value_ is _EMPTY_SEQ):
                 continue
             data[key_] = value_
         return data
