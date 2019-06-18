@@ -275,17 +275,17 @@ _EMPTY = {}
 # sigalias: ItemMaker = Callable[[Element], Mapping]
 
 
-def _make_extractor(get_raw, transform=None, foreach=None):
+def _make_extractor(raw, transform=None, foreach=None):
     iterate = make_xpather(foreach) if foreach is not None else None
 
     def apply(element):
         if iterate is None:
-            raw_value = get_raw(element)
+            raw_value = raw(element)
             if raw_value is _EMPTY:
                 return raw_value
             return raw_value if transform is None else transform(raw_value)
         else:
-            raw_values = [get_raw(r) for r in iterate(element)]
+            raw_values = [raw(r) for r in iterate(element)]
             raw_values = [v for v in raw_values if v is not _EMPTY]
             if len(raw_values) == 0:
                 return _EMPTY
@@ -295,7 +295,7 @@ def _make_extractor(get_raw, transform=None, foreach=None):
 
 
 def make_path_extractor(path, reduce=None, transform=None, foreach=None):
-    """Create an extractor that can get data from an element using XPath.
+    """Create an extractor that can get a single piece of data from an element.
 
     :sig:
         (
@@ -304,17 +304,17 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
             Optional[StrTransformer],
             Optional[str]
         ) -> Extractor
-    :param path: XPath expression for getting the raw data as strings.
-    :param reduce: Function for reducing the selected strings into a single string.
-    :param transform: Function for transforming the reduced string.
-    :param foreach: XPath expression for selecting multiple elements to extract data from.
-    :return: Function to apply to an element to extract the data.
+    :param path: XPath expression for getting the raw data values.
+    :param reduce: Function for reducing the raw data values to a single value.
+    :param transform: Function for transforming the reduced value.
+    :param foreach: XPath expression for selecting multiple subelements to extract data from.
+    :return: Function to apply to an element to extract the data as specified.
     """
-    apply_xpath = make_xpather(path)
+    xpath = make_xpather(path)
     reduce = reducers.concat if reduce is None else reduce
 
     def get_raw(element):
-        selected = apply_xpath(element)
+        selected = xpath(element)
         return reduce(selected) if len(selected) > 0 else _EMPTY
 
     return _make_extractor(get_raw, transform=transform, foreach=foreach)
@@ -333,16 +333,16 @@ def make_items_extractor(items, section=None, transform=None, foreach=None):
     :param items: Functions for generating the items from the element.
     :param section: XPath expression for selecting the root element for queries.
     :param transform: Function for transforming the extracted data items.
-    :param foreach: XPath expression for selecting multiple elements to extract data from.
-    :return: Function to apply to an element to extract the data.
+    :param foreach: XPath expression for selecting multiple subelements to extract data from.
+    :return: Function to apply to an element to extract the data as specified.
     """
-    get_sections = make_xpather(section) if section is not None else None
+    sections = make_xpather(section) if section is not None else None
 
     def get_raw(element):
-        if get_sections is None:
+        if sections is None:
             subroot = element
         else:
-            subroots = get_sections(element)
+            subroots = sections(element)
             if len(subroots) == 0:
                 return _EMPTY
             if len(subroots) > 1:
