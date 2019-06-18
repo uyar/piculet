@@ -307,12 +307,12 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
     :param foreach: XPath expression for selecting multiple elements to extract data from.
     :return: Function to apply to an element to extract the data.
     """
-    path_ = make_xpather(path)
-    reduce_ = reducers.concat if reduce is None else reduce
+    xpath = make_xpather(path)
+    reduce = reducers.concat if reduce is None else reduce
 
     def raw(element):
-        selected = path_(element)
-        return reduce_(selected) if len(selected) > 0 else _EMPTY
+        selected = xpath(element)
+        return reduce(selected) if len(selected) > 0 else _EMPTY
 
     return _make_extractor(raw, transform=transform, foreach=foreach)
 
@@ -328,18 +328,18 @@ def make_items_extractor(items, section=None, transform=None, foreach=None):
             Optional[str]
         ) -> Extractor
     :param items: Functions for generating the items from the element.
-    :param section: XPath expression for selecting the root elements of sections.
+    :param section: XPath expression for selecting the root element for queries.
     :param transform: Function for transforming the extracted data items.
     :param foreach: XPath expression for selecting multiple elements to extract data from.
     :return: Function to apply to an element to extract the data.
     """
-    section_ = make_xpather(section) if section is not None else None
+    sections = make_xpather(section) if section is not None else None
 
     def raw(element):
-        if section_ is None:
+        if sections is None:
             subroot = element
         else:
-            subroots = section_(element)
+            subroots = sections(element)
             if len(subroots) == 0:
                 return _EMPTY
             if len(subroots) > 1:
@@ -364,11 +364,11 @@ def make_item_maker(key, value, *, foreach=None):
     :param foreach: XPath expression for generating multiple data items.
     :return: Generated rule.
     """
-    foreach_ = make_xpather(foreach) if foreach is not None else None
+    iterate = make_xpather(foreach) if foreach is not None else None
 
     def apply(element):
         data = {}
-        subroots = [element] if foreach_ is None else foreach_(element)
+        subroots = [element] if iterate is None else iterate(element)
         for subroot in subroots:
             key_ = key if isinstance(key, str) else key(subroot)
             if key_ is _EMPTY:
