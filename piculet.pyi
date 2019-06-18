@@ -10,7 +10,6 @@ from typing import (
     Mapping,
     Optional,
     Sequence,
-    Set,
     Union,
 )
 
@@ -33,20 +32,17 @@ transformers = ...  # type: SimpleNamespace
 
 class HTMLNormalizer(HTMLParser):
     VOID_ELEMENTS = ...  # type: ClassVar[FrozenSet[str]]
-    omit_tags = ...  # type: Set[str]
-    omit_attrs = ...  # type: Set[str]
+    omit_tags = ...  # type: FrozenSet[str]
+    omit_attrs = ...  # type: FrozenSet[str]
     def __init__(
-        self,
-        *,
-        omit_tags: Optional[Iterable[str]] = ...,
-        omit_attrs: Optional[Iterable[str]] = ...,
+        self, *, omit_tags: Iterable[str] = ..., omit_attrs: Iterable[str] = ...
     ) -> None: ...
 
 def html_to_xhtml(
     document: str,
     *,
-    omit_tags: Optional[Iterable[str]] = ...,
-    omit_attrs: Optional[Iterable[str]] = ...,
+    omit_tags: Iterable[str] = ...,
+    omit_attrs: Iterable[str] = ...,
 ) -> str: ...
 def make_xpather(
     path: str

@@ -84,17 +84,17 @@ class HTMLNormalizer(HTMLParser):
     )
     """Tags to handle as self-closing."""
 
-    def __init__(self, *, omit_tags=None, omit_attrs=None):
+    def __init__(self, *, omit_tags=(), omit_attrs=()):
         """Initialize this normalizer.
 
-        :sig: (Optional[Iterable[str]], Optional[Iterable[str]]) -> None
+        :sig: (Iterable[str], Iterable[str]) -> None
         :param omit_tags: Tags to remove.
         :param omit_attrs: Attributes to remove.
         """
         super().__init__(convert_charrefs=True)
 
-        self.omit_tags = set(omit_tags) if omit_tags is not None else set()  # sig: Set[str]
-        self.omit_attrs = set(omit_attrs) if omit_attrs is not None else set()  # sig: Set[str]
+        self.omit_tags = frozenset(omit_tags)  # sig: FrozenSet[str]
+        self.omit_attrs = frozenset(omit_attrs)  # sig: FrozenSet[str]
 
         # stacks used during normalization
         self._open_tags = deque()
@@ -177,10 +177,10 @@ class HTMLNormalizer(HTMLParser):
     #         print('</%(tag)s>' % {'tag': tag}, end='')
 
 
-def html_to_xhtml(document, *, omit_tags=None, omit_attrs=None):
+def html_to_xhtml(document, *, omit_tags=(), omit_attrs=()):
     """Convert an HTML document to XHTML.
 
-    :sig: (str, Optional[Iterable[str]], Optional[Iterable[str]]) -> str
+    :sig: (str, Iterable[str], Iterable[str]) -> str
     :param document: HTML document to convert.
     :param omit_tags: Tags to exclude from the output.
     :param omit_attrs: Attributes to exclude from the output.
