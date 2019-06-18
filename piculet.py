@@ -303,9 +303,13 @@ def make_extractor(raw, transform=None, foreach=None):
 def make_path_extractor(path, reduce=None, transform=None, foreach=None):
     """Create an extractor that can get data from an element using XPath.
 
-    :sig: (
-        str, Optional[Reducer], Optional[PathTransformer], Optional[str]
-    ) -> Extractor
+    :sig:
+        (
+            str,
+            Optional[Reducer],
+            Optional[PathTransformer],
+            Optional[str]
+        ) -> Extractor
     :param path: XPath expression to apply.
     :param reduce: Function for reducing selected strings into a single string.
     :param transform: Function for transforming the raw data.
@@ -325,12 +329,13 @@ def make_path_extractor(path, reduce=None, transform=None, foreach=None):
 def make_items_extractor(items, section=None, transform=None, foreach=None):
     """Create an extractor that can get multiple data from an element.
 
-    :sig: (
-        Sequence[ItemMaker],
-        Optional[str],
-        Optional[MapTransformer],
-        Optional[str]
-    ) -> Extractor
+    :sig:
+        (
+            Sequence[ItemMaker],
+            Optional[str],
+            Optional[MapTransformer],
+            Optional[str]
+        ) -> Extractor
     :param items: Functions for generating the items from elements.
     :param section: XPath expression for setting the root of a section.
     :param transform: Function for transforming the raw data items.
