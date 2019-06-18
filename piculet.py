@@ -262,8 +262,8 @@ make_xpather = lru_cache(maxsize=None)(make_xpather)
 
 
 _EMPTY_VAL = object()
-_EMPTY_MAP = {}
-_EMPTY_SEQ = []
+_EMPTY_MAP = dict()
+_EMPTY_SEQ = tuple()
 
 
 # sigalias: Extractor = Callable[[Element], Any]
