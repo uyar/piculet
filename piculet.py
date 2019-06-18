@@ -198,7 +198,7 @@ def html_to_xhtml(document, *, omit_tags=None, omit_attrs=None):
 ###########################################################
 
 
-LXML_AVAILABLE = find_loader("lxml") is not None  # sig: bool
+LXML_AVAILABLE = find_loader("lxml") is not None
 if LXML_AVAILABLE:
     from lxml import etree as ElementTree
     from lxml.etree import Element
@@ -627,7 +627,7 @@ def scrape(document, spec, *, lxml_html=False):
 ###########################################################
 
 
-YAML_AVAILABLE = find_loader("strictyaml") is not None  # sig: bool
+YAML_AVAILABLE = find_loader("strictyaml") is not None
 
 
 def load_spec(filepath):

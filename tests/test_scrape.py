@@ -1,6 +1,11 @@
 import pytest
 
-from piculet import LXML_AVAILABLE, reducers, scrape, transformers
+from pkgutil import find_loader
+
+from piculet import reducers, scrape, transformers
+
+
+LXML_AVAILABLE = find_loader("lxml") is not None
 
 
 def test_no_rules_should_return_empty_result(shining_content):

@@ -26,11 +26,9 @@ Transformer = Union[StrTransformer, MapTransformer]
 ItemMaker = Callable[[Element], Mapping]
 
 __version__ = ...  # type: str
-LXML_AVAILABLE = ...  # type: bool
 preprocessors = ...  # type: SimpleNamespace
 reducers = ...  # type: SimpleNamespace
 transformers = ...  # type: SimpleNamespace
-YAML_AVAILABLE = ...  # type: bool
 
 
 class HTMLNormalizer(HTMLParser):

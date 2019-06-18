@@ -7,8 +7,12 @@ from tempfile import gettempdir
 
 from pathstring import Path
 from pkg_resources import get_distribution
+from pkgutil import find_loader
 
 import piculet
+
+
+YAML_AVAILABLE = find_loader("strictyaml") is not None
 
 
 movie_spec = Path(__file__).parent.parent.joinpath("examples", "movie.json")
@@ -64,7 +68,7 @@ def test_scrape_should_print_data_extracted_from_stdin(capsys, shining_content):
     assert data["title"] == "The Shining"
 
 
-@pytest.mark.skipif(not piculet.YAML_AVAILABLE, reason="requires YAML support")
+@pytest.mark.skipif(not YAML_AVAILABLE, reason="requires YAML support")
 def test_scrape_should_work_with_yaml_spec(capsys, shining_content):
     with mock.patch("sys.stdin", StringIO(shining_content)):
         piculet.main(argv=["piculet", "-s", movie_spec.with_suffix(".yaml")])
@@ -73,7 +77,7 @@ def test_scrape_should_work_with_yaml_spec(capsys, shining_content):
     assert data["title"] == "The Shining"
 
 
-@pytest.mark.skipif(piculet.YAML_AVAILABLE, reason="wants exception if no YAML support")
+@pytest.mark.skipif(YAML_AVAILABLE, reason="wants exception if no YAML support")
 def test_scrape_should_fail_with_yaml_spec_if_no_yaml_support(capsys):
     with pytest.raises(SystemExit):
         with mock.patch("sys.stdin", StringIO("")):
