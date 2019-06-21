@@ -200,12 +200,11 @@ def html_to_xhtml(document, *, omit_tags=(), omit_attrs=()):
 ###########################################################
 
 
-# sigalias: XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
+# sigalias: XPather = Callable[[ElementTree.Element], Union[Sequence[str], Sequence[ElementTree.Element]]]
 
 
 if find_loader("lxml") is not None:
-    from lxml import etree as ElementTree
-    from lxml.etree import Element
+    from lxml import etree
     from lxml.etree import XPath as make_xpather
 
     def build_tree(document, *, lxml_html=False):
@@ -213,19 +212,18 @@ if find_loader("lxml") is not None:
             import lxml.html
 
             return lxml.html.fromstring(document)
-        return ElementTree.fromstring(document)
+        return etree.fromstring(document)
 
-    get_parent = ElementTree._Element.getparent
+    get_parent = etree._Element.getparent
 
 
 else:
     from xml.etree import ElementTree
-    from xml.etree.ElementTree import Element
 
     def build_tree(document, *, lxml_html=False):
         """Build a tree from an XML document.
 
-        :sig: (str, bool) -> Element
+        :sig: (str, bool) -> ElementTree.Element
         :param document: XML document to build the tree from.
         :param lxml_html: Whether to use the lxml.html builder.
         :return: Root element of the XML tree.
@@ -238,6 +236,7 @@ else:
         # ElementTree doesn't support parent queries, so we'll build a map for it
         parents = {e: p for p in root.iter() for e in p}
         root.set("__parents__", parents)
+        root.set("__root__", root)
         for element in parents:
             element.set("__root__", root)
 
@@ -246,7 +245,7 @@ else:
     def get_parent(element):
         """Get the parent node of an element.
 
-        :sig: (Element) -> Element
+        :sig: (ElementTree.Element) -> ElementTree.Element
         :param element: Element for which to find the parent.
         :return: Parent of element.
         """
@@ -255,34 +254,46 @@ else:
     def make_xpather(path):
         """Get an XPath evaluator that can be applied to an element.
 
-        This is mainly needed to compensate for the lack of ``text()``
-        and ``@attr`` axis queries in ElementTree XPath support.
+        This is needed to compensate for the lack of some features
+        in ElementTree XPath support.
 
         :sig: (str) -> XPather
         :param path: XPath expression to apply.
         :return: Evaluator that applies the expression to an element.
         """
+        preps = []
         if path[0] == "/":
             # ElementTree doesn't support absolute paths
-            # TODO: handle this properly, find root of tree
-            path = "." + path
+            preps.append(lambda e, p: (e.get("__root__"), "." + p))
+
+        def prep(e, p):
+            for func in preps:
+                e, p = func(e, p)
+            return e, p
 
         def descendant_text(element):
+            element_, path_ = prep(element, path)
             # strip trailing '//text()'
-            return [t for e in element.findall(path[:-8]) for t in e.itertext() if t]
+            return [t for e in element_.findall(path_[:-8]) for t in e.itertext() if t]
 
         def child_text(element):
+            element_, path_ = prep(element, path)
             # strip trailing '/text()'
             return [
                 t
-                for e in element.findall(path[:-7])
+                for e in element_.findall(path_[:-7])
                 for t in ([e.text] + [c.tail if c.tail else "" for c in e])
                 if t
             ]
 
         def attribute(element, subpath, attr):
-            result = [e.get(attr) for e in element.findall(subpath)]
+            element_, subpath_ = prep(element, subpath)
+            result = [e.get(attr) for e in element_.findall(subpath_)]
             return [r for r in result if r is not None]
+
+        def regular(element):
+            element_, path_ = prep(element, path)
+            return element_.findall(path_)
 
         if path.endswith("//text()"):
             apply = descendant_text
@@ -293,7 +304,7 @@ else:
             if last.startswith("@"):
                 apply = partial(attribute, subpath="/".join(front), attr=last[1:])
             else:
-                apply = partial(Element.findall, path=path)
+                apply = regular
 
         return apply
 
@@ -311,14 +322,14 @@ _EMPTY = {}
 
 # sigalias: Reducer = Callable[[Sequence[str]], str]
 
-# sigalias: StrExtractor = Callable[[Element], str]
-# sigalias: MapExtractor = Callable[[Element], Mapping]
+# sigalias: StrExtractor = Callable[[ElementTree.Element], str]
+# sigalias: MapExtractor = Callable[[ElementTree.Element], Mapping]
 
 # sigalias: StrTransformer = Callable[[str], Any]
 # sigalias: MapTransformer = Callable[[Mapping], Any]
 # sigalias: Transformer = Union[StrTransformer, MapTransformer]
 
-# sigalias: Extractor = Callable[[Element], Any]
+# sigalias: Extractor = Callable[[ElementTree.Element], Any]
 
 
 def _make_extractor(raw, transform=None, foreach=None):
@@ -440,7 +451,7 @@ def make_rule(key, value, *, foreach=None):
 def preprocess_remove(root, *, path):
     """Remove selected elements from the tree.
 
-    :sig: (Element, str) -> None
+    :sig: (ElementTree.Element, str) -> None
     :param root: Root element of the tree.
     :param path: XPath expression to select the elements to remove.
     """
@@ -454,7 +465,13 @@ def preprocess_remove(root, *, path):
 def preprocess_set_attr(root, *, path, name, value):
     """Set an attribute for selected elements.
 
-    :sig: (Element, str, Union[str, StrExtractor], Union[str, StrExtractor]) -> None
+    :sig:
+        (
+            ElementTree.Element,
+            str,
+            Union[str, StrExtractor],
+            Union[str, StrExtractor]
+        ) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to set attributes for.
     :param name: Name of attribute to set.
@@ -476,7 +493,7 @@ def preprocess_set_attr(root, *, path, name, value):
 def preprocess_set_text(root, *, path, text):
     """Set the text for selected elements.
 
-    :sig: (Element, str, Union[str, StrExtractor]) -> None
+    :sig: (ElementTree.Element, str, Union[str, StrExtractor]) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to set attributes for.
     :param text: Value of text to set.

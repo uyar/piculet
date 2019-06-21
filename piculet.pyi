@@ -15,16 +15,16 @@ from typing import (
 
 from html.parser import HTMLParser
 from types import SimpleNamespace
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
-XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
+XPather = Callable[[ElementTree.Element], Union[Sequence[str], Sequence[ElementTree.Element]]]
 Reducer = Callable[[Sequence[str]], str]
-StrExtractor = Callable[[Element], str]
-MapExtractor = Callable[[Element], Mapping]
+StrExtractor = Callable[[ElementTree.Element], str]
+MapExtractor = Callable[[ElementTree.Element], Mapping]
 StrTransformer = Callable[[str], Any]
 MapTransformer = Callable[[Mapping], Any]
 Transformer = Union[StrTransformer, MapTransformer]
-Extractor = Callable[[Element], Any]
+Extractor = Callable[[ElementTree.Element], Any]
 
 __version__ = ...  # type: str
 preprocessors = ...  # type: SimpleNamespace
@@ -46,8 +46,10 @@ def html_to_xhtml(
     omit_tags: Iterable[str] = ...,
     omit_attrs: Iterable[str] = ...,
 ) -> str: ...
-def build_tree(document: str, *, lxml_html: bool = ...) -> Element: ...
-def get_parent(element: Element) -> Element: ...
+def build_tree(
+    document: str, *, lxml_html: bool = ...
+) -> ElementTree.Element: ...
+def get_parent(element: ElementTree.Element) -> ElementTree.Element: ...
 def make_xpather(path: str) -> XPather: ...
 def make_path(
     path: str,
@@ -67,16 +69,16 @@ def make_rule(
     *,
     foreach: Optional[str] = ...,
 ) -> MapExtractor: ...
-def preprocess_remove(root: Element, *, path: str) -> None: ...
+def preprocess_remove(root: ElementTree.Element, *, path: str) -> None: ...
 def preprocess_set_attr(
-    root: Element,
+    root: ElementTree.Element,
     *,
     path: str,
     name: Union[str, StrExtractor],
     value: Union[str, StrExtractor],
 ) -> None: ...
 def preprocess_set_text(
-    root: Element, *, path: str, text: Union[str, StrExtractor]
+    root: ElementTree.Element, *, path: str, text: Union[str, StrExtractor]
 ) -> None: ...
 def scrape(
     document: str, spec: Mapping, *, lxml_html: bool = ...

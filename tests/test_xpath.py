@@ -26,6 +26,12 @@ def test_attr_queries_should_return_strings():
     assert selected == ["v"]
 
 
-def test_non_absolute_queries_should_be_ok():
+def test_absolute_queries_should_be_ok():
     selected = XPath("//t1")(root)
+    assert [s.tag for s in selected] == ["t1", "t1"]
+
+
+def test_absolute_queries_on_subelements_should_be_ok():
+    element = XPath("//t2")(root)[0]
+    selected = XPath("//t1")(element)
     assert [s.tag for s in selected] == ["t1", "t1"]
