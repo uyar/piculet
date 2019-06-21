@@ -203,8 +203,7 @@ def html_to_xhtml(document, *, omit_tags=(), omit_attrs=()):
 # sigalias: XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
 
 
-LXML_AVAILABLE = find_loader("lxml") is not None
-if LXML_AVAILABLE:
+if find_loader("lxml") is not None:
     from lxml import etree as ElementTree
     from lxml.etree import Element
     from lxml.etree import XPath as make_xpather
@@ -215,6 +214,8 @@ if LXML_AVAILABLE:
 
             return lxml.html.fromstring(document)
         return ElementTree.fromstring(document)
+
+    get_parent = ElementTree._Element.getparent
 
 
 else:
@@ -231,7 +232,25 @@ else:
         """
         if lxml_html:
             raise RuntimeError("LXML not available")
-        return ElementTree.fromstring(document)
+
+        root = ElementTree.fromstring(document)
+
+        # ElementTree doesn't support parent queries, so we'll build a map for it
+        parents = {e: p for p in root.iter() for e in p}
+        root.set("__parents__", parents)
+        for element in parents:
+            element.set("__root__", root)
+
+        return root
+
+    def get_parent(element):
+        """Get the parent node of an element.
+
+        :sig: (Element) -> Element
+        :param element: Element for which to find the parent.
+        :return: Parent of element.
+        """
+        return element.get("__root__").get("__parents__").get(element)
 
     def make_xpather(path):
         """Get an XPath evaluator that can be applied to an element.
@@ -425,14 +444,6 @@ def preprocess_remove(root, *, path):
     :param root: Root element of the tree.
     :param path: XPath expression to select the elements to remove.
     """
-    if LXML_AVAILABLE:
-        get_parent = ElementTree._Element.getparent
-    else:
-        # ElementTree doesn't support parent queries, so we'll build a map for it
-        get_parent = root.get("_get_parent")
-        if get_parent is None:
-            get_parent = {e: p for p in root.iter() for e in p}.get
-            root.set("_get_parent", get_parent)
     elements = make_xpather(path)(root)
     if len(elements) > 0:
         for element in elements:
