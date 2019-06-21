@@ -282,28 +282,24 @@ else:
             return e
 
         def descendant_text(element):
-            element_ = prep(element)
             # strip trailing '//text()'
-            return [t for e in element_.findall(path[:-8]) for t in e.itertext() if t]
+            return [t for e in prep(element).findall(path[:-8]) for t in e.itertext() if t]
 
         def child_text(element):
-            element_ = prep(element)
             # strip trailing '/text()'
             return [
                 t
-                for e in element_.findall(path[:-7])
+                for e in prep(element).findall(path[:-7])
                 for t in ([e.text] + [c.tail if c.tail else "" for c in e])
                 if t
             ]
 
         def attribute(element, subpath, attr):
-            element_ = prep(element)
-            result = [e.get(attr) for e in element_.findall(subpath)]
+            result = [e.get(attr) for e in prep(element).findall(subpath)]
             return [r for r in result if r is not None]
 
         def regular(element):
-            element_ = prep(element)
-            return element_.findall(path)
+            return prep(element).findall(path)
 
         if path.endswith("//text()"):
             apply = descendant_text
