@@ -606,6 +606,27 @@ def _make_preprocessor_from_desc(desc):
     return preprocessor(path=desc["path"], **args)
 
 
+def load_spec(filepath):
+    """Load an extraction specification from a file.
+
+    :sig: (str) -> Mapping
+    :param filepath: Path of specification file.
+    :return: Loaded specification.
+    """
+    path = Path(filepath)
+    if path.suffix in {".yaml", ".yml"}:
+        if find_loader("strictyaml") is None:
+            raise RuntimeError("YAML support not available")
+        import strictyaml
+
+        spec_loader = lambda s: strictyaml.load(s).data
+    else:
+        spec_loader = json.loads
+
+    spec_content = path.read_text(encoding="utf-8")
+    return spec_loader(spec_content)
+
+
 def parse_spec(spec):
     """Parse a specification.
 
@@ -650,27 +671,6 @@ def scrape(document, spec, *, lxml_html=False):
 ###########################################################
 # COMMAND-LINE INTERFACE
 ###########################################################
-
-
-def load_spec(filepath):
-    """Load an extraction specification from a file.
-
-    :sig: (str) -> Mapping
-    :param filepath: Path of specification file.
-    :return: Loaded specification.
-    """
-    path = Path(filepath)
-    if path.suffix in {".yaml", ".yml"}:
-        if find_loader("strictyaml") is None:
-            raise RuntimeError("YAML support not available")
-        import strictyaml
-
-        spec_loader = lambda s: strictyaml.load(s).data
-    else:
-        spec_loader = json.loads
-
-    spec_content = path.read_text(encoding="utf-8")
-    return spec_loader(spec_content)
 
 
 def main(argv=None):
