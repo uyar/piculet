@@ -18,7 +18,8 @@ from html.parser import HTMLParser
 from types import SimpleNamespace
 from xml.etree import ElementTree
 
-XPather = Callable[[ElementTree.Element], Union[Sequence[str], Sequence[ElementTree.Element]]]
+XPathResult = Union[Sequence[str], Sequence[ElementTree.Element]]
+XPather = Callable[[ElementTree.Element], XPathResult]
 Reducer = Callable[[Sequence[str]], str]
 StrExtractor = Callable[[ElementTree.Element], str]
 MapExtractor = Callable[[ElementTree.Element], Mapping]

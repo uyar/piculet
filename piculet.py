@@ -201,7 +201,8 @@ def html_to_xhtml(document, *, omit_tags=(), omit_attrs=()):
 ###########################################################
 
 
-# sigalias: XPather = Callable[[ElementTree.Element], Union[Sequence[str], Sequence[ElementTree.Element]]]
+# sigalias: XPathResult = Union[Sequence[str], Sequence[ElementTree.Element]]
+# sigalias: XPather = Callable[[ElementTree.Element], XPathResult]
 
 
 if find_loader("lxml") is not None:
@@ -209,6 +210,7 @@ if find_loader("lxml") is not None:
     from lxml.etree import XPath as make_xpather
 
     def build_tree(document, *, lxml_html=False):
+        """Build a tree from an XML document."""
         if lxml_html:
             import lxml.html
 
