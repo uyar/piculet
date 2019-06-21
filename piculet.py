@@ -454,6 +454,9 @@ def make_rule(key, value, *, foreach=None):
 ###########################################################
 
 
+# sigalias: Preprocessor = Callable[[ElementTree.Element], None]
+
+
 def preprocess_remove(root, *, path):
     """Remove selected elements from the tree.
 
@@ -549,7 +552,7 @@ transformers = SimpleNamespace(  # sig: SimpleNamespace
 
 
 ###########################################################
-# SPECIFICATION DESCRIPTION OPERATIONS
+# SPECIFICATION OPERATIONS
 ###########################################################
 
 
@@ -603,6 +606,25 @@ def _make_preprocessor_from_desc(desc):
     return preprocessor(path=desc["path"], **args)
 
 
+def parse_spec(spec):
+    """Parse a specification.
+
+    :sig: (Mapping) -> Tuple[Sequence[Preprocessor], Extractor]
+    :param spec: Specification to parse.
+    :return: Preprocessor functions and data extractor function.
+    """
+    pre = spec.get("pre")
+    parsed_pre = [_make_preprocessor_from_desc(p) for p in pre] if pre is not None else []
+
+    items = spec.get("items", [])
+    section = spec.get("section")
+    parsed_items = make_items(
+        rules=[_make_rule_from_desc(item) for item in items], section=section
+    )
+
+    return parsed_pre, parsed_items
+
+
 ###########################################################
 # MAIN API
 ###########################################################
@@ -617,19 +639,11 @@ def scrape(document, spec, *, lxml_html=False):
     :param lxml_html: Whether to use the lxml.html builder.
     :return: Extracted data.
     """
+    pre, rules = parse_spec(spec)
     root = build_tree(document, lxml_html=lxml_html)
-
-    pre = spec.get("pre")
-    if pre is not None:
-        steps = [_make_preprocessor_from_desc(step) for step in pre]
-        for preprocess in steps:
-            preprocess(root)
-
-    items = spec.get("items", [])
-    section = spec.get("section")
-    rules = make_items(rules=[_make_rule_from_desc(item) for item in items], section=section)
+    for preprocess in pre:
+        preprocess(root)
     data = rules(root)
-
     return data
 
 

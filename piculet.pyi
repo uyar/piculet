@@ -10,6 +10,7 @@ from typing import (
     Mapping,
     Optional,
     Sequence,
+    Tuple,
     Union,
 )
 
@@ -25,6 +26,7 @@ StrTransformer = Callable[[str], Any]
 MapTransformer = Callable[[Mapping], Any]
 Transformer = Union[StrTransformer, MapTransformer]
 Extractor = Callable[[ElementTree.Element], Any]
+Preprocessor = Callable[[ElementTree.Element], None]
 
 __version__ = ...  # type: str
 preprocessors = ...  # type: SimpleNamespace
@@ -80,6 +82,7 @@ def preprocess_set_attr(
 def preprocess_set_text(
     root: ElementTree.Element, *, path: str, text: Union[str, StrExtractor]
 ) -> None: ...
+def parse_spec(spec: Mapping) -> Tuple[Sequence[Preprocessor], Extractor]: ...
 def scrape(
     document: str, spec: Mapping, *, lxml_html: bool = ...
 ) -> Mapping: ...
