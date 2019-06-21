@@ -418,7 +418,7 @@ def make_rule(key, value, *, foreach=None):
 ###########################################################
 
 
-def remove_elements(root, *, path):
+def preprocess_remove(root, *, path):
     """Remove selected elements from the tree.
 
     :sig: (Element, str) -> None
@@ -440,7 +440,7 @@ def remove_elements(root, *, path):
             get_parent(element).remove(element)
 
 
-def set_element_attr(root, *, path, name, value):
+def preprocess_set_attr(root, *, path, name, value):
     """Set an attribute for selected elements.
 
     :sig: (Element, str, Union[str, StrExtractor], Union[str, StrExtractor]) -> None
@@ -462,7 +462,7 @@ def set_element_attr(root, *, path, name, value):
         element.set(name_, value_)
 
 
-def set_element_text(root, *, path, text):
+def preprocess_set_text(root, *, path, text):
     """Set the text for selected elements.
 
     :sig: (Element, str, Union[str, StrExtractor]) -> None
@@ -483,9 +483,9 @@ def set_element_text(root, *, path, text):
 
 
 preprocessors = SimpleNamespace(  # sig: SimpleNamespace
-    remove=lambda **kwargs: partial(remove_elements, **kwargs),
-    set_attr=lambda **kwargs: partial(set_element_attr, **kwargs),
-    set_text=lambda **kwargs: partial(set_element_text, **kwargs),
+    remove=lambda **kwargs: partial(preprocess_remove, **kwargs),
+    set_attr=lambda **kwargs: partial(preprocess_set_attr, **kwargs),
+    set_text=lambda **kwargs: partial(preprocess_set_text, **kwargs),
 )
 """Predefined preprocessors."""
 

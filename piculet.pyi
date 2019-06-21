@@ -66,15 +66,15 @@ def make_rule(
     *,
     foreach: Optional[str] = ...,
 ) -> MapExtractor: ...
-def remove_elements(root: Element, *, path: str) -> None: ...
-def set_element_attr(
+def preprocess_remove(root: Element, *, path: str) -> None: ...
+def preprocess_set_attr(
     root: Element,
     *,
     path: str,
     name: Union[str, StrExtractor],
     value: Union[str, StrExtractor],
 ) -> None: ...
-def set_element_text(
+def preprocess_set_text(
     root: Element, *, path: str, text: Union[str, StrExtractor]
 ) -> None: ...
 def scrape(
