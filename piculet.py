@@ -35,6 +35,7 @@ from functools import lru_cache, partial
 from html import escape as html_escape
 from html.parser import HTMLParser
 from io import StringIO
+from itertools import dropwhile
 from operator import itemgetter
 from pathlib import Path
 from pkgutil import find_loader
@@ -264,36 +265,45 @@ else:
         preps = []
         if path[0] == "/":
             # ElementTree doesn't support absolute paths
-            preps.append(lambda e, p: (e.get("__root__"), "." + p))
+            preps.append(lambda e: e.get("__root__"))
+            path = "." + path
 
-        def prep(e, p):
+        # ElementTree doesn't support paths starting with a parent
+        if path.startswith(".."):
+            path_steps = path.split("/")
+            down_steps = list(dropwhile(lambda x: x == "..", path_steps))
+            for _ in range(len(path_steps) - len(down_steps)):
+                preps.append(get_parent)
+            path = "./" + "/".join(down_steps)
+
+        def prep(e):
             for func in preps:
-                e, p = func(e, p)
-            return e, p
+                e = func(e)
+            return e
 
         def descendant_text(element):
-            element_, path_ = prep(element, path)
+            element_ = prep(element)
             # strip trailing '//text()'
-            return [t for e in element_.findall(path_[:-8]) for t in e.itertext() if t]
+            return [t for e in element_.findall(path[:-8]) for t in e.itertext() if t]
 
         def child_text(element):
-            element_, path_ = prep(element, path)
+            element_ = prep(element)
             # strip trailing '/text()'
             return [
                 t
-                for e in element_.findall(path_[:-7])
+                for e in element_.findall(path[:-7])
                 for t in ([e.text] + [c.tail if c.tail else "" for c in e])
                 if t
             ]
 
         def attribute(element, subpath, attr):
-            element_, subpath_ = prep(element, subpath)
-            result = [e.get(attr) for e in element_.findall(subpath_)]
+            element_ = prep(element)
+            result = [e.get(attr) for e in element_.findall(subpath)]
             return [r for r in result if r is not None]
 
         def regular(element):
-            element_, path_ = prep(element, path)
-            return element_.findall(path_)
+            element_ = prep(element)
+            return element_.findall(path)
 
         if path.endswith("//text()"):
             apply = descendant_text
