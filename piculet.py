@@ -290,12 +290,16 @@ make_xpather = lru_cache(maxsize=None)(make_xpather)
 _EMPTY = {}
 
 
-# sigalias: Extractor = Callable[[Element], Any]
 # sigalias: Reducer = Callable[[Sequence[str]], str]
+
+# sigalias: StrExtractor = Callable[[Element], str]
+# sigalias: MapExtractor = Callable[[Element], Mapping]
+
 # sigalias: StrTransformer = Callable[[str], Any]
 # sigalias: MapTransformer = Callable[[Mapping], Any]
 # sigalias: Transformer = Union[StrTransformer, MapTransformer]
-# sigalias: Rule = Callable[[Element], Mapping]
+
+# sigalias: Extractor = Callable[[Element], Any]
 
 
 def _make_extractor(raw, transform=None, foreach=None):
@@ -348,7 +352,7 @@ def make_items(rules, section=None, transform=None, foreach=None):
 
     :sig:
         (
-            Sequence[Rule],
+            Sequence[MapExtractor],
             Optional[str],
             Optional[MapTransformer],
             Optional[str]
@@ -384,12 +388,7 @@ def make_items(rules, section=None, transform=None, foreach=None):
 def make_rule(key, value, *, foreach=None):
     """Create a data generator that can be applied to an element.
 
-    :sig:
-        (
-            Union[str, Callable[[Element], str]],
-            Extractor,
-            Optional[str]
-        ) -> Rule
+    :sig: (Union[str, StrExtractor], Extractor, Optional[str]) -> MapExtractor
     :param key: Name to distinguish the data.
     :param value: Extractor that will generate the data.
     :param foreach: XPath expression for generating multiple data items.
@@ -444,7 +443,7 @@ def remove_elements(root, *, path):
 def set_element_attr(root, *, path, name, value):
     """Set an attribute for selected elements.
 
-    :sig: (Element, str, Union[str, Extractor], Union[str, Extractor]) -> None
+    :sig: (Element, str, Union[str, StrExtractor], Union[str, StrExtractor]) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to set attributes for.
     :param name: Name of attribute to set.
@@ -466,7 +465,7 @@ def set_element_attr(root, *, path, name, value):
 def set_element_text(root, *, path, text):
     """Set the text for selected elements.
 
-    :sig: (Element, str, Union[str, Extractor]) -> None
+    :sig: (Element, str, Union[str, StrExtractor]) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to set attributes for.
     :param text: Value of text to set.

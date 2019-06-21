@@ -18,12 +18,13 @@ from types import SimpleNamespace
 from xml.etree.ElementTree import Element
 
 XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
-Extractor = Callable[[Element], Any]
 Reducer = Callable[[Sequence[str]], str]
+StrExtractor = Callable[[Element], str]
+MapExtractor = Callable[[Element], Mapping]
 StrTransformer = Callable[[str], Any]
 MapTransformer = Callable[[Mapping], Any]
 Transformer = Union[StrTransformer, MapTransformer]
-Rule = Callable[[Element], Mapping]
+Extractor = Callable[[Element], Any]
 
 __version__ = ...  # type: str
 preprocessors = ...  # type: SimpleNamespace
@@ -54,27 +55,27 @@ def make_path(
     foreach: Optional[str] = ...,
 ) -> Extractor: ...
 def make_items(
-    rules: Sequence[Rule],
+    rules: Sequence[MapExtractor],
     section: Optional[str] = ...,
     transform: Optional[MapTransformer] = ...,
     foreach: Optional[str] = ...,
 ) -> Extractor: ...
 def make_rule(
-    key: Union[str, Callable[[Element], str]],
+    key: Union[str, StrExtractor],
     value: Extractor,
     *,
     foreach: Optional[str] = ...,
-) -> Rule: ...
+) -> MapExtractor: ...
 def remove_elements(root: Element, *, path: str) -> None: ...
 def set_element_attr(
     root: Element,
     *,
     path: str,
-    name: Union[str, Extractor],
-    value: Union[str, Extractor],
+    name: Union[str, StrExtractor],
+    value: Union[str, StrExtractor],
 ) -> None: ...
 def set_element_text(
-    root: Element, *, path: str, text: Union[str, Extractor]
+    root: Element, *, path: str, text: Union[str, StrExtractor]
 ) -> None: ...
 def scrape(
     document: str, spec: Mapping, *, lxml_html: bool = ...
