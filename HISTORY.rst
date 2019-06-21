@@ -5,6 +5,8 @@ History
 ------------------
 
 - Drop support for Python 2 and 3.4.
+- Add support for absolute XPath queries.
+- Add support for XPath queries that start with a parent axis.
 - Cache compiled XPath expressions.
 - Remove HTML charset detection.
 - Command line operations now read only from stdin.
