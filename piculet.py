@@ -122,6 +122,9 @@ class HTMLNormalizer(HTMLParser):
                 if attr_name in self.omit_attrs:
                     # omit attribute
                     continue
+                if (not attr_name[0].isalpha()) or ('"' in attr_name):
+                    # malformed attribute name, ignore
+                    continue
                 if attr_value is None:
                     # add empty value for attribute
                     attr_value = ""
