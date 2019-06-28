@@ -1,4 +1,4 @@
-|pypi| |license| |azure|
+|pypi| |license| |azure| |codecov|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/piculet.svg?style=flat-square
     :target: https://pypi.org/project/piculet/
@@ -11,6 +11,9 @@
 .. |azure| image:: https://dev.azure.com/tekir/piculet/_apis/build/status/uyar.piculet?branchName=master
     :target: https://dev.azure.com/tekir/piculet/_build
     :alt: Azure Pipelines build status.
+
+.. |codecov| image:: https://codecov.io/gh/uyar/piculet/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/uyar/piculet
 
 Piculet is a module for extracting data from XML or HTML documents
 using XPath queries.

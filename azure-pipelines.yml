@@ -72,3 +72,30 @@ jobs:
 
   - script: tox -e style
     displayName: 'Run flake8'
+
+- job: codecov
+  strategy:
+    matrix:
+      linux-py36:
+        imageName: 'ubuntu-latest'
+        python.version: '3.6'
+
+  pool:
+    vmImage: $(imageName)
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+    displayName: 'Use Python $(python.version)'
+
+  - script: |
+      python -m pip install --upgrade poetry
+    displayName: 'Install poetry'
+
+  - script: |
+      python -m pip install --upgrade tox
+    displayName: 'Install tox'
+
+  - script: tox -e codecov
+    displayName: 'Run codecov'

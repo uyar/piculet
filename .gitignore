@@ -11,6 +11,7 @@ __pycache__
 build
 dist
 prof
+coverage.xml
 
 .idea
 .vscode
