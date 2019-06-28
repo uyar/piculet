@@ -96,7 +96,6 @@ by invoking it with the ``--h2x`` option::
 
   $ cat foo.html | piculet --h2x
 
-
 YAML support
 ------------
 
