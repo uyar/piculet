@@ -1,8 +1,8 @@
 History
 =======
 
-2.0.0 (unreleased)
-------------------
+2.0.0a0 (2019-06-28)
+--------------------
 
 - Drop support for Python 2 and 3.4.
 - Add support for absolute XPath queries in ElementTree.
