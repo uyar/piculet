@@ -265,6 +265,27 @@ If you want to use a custom transformer, you have to register it first:
    >>> scrape(document, spec)
    {'25th_year': 2005}
 
+
+Shorthand notation
+------------------
+
+To make the specification more concise, you can write the value
+as a single string to combine path, reduce, and transform operations
+by splitting them with arrows:
+
+.. code-block:: python
+
+>>> spec = {
+...     "items": [
+...         {
+...             "key": "title",
+...             "value": "//title/text() -> first -> strip"
+...         }
+...     ]
+... }
+>>> scrape(document, spec)
+{'title': 'The Shining'}
+
 Multi-valued items
 ------------------
 
