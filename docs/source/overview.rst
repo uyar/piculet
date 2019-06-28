@@ -3,42 +3,39 @@ Overview
 
 Scraping a document consists of three stages:
 
-#. Building a DOM tree out of the document. This is a straightforward
-   operation for an XML document. For an HTML document, Piculet will first
-   try to convert it into XHTML and then build the tree from that.
+#. Building a DOM tree out of the document.
+   This is a straightforward operation for an XML document.
+   For an HTML document, Piculet will first try to convert it into XHTML,
+   and then build the tree from that.
 
-#. Preprocessing the tree. This is an optional stage. In some cases
-   it might be helpful to do some changes on the tree to simplify
-   the extraction process.
+#. Preprocessing the tree.
+   This is an optional stage.
+   In some cases it might be helpful to do some changes on the tree
+   to simplify the extraction process.
 
 #. Extracting data out of the tree.
 
-The preprocessing and extraction stages are expressed as part of a scraping
-specification. The specification is a mapping which can be stored
-in a file format that can represent a mapping, such as JSON or YAML.
+The preprocessing and extraction stages are expressed
+as part of a scraping specification.
+The specification is a mapping which can be stored in a file format
+that can represent a mapping, such as JSON or YAML.
 Details about the specification are given in later chapters.
 
-Command Line Interface
+Command-line interface
 ----------------------
 
 Installing Piculet creates a script named ``piculet`` which can be used
 to invoke the command line interface::
 
    $ piculet -h
-   usage: piculet [-h] [--debug] command ...
+   usage: piculet [-h] [--version] [--html] (-s SPEC | --h2x)
 
-The ``scrape`` command extracts data out of a document as described by
-a specification file::
-
-   $ piculet scrape -h
-   usage: piculet scrape [-h] -s SPEC [--html] document
-
-The location of the document can be given as a file path or a URL.
+The document will be read from the standard input.
 For example, say you want to extract some data from the file `shining.html`_.
 An example specification is given in `movie.json`_.
 Download both of these files and run the command::
 
-   $ piculet scrape -s movie.json shining.html
+   $ cat shining.html | piculet -s movie.json
 
 This should print the following output::
 
@@ -70,12 +67,11 @@ This should print the following output::
      "year": 1980
    }
 
-For HTML documents, the ``--html`` option has to be used. If the document
-address starts with ``http://`` or ``https://``, the content will be taken
-from the given URL. For example, to extract some data from the Wikipedia page
-for `David Bowie`_, download the `wikipedia.json`_ file and run the command::
+For HTML documents, the ``--html`` option has to be used.
+For example, to extract some data from the Wikipedia page for `David Bowie`_,
+download the `wikipedia.json`_ file and run the command::
 
-   piculet scrape -s wikipedia.json --html "https://en.wikipedia.org/wiki/David_Bowie"
+   $ curl -s "https://en.wikipedia.org/wiki/David_Bowie" | piculet -s wikipedia.json --html
 
 This should print the following output::
 
@@ -90,32 +86,16 @@ This should print the following output::
      ]
    }
 
-In the same command, change the name part of the URL to ``Merlene_Ottey`` and
-you will get similar data for `Merlene Ottey`_. Note that since the markup
-used in Wikipedia pages for persons varies, the kinds of data you get
-with this specification will also vary.
+In the same command, change the name part of the URL to ``Merlene_Ottey``
+and you will get similar data for `Merlene Ottey`_.
+Note that since the markup used in Wikipedia pages for persons varies,
+the kinds of data you get with this specification will also vary.
 
-Piculet can be used as a simplistic HTML to XHTML convertor by invoking it with
-the ``h2x`` command. This command takes the file name as input and prints
-the converted content, as in ``piculet h2x foo.html``. If the input file name
-is given as ``-`` it will read the content from the standard input
-and therefore can be used as part of a pipe:
-``cat foo.html | piculet h2x -``
+Piculet can also be used as a simplistic HTML to XHTML converter
+by invoking it with the ``--h2x`` option::
 
-Using in programs
------------------
+  $ cat foo.html | piculet --h2x
 
-The scraping operation can also be invoked programmatically using
-the :func:`scrape_document <piculet.scrape_document>` function. Note that
-this function prints its output and doesn't return anything:
-
-.. code-block:: python
-
-   from piculet import scrape_document
-
-   url = "https://en.wikipedia.org/wiki/David_Bowie"
-   spec = "wikipedia.json"
-   scrape_document(url, spec, content_format="html")
 
 YAML support
 ------------
@@ -124,8 +104,7 @@ To use YAML for specification, Piculet has to be installed with YAML support::
 
    pip install piculet[yaml]
 
-Note that this will install an external module for parsing YAML files,
-and therefore will not be contained to the standard library anymore.
+Note that this will install an external module for parsing YAML files.
 
 The YAML version of the configuration example above can be found in
 `movie.yaml`_.
