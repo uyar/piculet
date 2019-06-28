@@ -94,8 +94,11 @@ commands =
 
 [testenv:codecov]
 passenv = CODECOV_TOKEN
+deps =
+    strictyaml
 commands =
     poetry install -v
+    {posargs:pytest} --cov
     {posargs:codecov}
 
 [testenv:style]
