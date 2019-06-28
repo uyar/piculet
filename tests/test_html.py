@@ -57,6 +57,12 @@ def test_html_to_xhtml_omitted_attributes_should_be_removed():
     assert normalized == """<html><p></p></html>"""
 
 
+def test_html_to_xhtml_invalid_attributes_should_be_removed():
+    content = """<html><p a"></p></html>"""
+    normalized = html_to_xhtml(content, omit_attrs={"font"})
+    assert normalized == """<html><p></p></html>"""
+
+
 def test_html_to_xhtml_self_closing_tags_should_have_slash_at_end():
     content = """<html><br></html>"""
     normalized = html_to_xhtml(content)
