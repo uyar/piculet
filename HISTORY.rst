@@ -5,8 +5,9 @@ History
 ------------------
 
 - Drop support for Python 2 and 3.4.
-- Add support for absolute XPath queries.
-- Add support for XPath queries that start with a parent axis.
+- Add support for absolute XPath queries in ElementTree.
+- Add support for XPath queries that start with a parent axis in ElementTree.
+- Add shorthand notation for path extractors in specification.
 - Cache compiled XPath expressions.
 - Remove HTML charset detection.
 - Command line operations now read only from stdin.

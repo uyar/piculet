@@ -562,7 +562,16 @@ transformers = SimpleNamespace(  # sig: SimpleNamespace
 
 
 def _make_extractor_from_desc(desc):
-    transform = desc.get("transform")
+    if isinstance(desc, str):
+        path, reduce, *rest = [s.strip() for s in desc.split("->")]
+        transform = rest[0] if len(rest) == 1 else None
+        foreach = None
+    else:
+        path = desc.get("path")
+        reduce = desc.get("reduce")
+        transform = desc.get("transform")
+        foreach = desc.get("foreach")
+
     if transform is None:
         transform_ = None
     else:
@@ -570,11 +579,7 @@ def _make_extractor_from_desc(desc):
         if transform_ is None:
             raise ValueError("Unknown transformer")
 
-    foreach = desc.get("foreach")
-
-    path = desc.get("path")
     if path is not None:
-        reduce = desc.get("reduce")
         if reduce is None:
             reduce_ = None
         else:
