@@ -93,6 +93,7 @@ commands =
     {posargs:pytest} --cov-report term-missing --cov=piculet tests
 
 [testenv:codecov]
+passenv = CODECOV_TOKEN
 commands =
     poetry install -v
     {posargs:codecov}
