@@ -38,6 +38,12 @@ def test_unknown_reducer_should_raise_error(shining_content):
         scrape(shining_content, {"items": items})
 
 
+def test_shorthand_notation_should_be_converted_to_path_and_reduce(shining_content):
+    items = [{"key": "title", "value": "//title/text() -> first"}]
+    data = scrape(shining_content, {"items": items})
+    assert data == {"title": "The Shining"}
+
+
 def test_reduced_value_should_be_transformable(shining_content):
     items = [
         {"key": "year", "value": {"path": '//span[@class="year"]/text()', "transform": "int"}}
@@ -67,6 +73,12 @@ def test_unknown_transformer_should_raise_error(shining_content):
             }
         ]
         scrape(shining_content, {"items": items})
+
+
+def test_shorthand_notation_should_handle_transformer(shining_content):
+    items = [{"key": "year", "value": '//span[@class="year"]/text() -> first -> int'}]
+    data = scrape(shining_content, {"items": items})
+    assert data == {"year": 1980}
 
 
 def test_multiple_rules_should_generate_multiple_items(shining_content):
