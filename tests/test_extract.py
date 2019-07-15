@@ -188,28 +188,16 @@ def test_key_should_be_generatable_using_path(shining):
     assert data == {"Language:": "English", "Runtime:": "144 minutes"}
 
 
-def test_generated_key_should_be_normalizable(shining):
+def test_generated_key_should_be_transformable(shining):
     rules = [
         Rule(
             foreach='//div[@class="info"]',
-            key=Path("./h3/text()", reduce=reducers.normalize),
+            key=Path("./h3/text()", transform=transformers.normalize),
             value=Path("./p/text()"),
         )
     ]
     data = Items(rules)(shining)
     assert data == {"language": "English", "runtime": "144 minutes"}
-
-
-def test_generated_key_should_be_transformable(shining):
-    rules = [
-        Rule(
-            foreach='//div[@class="info"]',
-            key=Path("./h3/text()", reduce=reducers.normalize, transform=lambda x: x.upper()),
-            value=Path("./p/text()"),
-        )
-    ]
-    data = Items(rules)(shining)
-    assert data == {"LANGUAGE": "English", "RUNTIME": "144 minutes"}
 
 
 def test_generated_key_none_should_be_excluded(shining):

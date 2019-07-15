@@ -201,28 +201,16 @@ def test_key_should_be_generatable_using_path(shining_content):
     assert data == {"Language:": "English", "Runtime:": "144 minutes"}
 
 
-def test_generated_key_should_be_normalizable(shining_content):
+def test_generated_key_should_be_transformable(shining_content):
     items = [
         {
             "foreach": '//div[@class="info"]',
-            "key": {"path": "./h3/text()", "reduce": "normalize"},
+            "key": {"path": "./h3/text()", "transform": "normalize"},
             "value": {"path": "./p/text()"},
         }
     ]
     data = scrape(shining_content, {"items": items})
     assert data == {"language": "English", "runtime": "144 minutes"}
-
-
-def test_generated_key_should_be_transformable(shining_content):
-    items = [
-        {
-            "foreach": '//div[@class="info"]',
-            "key": {"path": "./h3/text()", "reduce": "normalize", "transform": "upper"},
-            "value": {"path": "./p/text()"},
-        }
-    ]
-    data = scrape(shining_content, {"items": items})
-    assert data == {"LANGUAGE": "English", "RUNTIME": "144 minutes"}
 
 
 def test_generated_key_none_should_be_excluded(shining_content):
