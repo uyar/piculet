@@ -42,7 +42,7 @@ from pkgutil import find_loader
 from types import SimpleNamespace
 
 
-__version__ = "2.0.0a0"  # sig: str
+__version__ = "2.0.0a1"  # sig: str
 
 
 ###########################################################
