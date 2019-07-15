@@ -303,7 +303,7 @@ def test_scrape_should_use_lxml_html_parser_if_requested(shining_content):
 def test_scrape_should_fail_for_lxml_html_parser_if_no_lxml_support(shining_content):
     with pytest.raises(RuntimeError) as e:
         scrape(shining_content, {}, lxml_html=True)
-    assert "LXML not available" in str(e)
+        assert "LXML not available" in str(e)
 
 
 def test_unknown_preprocessor_should_raise_error(shining_content):
