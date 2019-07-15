@@ -533,10 +533,7 @@ preprocessors = SimpleNamespace(  # sig: SimpleNamespace
 
 
 reducers = SimpleNamespace(  # sig: SimpleNamespace
-    first=itemgetter(0),
-    concat=partial(str.join, ""),
-    clean=lambda xs: re.sub(r"\s+", " ", "".join(xs).replace("\xa0", " ")).strip(),
-    normalize=lambda xs: re.sub(r"[^a-z0-9_]", "", "".join(xs).lower().replace(" ", "_")),
+    first=itemgetter(0), concat=partial(str.join, "")
 )
 """Predefined reducers."""
 
@@ -552,6 +549,8 @@ transformers = SimpleNamespace(  # sig: SimpleNamespace
     lstrip=str.lstrip,
     rstrip=str.rstrip,
     strip=str.strip,
+    clean=lambda s: re.sub(r"\s+", " ", s.replace("\xa0", " ")).strip(),
+    normalize=lambda s: re.sub(r"[^a-z0-9_]", "", s.lower().replace(" ", "_")),
 )
 """Predefined transformers."""
 

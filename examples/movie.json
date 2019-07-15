@@ -78,14 +78,16 @@
       "key": "review",
       "value": {
         "path": "//div[@class='review']//text()",
-        "reduce": "clean"
+        "reduce": "concat",
+        "transform": "clean"
       }
     },
     {
       "foreach": "//div[@class='info']",
       "key": {
         "path": "./h3/text()",
-        "reduce": "normalize"
+        "reduce": "concat",
+        "transform": "normalize"
       },
       "value": {
         "path": "./p/text()",

@@ -1,6 +1,11 @@
 History
 =======
 
+2.0.0a1 (unreleased)
+--------------------
+
+- Convert string normalization and cleaning into transformers.
+
 2.0.0a0 (2019-06-28)
 --------------------
 
