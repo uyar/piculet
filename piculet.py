@@ -36,7 +36,6 @@ from html import escape as html_escape
 from html.parser import HTMLParser
 from io import StringIO
 from itertools import dropwhile
-from operator import itemgetter
 from pathlib import Path
 from pkgutil import find_loader
 from types import SimpleNamespace
