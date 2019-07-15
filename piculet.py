@@ -577,7 +577,7 @@ def _make_extractor_from_desc(desc):
     else:
         transform_ = getattr(transformers, transform, None)
         if transform_ is None:
-            raise ValueError("Unknown transformer")
+            raise ValueError("Unknown transformer: '%(t)s'", {"t": transform})
 
     if path is not None:
         if reduce is None:
@@ -585,7 +585,7 @@ def _make_extractor_from_desc(desc):
         else:
             reduce_ = getattr(reducers, reduce, None)
             if reduce_ is None:
-                raise ValueError("Unknown reducer")
+                raise ValueError("Unknown reducer: '%(r)s'", {"r": reduce})
         extractor = make_path(path=path, reduce=reduce_, transform=transform_, foreach=foreach)
     else:
         items = desc.get("items", [])
@@ -607,7 +607,7 @@ def _make_rule_from_desc(desc):
 def _make_preprocessor_from_desc(desc):
     preprocessor = getattr(preprocessors, desc["op"], None)
     if preprocessor is None:
-        raise ValueError("Unknown preprocessing operation")
+        raise ValueError("Unknown preprocessing operation: '%(o)s'", {"o": desc["op"]})
     args = {
         k: v if isinstance(v, str) else _make_extractor_from_desc(v)
         for k, v in desc.items()
