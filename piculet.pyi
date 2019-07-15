@@ -20,7 +20,6 @@ from xml.etree import ElementTree
 
 XPathResult = Union[Sequence[str], Sequence[ElementTree.Element]]
 XPather = Callable[[ElementTree.Element], XPathResult]
-Reducer = Callable[[Sequence[str]], str]
 StrExtractor = Callable[[ElementTree.Element], str]
 MapExtractor = Callable[[ElementTree.Element], Mapping]
 StrTransformer = Callable[[str], Any]
@@ -31,7 +30,6 @@ Preprocessor = Callable[[ElementTree.Element], None]
 
 __version__ = ...  # type: str
 preprocessors = ...  # type: SimpleNamespace
-reducers = ...  # type: SimpleNamespace
 transformers = ...  # type: SimpleNamespace
 
 
@@ -56,7 +54,7 @@ def get_parent(element: ElementTree.Element) -> ElementTree.Element: ...
 def make_xpather(path: str) -> XPather: ...
 def make_path(
     path: str,
-    reduce: Optional[Reducer] = ...,
+    sep: str = ...,
     transform: Optional[StrTransformer] = ...,
     foreach: Optional[str] = ...,
 ) -> Extractor: ...

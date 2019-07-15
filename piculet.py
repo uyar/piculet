@@ -331,8 +331,6 @@ make_xpather = lru_cache(maxsize=None)(make_xpather)
 _EMPTY = {}
 
 
-# sigalias: Reducer = Callable[[Sequence[str]], str]
-
 # sigalias: StrExtractor = Callable[[ElementTree.Element], str]
 # sigalias: MapExtractor = Callable[[ElementTree.Element], Mapping]
 
@@ -362,28 +360,21 @@ def _make_extractor(raw, transform=None, foreach=None):
     return apply
 
 
-def make_path(path, reduce=None, transform=None, foreach=None):
+def make_path(path, sep="", transform=None, foreach=None):
     """Create an extractor that can get a single piece of data from an element.
 
-    :sig:
-        (
-            str,
-            Optional[Reducer],
-            Optional[StrTransformer],
-            Optional[str]
-        ) -> Extractor
+    :sig: (str, str, Optional[StrTransformer], Optional[str]) -> Extractor
     :param path: XPath expression for getting the raw data values.
-    :param reduce: Function for reducing the raw data values to a single value.
-    :param transform: Function for transforming the reduced value.
-    :param foreach: XPath expression for selecting multiple subelements to extract data from.
+    :param sep: Separator for joining the raw data values.
+    :param transform: Function for transforming the obtained value.
+    :param foreach: XPath expression for selecting multiple subelements.
     :return: Function to apply to an element to extract the data as specified.
     """
     xpath = make_xpather(path)
-    reduce = reducers.concat if reduce is None else reduce
 
     def get_raw(element):
         selected = xpath(element)
-        return reduce(selected) if len(selected) > 0 else _EMPTY
+        return sep.join(selected) if len(selected) > 0 else _EMPTY
 
     return _make_extractor(get_raw, transform=transform, foreach=foreach)
 
@@ -532,12 +523,6 @@ preprocessors = SimpleNamespace(  # sig: SimpleNamespace
 """Predefined preprocessors."""
 
 
-reducers = SimpleNamespace(  # sig: SimpleNamespace
-    first=itemgetter(0), concat=partial(str.join, "")
-)
-"""Predefined reducers."""
-
-
 transformers = SimpleNamespace(  # sig: SimpleNamespace
     int=int,
     float=float,
@@ -562,12 +547,11 @@ transformers = SimpleNamespace(  # sig: SimpleNamespace
 
 def _make_extractor_from_desc(desc):
     if isinstance(desc, str):
-        path, reduce, *rest = [s.strip() for s in desc.split("->")]
+        path, *rest = [s.strip() for s in desc.split("->")]
         transform = rest[0] if len(rest) == 1 else None
         foreach = None
     else:
         path = desc.get("path")
-        reduce = desc.get("reduce")
         transform = desc.get("transform")
         foreach = desc.get("foreach")
 
@@ -579,13 +563,7 @@ def _make_extractor_from_desc(desc):
             raise ValueError("Unknown transformer: '%(t)s'", {"t": transform})
 
     if path is not None:
-        if reduce is None:
-            reduce_ = None
-        else:
-            reduce_ = getattr(reducers, reduce, None)
-            if reduce_ is None:
-                raise ValueError("Unknown reducer: '%(r)s'", {"r": reduce})
-        extractor = make_path(path=path, reduce=reduce_, transform=transform_, foreach=foreach)
+        extractor = make_path(path=path, transform=transform_, foreach=foreach)
     else:
         items = desc.get("items", [])
         rules = [_make_rule_from_desc(i) for i in items]

@@ -3,15 +3,13 @@
     {
       "key": "title",
       "value": {
-        "path": "//title/text()",
-        "reduce": "first"
+        "path": "//title/text()"
       }
     },
     {
       "key": "year",
       "value": {
         "path": "//span[@class='year']/text()",
-        "reduce": "first",
         "transform": "int"
       }
     },
@@ -19,8 +17,7 @@
       "key": "genres",
       "value": {
         "foreach": "//ul[@class='genres']/li",
-        "path": "./text()",
-        "reduce": "first"
+        "path": "./text()"
       }
     },
     {
@@ -31,15 +28,13 @@
           {
             "key": "name",
             "value": {
-              "path": "./text()",
-              "reduce": "first"
+              "path": "./text()"
             }
           },
           {
             "key": "link",
             "value": {
-              "path": "./@href",
-              "reduce": "first"
+              "path": "./@href"
             }
           }
         ]
@@ -53,22 +48,19 @@
           {
             "key": "name",
             "value": {
-              "path": "./td[1]/a/text()",
-              "reduce": "first"
+              "path": "./td[1]/a/text()"
             }
           },
           {
             "key": "link",
             "value": {
-              "path": "./td[1]/a/@href",
-              "reduce": "first"
+              "path": "./td[1]/a/@href"
             }
           },
           {
             "key": "character",
             "value": {
-              "path": "./td[2]/text()",
-              "reduce": "first"
+              "path": "./td[2]/text()"
             }
           }
         ]
@@ -78,7 +70,6 @@
       "key": "review",
       "value": {
         "path": "//div[@class='review']//text()",
-        "reduce": "concat",
         "transform": "clean"
       }
     },
@@ -86,12 +77,10 @@
       "foreach": "//div[@class='info']",
       "key": {
         "path": "./h3/text()",
-        "reduce": "concat",
         "transform": "normalize"
       },
       "value": {
-        "path": "./p/text()",
-        "reduce": "first"
+        "path": "./p/text()"
       }
     }
   ]

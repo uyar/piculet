@@ -4,6 +4,8 @@ History
 2.0.0a1 (unreleased)
 --------------------
 
+- Remove reducing functions; selected texts will always be concatenated
+  (using an optional separator).
 - Convert string normalization and cleaning into transformers.
 
 2.0.0a0 (2019-06-28)

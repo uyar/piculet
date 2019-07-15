@@ -3,30 +3,26 @@
     {
       "key": "name",
       "value": {
-        "path": "//div[@class='fn']/text()",
-        "reducer": "first"
+        "path": "//div[@class='fn']/text()"
       }
     },
     {
       "key": "born",
       "value": {
-        "path": "//span[@class='bday']/text()",
-        "reducer": "first"
+        "path": "//span[@class='bday']/text()"
       }
     },
     {
       "key": "birthplace",
       "value": {
-        "path": "//div[@class='birthplace']//text()",
-        "reducer": "clean"
+        "path": "//div[@class='birthplace']//text()"
       }
     },
     {
       "key": "occupation",
       "value": {
         "foreach": "//td[@class='role']//li",
-        "path": "./text()",
-        "reducer": "clean"
+        "path": "./text()"
       }
     }
   ]
