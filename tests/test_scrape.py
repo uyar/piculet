@@ -2,49 +2,30 @@ import pytest
 
 from pkgutil import find_loader
 
-from piculet import reducers, scrape, transformers
+from piculet import scrape, transformers
 
 
 LXML_AVAILABLE = find_loader("lxml") is not None
 
 
-def test_no_rules_should_return_empty_result(shining_content):
+def test_empty_rules_should_return_empty_result(shining_content):
     data = scrape(shining_content, {"items": []})
     assert data == {}
 
 
-def test_extracted_value_should_be_reduced(shining_content):
-    items = [{"key": "title", "value": {"path": "//title/text()", "reduce": "first"}}]
+def test_extracted_text_should_be_scalar(shining_content):
+    items = [{"key": "title", "value": {"path": "//title/text()"}}]
     data = scrape(shining_content, {"items": items})
     assert data == {"title": "The Shining"}
 
 
-def test_default_reducer_should_be_concat(shining_content):
+def test_extracted_texts_should_be_concatenated(shining_content):
     items = [{"key": "full_title", "value": {"path": "//h1//text()"}}]
     data = scrape(shining_content, {"items": items})
     assert data == {"full_title": "The Shining (1980)"}
 
 
-def test_added_reducer_should_be_usable(shining_content):
-    reducers.second = lambda x: x[1]
-    items = [{"key": "year", "value": {"path": "//h1//text()", "reduce": "second"}}]
-    data = scrape(shining_content, {"items": items})
-    assert data == {"year": "1980"}
-
-
-def test_unknown_reducer_should_raise_error(shining_content):
-    with pytest.raises(ValueError):
-        items = [{"key": "year", "value": {"path": "//h1//text()", "reduce": "foo"}}]
-        scrape(shining_content, {"items": items})
-
-
-def test_shorthand_notation_should_be_converted_to_path_and_reduce(shining_content):
-    items = [{"key": "title", "value": "//title/text() -> first"}]
-    data = scrape(shining_content, {"items": items})
-    assert data == {"title": "The Shining"}
-
-
-def test_reduced_value_should_be_transformable(shining_content):
+def test_extracted_value_should_be_transformable(shining_content):
     items = [
         {"key": "year", "value": {"path": '//span[@class="year"]/text()', "transform": "int"}}
     ]
@@ -75,8 +56,8 @@ def test_unknown_transformer_should_raise_error(shining_content):
         scrape(shining_content, {"items": items})
 
 
-def test_shorthand_notation_should_handle_transformer(shining_content):
-    items = [{"key": "year", "value": '//span[@class="year"]/text() -> first -> int'}]
+def test_shorthand_notation_should_be_path_and_transform(shining_content):
+    items = [{"key": "year", "value": '//span[@class="year"]/text() -> int'}]
     data = scrape(shining_content, {"items": items})
     assert data == {"year": 1980}
 
@@ -282,7 +263,7 @@ def test_section_multiple_roots_should_raise_error(shining_content):
 @pytest.mark.skipif(not LXML_AVAILABLE, reason="requires support for LXML")
 def test_scrape_should_use_lxml_html_parser_if_requested(shining_content):
     content = shining_content.replace('<meta charset="utf-8"/>', '<meta charset="utf-8">')
-    items = [{"key": "title", "value": {"path": "//title/text()", "reduce": "first"}}]
+    items = [{"key": "title", "value": {"path": "//title/text()"}}]
     data = scrape(content, {"items": items}, lxml_html=True)
     assert data == {"title": "The Shining"}
 

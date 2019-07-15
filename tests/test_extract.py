@@ -1,42 +1,29 @@
 import pytest
 
-from piculet import build_tree, reducers, transformers
+from piculet import build_tree, transformers
 from piculet import make_items as Items
 from piculet import make_path as Path
 from piculet import make_rule as Rule
 
 
-def test_no_rules_should_return_empty_result(shining):
+def test_empty_rules_should_return_empty_result(shining):
     data = Items([])(shining)
     assert data == {}
 
 
-def test_extracted_value_should_be_reduced(shining):
-    rules = [Rule(key="title", value=Path("//title/text()", reduce=reducers.first))]
+def test_extracted_text_should_be_scalar(shining):
+    rules = [Rule(key="title", value=Path("//title/text()"))]
     data = Items(rules)(shining)
     assert data == {"title": "The Shining"}
 
 
-def test_default_reducer_should_be_concat(shining):
+def test_extracted_texts_should_be_concatenated(shining):
     rules = [Rule(key="full_title", value=Path("//h1//text()"))]
     data = Items(rules)(shining)
     assert data == {"full_title": "The Shining (1980)"}
 
 
-def test_added_reducer_should_be_usable(shining):
-    reducers.second = lambda x: x[1]
-    rules = [Rule(key="year", value=Path("//h1//text()", reduce=reducers.second))]
-    data = Items(rules)(shining)
-    assert data == {"year": "1980"}
-
-
-def test_reduce_by_lambda_should_be_ok(shining):
-    rules = [Rule(key="title", value=Path("//title/text()", reduce=lambda xs: xs[0]))]
-    data = Items(rules)(shining)
-    assert data == {"title": "The Shining"}
-
-
-def test_reduced_value_should_be_transformable(shining):
+def test_extracted_text_should_be_transformable(shining):
     rules = [Rule(key="year", value=Path('//span[@class="year"]/text()', transform=int))]
     data = Items(rules)(shining)
     assert data == {"year": 1980}
