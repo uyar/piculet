@@ -5,7 +5,7 @@
     :alt: PyPI version.
 
 .. |license| image:: https://img.shields.io/pypi/l/piculet.svg?style=flat-square
-    :target: https://pypi.org/project/piculet/
+    :target: https://github.com/uyar/piculet/blob/master/LICENSE.txt
     :alt: Project license.
 
 .. |azure| image:: https://dev.azure.com/tekir/piculet/_apis/build/status/uyar.piculet?branchName=master
@@ -21,6 +21,8 @@ It consists of a `single source file`_ with no dependencies other than
 the standard library, which makes it very easy to integrate into applications.
 It also provides a command line interface.
 
+.. _single source file: https://github.com/uyar/piculet/blob/master/piculet.py
+
 Getting started
 ---------------
 
@@ -29,7 +31,18 @@ You can install the latest version using ``pip``::
 
     pip install piculet
 
-.. _single source file: https://github.com/uyar/piculet/blob/master/piculet.py
+Installing Piculet creates a script named ``piculet`` which can be used
+to invoke the command line interface::
+
+   $ piculet -h
+   usage: piculet [-h] [--version] [--html] (-s SPEC | --h2x)
+
+The document will be read from the standard input.
+For example, say you want to extract some data from the file `shining.html`_.
+An example specification is given in `movie.json`_.
+Download both of these files and run the command::
+
+   $ cat shining.html | piculet -s movie.json
 
 Getting help
 ------------
