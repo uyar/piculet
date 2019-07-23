@@ -34,15 +34,10 @@ def test_extracted_value_should_be_transformable(shining_content):
 
 
 def test_added_transformer_should_be_usable(shining_content):
-    transformers.year25 = lambda x: int(x) + 25
-    items = [
-        {
-            "key": "year",
-            "value": {"path": '//span[@class="year"]/text()', "transform": "year25"},
-        }
-    ]
+    transformers.underscore = lambda s: s.replace(" ", "_")
+    items = [{"key": "title", "value": {"path": "//title/text()", "transform": "underscore"}}]
     data = scrape(shining_content, {"items": items})
-    assert data == {"year": 2005}
+    assert data == {"title": "The_Shining"}
 
 
 def test_transformers_should_be_chainable(shining_content):
