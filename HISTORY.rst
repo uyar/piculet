@@ -7,7 +7,8 @@ History
 - Remove reducing functions; selected texts will always be concatenated
   (using an optional separator).
 - Convert string normalization and cleaning into transformers.
-- Change transformer chaining symbol from "->" to "|".
+- Add support for chaining transformers.
+- Change chaining symbol from "->" to "|".
 
 2.0.0a0 (2019-06-28)
 --------------------

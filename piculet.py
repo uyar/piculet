@@ -556,28 +556,32 @@ def pipe(*functions):
 
 def _make_extractor_from_desc(desc):
     if isinstance(desc, str):
-        path, *rest = [s.strip() for s in desc.split("|")]
-        transform = rest[0] if len(rest) == 1 else None
+        path, *transforms = [s.strip() for s in desc.split("|")]
         foreach = None
     else:
         path = desc.get("path")
-        transform = desc.get("transform")
+        transforms = [s.strip() for s in desc.get("transform", "").split("|")]
         foreach = desc.get("foreach")
+    transforms = [s for s in transforms if len(s) > 0]
 
-    if transform is None:
-        transform_ = None
+    if len(transforms) == 0:
+        transform = None
     else:
-        transform_ = getattr(transformers, transform, None)
-        if transform_ is None:
-            raise ValueError("Unknown transformer: '%(t)s'", {"t": transform})
+        ops = []
+        for op_name in transforms:
+            op = getattr(transformers, op_name, None)
+            if op is None:
+                raise ValueError("Unknown transformer: '%(t)s'", {"t": op_name})
+            ops.append(op)
+        transform = pipe(*ops)
 
     if path is not None:
-        extractor = make_path(path=path, transform=transform_, foreach=foreach)
+        extractor = make_path(path=path, transform=transform, foreach=foreach)
     else:
         items = desc.get("items", [])
         rules = [_make_rule_from_desc(i) for i in items]
         extractor = make_items(
-            rules=rules, section=desc.get("section"), transform=transform_, foreach=foreach
+            rules=rules, section=desc.get("section"), transform=transform, foreach=foreach
         )
 
     return extractor
