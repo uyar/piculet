@@ -138,6 +138,25 @@ Note that in the following example, there's no "foo" key in the result:
    >>> scrape(document, spec)
    {'title': 'The Shining'}
 
+You can specify a string to use as separator when concatenating the texts
+selected by the query:
+
+.. code-block:: python
+
+   >>> spec = {
+   ...     "items": [
+   ...         {
+   ...             "key": "cast_names",
+   ...             "value": {
+   ...                 "path": '//table[@class="cast"]/tr/td[1]/a/text()',
+   ...                 "sep": ", "
+   ...             }
+   ...         }
+   ...     ]
+   ... }
+   >>> scrape(document, spec)
+   {'cast_names': 'Jack Nicholson, Shelley Duvall'}
+
 Transforming
 ------------
 
