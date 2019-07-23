@@ -534,6 +534,8 @@ class transformers:
     rstrip = str.rstrip  # sig: Callable[[str], str]
     strip = str.strip  # sig: Callable[[str], str]
 
+    re_spaces = re.compile(r"\s+")
+
     @staticmethod
     def clean(s):
         """Remove extra whitespace.
@@ -542,7 +544,9 @@ class transformers:
         :param s: String to remove extra whitespace from.
         :return: String with extra whitespace removed.
         """
-        return re.sub(r"\s+", " ", s.replace("\xa0", " ")).strip()
+        return transformers.re_spaces.sub(" ", s.replace("\xa0", " ")).strip()
+
+    re_symbols = re.compile(r"[^a-z0-9_]")
 
     @staticmethod
     def normalize(s):
@@ -552,7 +556,7 @@ class transformers:
         :param s: String to normalize.
         :return: Normalized string.
         """
-        return re.sub(r"[^a-z0-9_]", "", s.lower().replace(" ", "_"))
+        return transformers.re_symbols.sub("", s.lower().replace(" ", "_"))
 
 
 def chain(*functions):
