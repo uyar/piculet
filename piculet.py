@@ -533,10 +533,26 @@ class transformers:
     lstrip = str.lstrip  # sig: Transformer
     rstrip = str.rstrip  # sig: Transformer
     strip = str.strip  # sig: Transformer
-    clean = lambda s: re.sub(r"\s+", " ", s.replace("\xa0", " ")).strip()  # sig: Transformer
-    normalize = lambda s: re.sub(  # sig: Transformer
-        r"[^a-z0-9_]", "", s.lower().replace(" ", "_")
-    )
+
+    @staticmethod
+    def clean(s):
+        """Remove extra whitespace.
+
+        :sig: (str) -> str
+        :param s: String to remove extra whitespace from.
+        :return: String with extra whitespace removed.
+        """
+        return re.sub(r"\s+", " ", s.replace("\xa0", " ")).strip()
+
+    @staticmethod
+    def normalize(s):
+        """Remove punctuation symbols and replace spaces with underscores.
+
+        :sig: (str) -> str
+        :param s: String to normalize.
+        :return: Normalized string.
+        """
+        return re.sub(r"[^a-z0-9_]", "", s.lower().replace(" ", "_"))
 
 
 def chain(*functions):
