@@ -23,6 +23,14 @@ def test_extracted_texts_should_be_concatenated(shining):
     assert data == {"full_title": "The Shining (1980)"}
 
 
+def test_extracted_texts_should_be_concatenated_using_given_separator(shining):
+    rules = [
+        Rule(key="cast_names", value=Path('//table[@class="cast"]/tr/td[1]/a/text()', sep=", "))
+    ]
+    data = Items(rules)(shining)
+    assert data == {"cast_names": "Jack Nicholson, Shelley Duvall"}
+
+
 def test_extracted_text_should_be_transformable(shining):
     rules = [Rule(key="year", value=Path('//span[@class="year"]/text()', transform=int))]
     data = Items(rules)(shining)
