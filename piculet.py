@@ -31,7 +31,7 @@ import sys
 from argparse import ArgumentParser
 from collections import deque
 from contextlib import redirect_stdout
-from functools import lru_cache, partial
+from functools import lru_cache, partial, reduce
 from html import escape as html_escape
 from html.parser import HTMLParser
 from io import StringIO
@@ -537,6 +537,16 @@ transformers = SimpleNamespace(  # sig: SimpleNamespace
     normalize=lambda s: re.sub(r"[^a-z0-9_]", "", s.lower().replace(" ", "_")),
 )
 """Predefined transformers."""
+
+
+def pipe(*functions):
+    """Chain functions to apply the output of one as the input of the next.
+
+    :sig: () -> Callable[[Any], Any]
+    :param functions: Functions to chain.
+    :return: Single function that will apply all chained functions in order.
+    """
+    return reduce(lambda f, g: lambda x: g(f(x)), functions)
 
 
 ###########################################################
