@@ -1,6 +1,6 @@
 import pytest
 
-from piculet import build_tree, transformers
+from piculet import build_tree, pipe, transformers
 from piculet import make_items as Items
 from piculet import make_path as Path
 from piculet import make_rule as Rule
@@ -27,6 +27,19 @@ def test_extracted_text_should_be_transformable(shining):
     rules = [Rule(key="year", value=Path('//span[@class="year"]/text()', transform=int))]
     data = Items(rules)(shining)
     assert data == {"year": 1980}
+
+
+def test_transformers_should_be_chainable(shining):
+    rules = [
+        Rule(
+            key="century",
+            value=Path(
+                '//span[@class="year"]/text()', transform=pipe(int, lambda x: x // 100 + 1)
+            ),
+        )
+    ]
+    data = Items(rules)(shining)
+    assert data == {"century": 20}
 
 
 def test_added_transformer_should_be_usable(shining):
