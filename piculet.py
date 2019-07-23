@@ -539,7 +539,7 @@ class transformers:
     )
 
 
-def pipe(*functions):
+def chain(*functions):
     """Chain functions to apply the output of one as the input of the next.
 
     :sig: () -> Callable[[Any], Any]
@@ -573,7 +573,7 @@ def _make_extractor_from_desc(desc):
             if op is None:
                 raise ValueError("Unknown transformer: '%(t)s'", {"t": op_name})
             ops.append(op)
-        transform = pipe(*ops)
+        transform = chain(*ops)
 
     if path is not None:
         extractor = make_path(path=path, transform=transform, foreach=foreach)

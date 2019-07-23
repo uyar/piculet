@@ -1,6 +1,6 @@
 import pytest
 
-from piculet import build_tree, pipe
+from piculet import build_tree, chain
 from piculet import make_items as Items
 from piculet import make_path as Path
 from piculet import make_rule as Rule
@@ -42,7 +42,7 @@ def test_transformers_should_be_chainable(shining):
         Rule(
             key="century",
             value=Path(
-                '//span[@class="year"]/text()', transform=pipe(int, lambda x: x // 100 + 1)
+                '//span[@class="year"]/text()', transform=chain(int, lambda x: x // 100 + 1)
             ),
         )
     ]
