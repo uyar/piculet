@@ -1,8 +1,12 @@
-|pypi| |license| |azure| |codecov|
+|pypi| |pyversions| |license| |azure| |codecov|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/piculet.svg?style=flat-square
     :target: https://pypi.org/project/piculet/
     :alt: PyPI version.
+
+.. |pyversions| image:: https://img.shields.io/pypi/pyversions/piculet.svg?style=flat-square
+    :target: https://pypi.org/project/piculet/
+    :alt: Supported Python versions.
 
 .. |license| image:: https://img.shields.io/pypi/l/piculet.svg?style=flat-square
     :target: https://github.com/uyar/piculet/blob/master/LICENSE.txt
@@ -37,12 +41,14 @@ to invoke the command line interface::
    $ piculet -h
    usage: piculet [-h] [--version] [--html] (-s SPEC | --h2x)
 
-The document will be read from the standard input.
 For example, say you want to extract some data from the file `shining.html`_.
 An example specification is given in `movie.json`_.
 Download both of these files and run the command::
 
    $ cat shining.html | piculet -s movie.json
+
+.. _shining.html: https://github.com/uyar/piculet/blob/master/examples/shining.html
+.. _movie.json: https://github.com/uyar/piculet/blob/master/examples/movie.json
 
 Getting help
 ------------

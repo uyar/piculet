@@ -24,16 +24,9 @@ Details about the specification are given in later chapters.
 Command-line interface
 ----------------------
 
-Installing Piculet creates a script named ``piculet`` which can be used
-to invoke the command line interface::
-
-   $ piculet -h
-   usage: piculet [-h] [--version] [--html] (-s SPEC | --h2x)
-
-The document will be read from the standard input.
-For example, say you want to extract some data from the file `shining.html`_.
-An example specification is given in `movie.json`_.
-Download both of these files and run the command::
+The command-line interface reads the document from the standard input.
+After downloading the example files `shining.html`_ and `movie.json`_,
+run the command::
 
    $ cat shining.html | piculet -s movie.json
 
