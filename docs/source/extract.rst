@@ -459,8 +459,9 @@ that will be applied to the selected element:
    >>> scrape(document, spec)
    {'Runtime:': '144 minutes', 'Language:': 'English'}
 
-The ``normalize`` transformer concatenates the strings, converts it to lowercase,
-replaces spaces with underscores and strips other non-alphanumeric characters:
+The :meth:`normalize <piculet.transformers.normalize>` transformer converts
+the string to lowercase, replaces spaces with underscores,
+and strips non-alphanumeric characters:
 
 .. code-block:: python
 
