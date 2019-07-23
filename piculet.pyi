@@ -29,7 +29,6 @@ Extractor = Callable[[ElementTree.Element], Any]
 Preprocessor = Callable[[ElementTree.Element], None]
 
 __version__ = ...  # type: str
-preprocessors = ...  # type: SimpleNamespace
 transformers = ...  # type: SimpleNamespace
 
 
@@ -81,6 +80,12 @@ def preprocess_set_attr(
 def preprocess_set_text(
     root: ElementTree.Element, *, path: str, text: Union[str, StrExtractor]
 ) -> None: ...
+
+class preprocessors:
+    remove = ...  # type: Preprocessor
+    set_attr = ...  # type: Preprocessor
+    set_text = ...  # type: Preprocessor
+
 def pipe(*functions) -> Callable[[Any], Any]: ...
 def load_spec(filepath: str) -> Mapping: ...
 def parse_spec(spec: Mapping) -> Tuple[Sequence[Preprocessor], Extractor]: ...

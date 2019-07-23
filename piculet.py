@@ -514,12 +514,12 @@ def preprocess_set_text(root, *, path, text):
 ###########################################################
 
 
-preprocessors = SimpleNamespace(  # sig: SimpleNamespace
-    remove=lambda **kwargs: partial(preprocess_remove, **kwargs),
-    set_attr=lambda **kwargs: partial(preprocess_set_attr, **kwargs),
-    set_text=lambda **kwargs: partial(preprocess_set_text, **kwargs),
-)
-"""Predefined preprocessors."""
+class preprocessors:
+    """Predefined preprocessors."""
+
+    remove = lambda **kwargs: partial(preprocess_remove, **kwargs)  # sig: Preprocessor
+    set_attr = lambda **kwargs: partial(preprocess_set_attr, **kwargs)  # sig: Preprocessor
+    set_text = lambda **kwargs: partial(preprocess_set_text, **kwargs)  # sig: Preprocessor
 
 
 transformers = SimpleNamespace(  # sig: SimpleNamespace
