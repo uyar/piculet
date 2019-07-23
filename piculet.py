@@ -523,9 +523,9 @@ class preprocessors:
 class transformers:
     """Predefined transformers."""
 
-    int = int  # sig: Transformer
-    float = float  # sig: Transformer
-    bool = bool  # sig: Transformer
+    int = int.__call__  # sig: Transformer
+    float = float.__call__  # sig: Transformer
+    bool = bool.__call__  # sig: Transformer
     len = len  # sig: Transformer
     lower = str.lower  # sig: Transformer
     upper = str.upper  # sig: Transformer
