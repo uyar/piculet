@@ -556,7 +556,7 @@ def pipe(*functions):
 
 def _make_extractor_from_desc(desc):
     if isinstance(desc, str):
-        path, *rest = [s.strip() for s in desc.split("->")]
+        path, *rest = [s.strip() for s in desc.split("|")]
         transform = rest[0] if len(rest) == 1 else None
         foreach = None
     else:

@@ -57,7 +57,7 @@ def test_unknown_transformer_should_raise_error(shining_content):
 
 
 def test_shorthand_notation_should_be_path_and_transform(shining_content):
-    items = [{"key": "year", "value": '//span[@class="year"]/text() -> int'}]
+    items = [{"key": "year", "value": '//span[@class="year"]/text() | int'}]
     data = scrape(shining_content, {"items": items})
     assert data == {"year": 1980}
 
