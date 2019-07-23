@@ -85,16 +85,16 @@ class preprocessors:
     set_text = ...  # type: Preprocessor
 
 class transformers:
-    int = ...  # type: Transformer
-    float = ...  # type: Transformer
-    bool = ...  # type: Transformer
-    len = ...  # type: Transformer
-    lower = ...  # type: Transformer
-    upper = ...  # type: Transformer
-    capitalize = ...  # type: Transformer
-    lstrip = ...  # type: Transformer
-    rstrip = ...  # type: Transformer
-    strip = ...  # type: Transformer
+    int = ...  # type: Callable[[Any], int]
+    float = ...  # type: Callable[[Any], float]
+    bool = ...  # type: Callable[[Any], bool]
+    len = ...  # type: Callable[[Sequence], int]
+    lower = ...  # type: Callable[[str], str]
+    upper = ...  # type: Callable[[str], str]
+    capitalize = ...  # type: Callable[[str], str]
+    lstrip = ...  # type: Callable[[str], str]
+    rstrip = ...  # type: Callable[[str], str]
+    strip = ...  # type: Callable[[str], str]
     @staticmethod
     def clean(s: str) -> str: ...
     @staticmethod

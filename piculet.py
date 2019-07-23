@@ -523,16 +523,16 @@ class preprocessors:
 class transformers:
     """Predefined transformers."""
 
-    int = int.__call__  # sig: Transformer
-    float = float.__call__  # sig: Transformer
-    bool = bool.__call__  # sig: Transformer
-    len = len  # sig: Transformer
-    lower = str.lower  # sig: Transformer
-    upper = str.upper  # sig: Transformer
-    capitalize = str.capitalize  # sig: Transformer
-    lstrip = str.lstrip  # sig: Transformer
-    rstrip = str.rstrip  # sig: Transformer
-    strip = str.strip  # sig: Transformer
+    int = int.__call__  # sig: Callable[[Any], int]
+    float = float.__call__  # sig: Callable[[Any], float]
+    bool = bool.__call__  # sig: Callable[[Any], bool]
+    len = len  # sig: Callable[[Sequence], int]
+    lower = str.lower  # sig: Callable[[str], str]
+    upper = str.upper  # sig: Callable[[str], str]
+    capitalize = str.capitalize  # sig: Callable[[str], str]
+    lstrip = str.lstrip  # sig: Callable[[str], str]
+    rstrip = str.rstrip  # sig: Callable[[str], str]
+    strip = str.strip  # sig: Callable[[str], str]
 
     @staticmethod
     def clean(s):
