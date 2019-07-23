@@ -15,21 +15,19 @@ from typing import (
 )
 
 from html.parser import HTMLParser
-from types import SimpleNamespace
 from xml.etree import ElementTree
 
 XPathResult = Union[Sequence[str], Sequence[ElementTree.Element]]
 XPather = Callable[[ElementTree.Element], XPathResult]
-StrExtractor = Callable[[ElementTree.Element], str]
-MapExtractor = Callable[[ElementTree.Element], Mapping]
 StrTransformer = Callable[[str], Any]
 MapTransformer = Callable[[Mapping], Any]
-Transformer = Union[StrTransformer, MapTransformer]
+Transformer = Callable[[Any], Any]
+StrExtractor = Callable[[ElementTree.Element], str]
+MapExtractor = Callable[[ElementTree.Element], Mapping]
 Extractor = Callable[[ElementTree.Element], Any]
 Preprocessor = Callable[[ElementTree.Element], None]
 
 __version__ = ...  # type: str
-transformers = ...  # type: SimpleNamespace
 
 
 class HTMLNormalizer(HTMLParser):
@@ -85,6 +83,20 @@ class preprocessors:
     remove = ...  # type: Preprocessor
     set_attr = ...  # type: Preprocessor
     set_text = ...  # type: Preprocessor
+
+class transformers:
+    int = ...  # type: Transformer
+    float = ...  # type: Transformer
+    bool = ...  # type: Transformer
+    len = ...  # type: Transformer
+    lower = ...  # type: Transformer
+    upper = ...  # type: Transformer
+    capitalize = ...  # type: Transformer
+    lstrip = ...  # type: Transformer
+    rstrip = ...  # type: Transformer
+    strip = ...  # type: Transformer
+    clean = ...  # type: Transformer
+    normalize = ...  # type: Transformer
 
 def pipe(*functions) -> Callable[[Any], Any]: ...
 def load_spec(filepath: str) -> Mapping: ...

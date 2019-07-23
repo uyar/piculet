@@ -38,7 +38,6 @@ from io import StringIO
 from itertools import dropwhile
 from pathlib import Path
 from pkgutil import find_loader
-from types import SimpleNamespace
 
 
 __version__ = "2.0.0a1"  # sig: str
@@ -330,13 +329,12 @@ make_xpather = lru_cache(maxsize=None)(make_xpather)
 _EMPTY = {}
 
 
-# sigalias: StrExtractor = Callable[[ElementTree.Element], str]
-# sigalias: MapExtractor = Callable[[ElementTree.Element], Mapping]
-
 # sigalias: StrTransformer = Callable[[str], Any]
 # sigalias: MapTransformer = Callable[[Mapping], Any]
-# sigalias: Transformer = Union[StrTransformer, MapTransformer]
+# sigalias: Transformer = Callable[[Any], Any]
 
+# sigalias: StrExtractor = Callable[[ElementTree.Element], str]
+# sigalias: MapExtractor = Callable[[ElementTree.Element], Mapping]
 # sigalias: Extractor = Callable[[ElementTree.Element], Any]
 
 
@@ -522,21 +520,23 @@ class preprocessors:
     set_text = lambda **kwargs: partial(preprocess_set_text, **kwargs)  # sig: Preprocessor
 
 
-transformers = SimpleNamespace(  # sig: SimpleNamespace
-    int=int,
-    float=float,
-    bool=bool,
-    len=len,
-    lower=str.lower,
-    upper=str.upper,
-    capitalize=str.capitalize,
-    lstrip=str.lstrip,
-    rstrip=str.rstrip,
-    strip=str.strip,
-    clean=lambda s: re.sub(r"\s+", " ", s.replace("\xa0", " ")).strip(),
-    normalize=lambda s: re.sub(r"[^a-z0-9_]", "", s.lower().replace(" ", "_")),
-)
-"""Predefined transformers."""
+class transformers:
+    """Predefined transformers."""
+
+    int = int  # sig: Transformer
+    float = float  # sig: Transformer
+    bool = bool  # sig: Transformer
+    len = len  # sig: Transformer
+    lower = str.lower  # sig: Transformer
+    upper = str.upper  # sig: Transformer
+    capitalize = str.capitalize  # sig: Transformer
+    lstrip = str.lstrip  # sig: Transformer
+    rstrip = str.rstrip  # sig: Transformer
+    strip = str.strip  # sig: Transformer
+    clean = lambda s: re.sub(r"\s+", " ", s.replace("\xa0", " ")).strip()  # sig: Transformer
+    normalize = lambda s: re.sub(  # sig: Transformer
+        r"[^a-z0-9_]", "", s.lower().replace(" ", "_")
+    )
 
 
 def pipe(*functions):
