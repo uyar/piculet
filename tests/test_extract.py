@@ -1,6 +1,6 @@
 import pytest
 
-from piculet import build_tree, pipe, transformers
+from piculet import build_tree, pipe
 from piculet import make_items as Items
 from piculet import make_path as Path
 from piculet import make_rule as Rule
@@ -40,18 +40,6 @@ def test_transformers_should_be_chainable(shining):
     ]
     data = Items(rules)(shining)
     assert data == {"century": 20}
-
-
-def test_added_transformer_should_be_usable(shining):
-    transformers.year25 = lambda x: int(x) + 25
-    rules = [
-        Rule(
-            key="year",
-            value=Path('//span[@class="year"]/text()', transform=transformers.year25),
-        )
-    ]
-    data = Items(rules)(shining)
-    assert data == {"year": 2005}
 
 
 def test_multiple_rules_should_generate_multiple_items(shining):
@@ -106,9 +94,7 @@ def test_multivalued_items_should_be_transformable(shining):
         Rule(
             key="genres",
             value=Path(
-                foreach='//ul[@class="genres"]/li',
-                path="./text()",
-                transform=transformers.lower,
+                foreach='//ul[@class="genres"]/li', path="./text()", transform=str.lower
             ),
         )
     ]
@@ -192,7 +178,7 @@ def test_generated_key_should_be_transformable(shining):
     rules = [
         Rule(
             foreach='//div[@class="info"]',
-            key=Path("./h3/text()", transform=transformers.normalize),
+            key=Path("./h3/text()", transform=lambda s: s.lower()[:-1]),
             value=Path("./p/text()"),
         )
     ]
