@@ -1,7 +1,7 @@
 History
 =======
 
-2.0.0a1 (unreleased)
+2.0.0a1 (2019-07-23)
 --------------------
 
 - Remove reducing functions; selected texts will always be concatenated
