@@ -357,10 +357,10 @@ def _make_extractor(raw, transform=None, foreach=None):
     return apply
 
 
-def make_path(path, sep="", transform=None, foreach=None):
+def make_path(path, sep=None, transform=None, foreach=None):
     """Create an extractor that can get a single piece of data from an element.
 
-    :sig: (str, str, Optional[StrTransformer], Optional[str]) -> Extractor
+    :sig: (str, Optional[str], Optional[StrTransformer], Optional[str]) -> Extractor
     :param path: XPath expression for getting the raw data values.
     :param sep: Separator for joining the raw data values.
     :param transform: Function for transforming the obtained value.
@@ -368,6 +368,7 @@ def make_path(path, sep="", transform=None, foreach=None):
     :return: Function to apply to an element to extract the data as specified.
     """
     xpath = make_xpather(path)
+    sep = sep if sep is not None else ""
 
     def get_raw(element):
         selected = xpath(element)
@@ -577,9 +578,11 @@ def chain(*functions):
 def _make_extractor_from_desc(desc):
     if isinstance(desc, str):
         path, *transforms = [s.strip() for s in desc.split("|")]
+        sep = None
         foreach = None
     else:
         path = desc.get("path")
+        sep = desc.get("sep")
         transforms = [s.strip() for s in desc.get("transform", "").split("|")]
         foreach = desc.get("foreach")
     transforms = [s for s in transforms if len(s) > 0]
@@ -596,7 +599,7 @@ def _make_extractor_from_desc(desc):
         transform = chain(*ops)
 
     if path is not None:
-        extractor = make_path(path=path, transform=transform, foreach=foreach)
+        extractor = make_path(path=path, sep=sep, transform=transform, foreach=foreach)
     else:
         items = desc.get("items", [])
         rules = [_make_rule_from_desc(i) for i in items]

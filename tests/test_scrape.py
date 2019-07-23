@@ -25,6 +25,17 @@ def test_extracted_texts_should_be_concatenated(shining_content):
     assert data == {"full_title": "The Shining (1980)"}
 
 
+def test_extracted_texts_should_be_concatenated_using_given_separator(shining_content):
+    items = [
+        {
+            "key": "cast_names",
+            "value": {"path": '//table[@class="cast"]/tr/td[1]/a/text()', "sep": ", "},
+        }
+    ]
+    data = scrape(shining_content, {"items": items})
+    assert data == {"cast_names": "Jack Nicholson, Shelley Duvall"}
+
+
 def test_extracted_value_should_be_transformable(shining_content):
     items = [
         {"key": "year", "value": {"path": '//span[@class="year"]/text()', "transform": "int"}}
