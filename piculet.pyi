@@ -67,22 +67,16 @@ def make_rule(
     *,
     foreach: Optional[str] = ...,
 ) -> MapExtractor: ...
-def preprocess_remove(root: ElementTree.Element, *, path: str) -> None: ...
-def preprocess_set_attr(
-    root: ElementTree.Element,
-    *,
-    path: str,
-    name: Union[str, StrExtractor],
-    value: Union[str, StrExtractor],
-) -> None: ...
-def preprocess_set_text(
-    root: ElementTree.Element, *, path: str, text: Union[str, StrExtractor]
-) -> None: ...
 
 class preprocessors:
-    remove = ...  # type: Preprocessor
-    set_attr = ...  # type: Preprocessor
-    set_text = ...  # type: Preprocessor
+    @staticmethod
+    def remove(path: str) -> Preprocessor: ...
+    @staticmethod
+    def set_attr(
+        path: str, name: Union[str, StrExtractor], value: Union[str, StrExtractor]
+    ) -> Preprocessor: ...
+    @staticmethod
+    def set_text(path: str, text: Union[str, StrExtractor]) -> Preprocessor: ...
 
 class transformers:
     int = ...  # type: Callable[[Any], int]

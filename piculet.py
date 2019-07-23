@@ -443,81 +443,81 @@ def make_rule(key, value, *, foreach=None):
 
 
 ###########################################################
-# PREPROCESSING OPERATIONS
+# PREDEFINED HELPERS
 ###########################################################
 
 
 # sigalias: Preprocessor = Callable[[ElementTree.Element], None]
 
 
-def preprocess_remove(root, *, path):
-    """Remove selected elements from the tree.
-
-    :sig: (ElementTree.Element, str) -> None
-    :param root: Root element of the tree.
-    :param path: XPath expression to select the elements to remove.
-    """
-    elements = make_xpather(path)(root)
-    if len(elements) > 0:
-        for element in elements:
-            # XXX: could this be hazardous? parent removed in earlier iteration?
-            get_parent(element).remove(element)
-
-
-def preprocess_set_attr(root, *, path, name, value):
-    """Set an attribute for selected elements.
-
-    :sig:
-        (
-            ElementTree.Element,
-            str,
-            Union[str, StrExtractor],
-            Union[str, StrExtractor]
-        ) -> None
-    :param root: Root element of the tree.
-    :param path: XPath to select the elements to set attributes for.
-    :param name: Name of attribute to set.
-    :param value: Value of attribute to set.
-    """
-    elements = make_xpather(path)(root)
-    for element in elements:
-        name_ = name if isinstance(name, str) else name(element)
-        if name_ is _EMPTY:
-            continue
-
-        value_ = value if isinstance(value, str) else value(element)
-        if value_ is _EMPTY:
-            continue
-
-        element.set(name_, value_)
-
-
-def preprocess_set_text(root, *, path, text):
-    """Set the text for selected elements.
-
-    :sig: (ElementTree.Element, str, Union[str, StrExtractor]) -> None
-    :param root: Root element of the tree.
-    :param path: XPath to select the elements to set attributes for.
-    :param text: Value of text to set.
-    """
-    elements = make_xpather(path)(root)
-    for element in elements:
-        text_ = text if isinstance(text, str) else text(element)
-        # note that the text can be empty in which case the existing text will be cleared
-        element.text = text_ if text_ is not _EMPTY else None
-
-
-###########################################################
-# PREDEFINED HELPERS
-###########################################################
-
-
 class preprocessors:
     """Predefined preprocessors."""
 
-    remove = lambda **kwargs: partial(preprocess_remove, **kwargs)  # sig: Preprocessor
-    set_attr = lambda **kwargs: partial(preprocess_set_attr, **kwargs)  # sig: Preprocessor
-    set_text = lambda **kwargs: partial(preprocess_set_text, **kwargs)  # sig: Preprocessor
+    @staticmethod
+    def remove(path):
+        """Create a preprocessor that will remove selected elements from a tree.
+
+        :sig: (str) -> Preprocessor
+        :param path: XPath expression to select the elements to remove.
+        :return: Function to apply to a root to remove the selected elements.
+        """
+        xpather = make_xpather(path)
+
+        def apply(root):
+            elements = xpather(root)
+            if len(elements) > 0:
+                for element in elements:
+                    # XXX: could this be hazardous? parent removed in earlier iteration?
+                    get_parent(element).remove(element)
+
+        return apply
+
+    @staticmethod
+    def set_attr(path, name, value):
+        """Create a preprocessor that will set an attribute for selected elements.
+
+        :sig: (str, Union[str, StrExtractor], Union[str, StrExtractor]) -> Preprocessor
+        :param path: XPath to select the elements to set attributes for.
+        :param name: Name of attribute to set.
+        :param value: Value of attribute to set.
+        :return: Function to apply to a root to set the attributes.
+        """
+        xpather = make_xpather(path)
+
+        def apply(root):
+            elements = xpather(root)
+            for element in elements:
+                name_ = name if isinstance(name, str) else name(element)
+                if name_ is _EMPTY:
+                    continue
+
+                value_ = value if isinstance(value, str) else value(element)
+                if value_ is _EMPTY:
+                    continue
+
+                element.set(name_, value_)
+
+        return apply
+
+    @staticmethod
+    def set_text(path, text):
+        """Create a preprocessor that will set the text for selected elements.
+
+        :sig: (str, Union[str, StrExtractor]) -> Preprocessor
+        :param path: XPath to select the elements to set attributes for.
+        :param text: Value of text to set.
+        :return: Function to apply to a root to set the text values.
+        """
+        xpather = make_xpather(path)
+
+        def apply(root):
+            elements = xpather(root)
+            for element in elements:
+                text_ = text if isinstance(text, str) else text(element)
+                # note that if the text is empty the existing text will be cleared
+                element.text = text_ if text_ is not _EMPTY else None
+
+        return apply
 
 
 class transformers:
