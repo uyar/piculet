@@ -86,6 +86,12 @@ basepython = pypy3.6
 [testenv:pypy36-lxml]
 basepython = pypy3.6
 
+[testenv:pypy35]
+basepython = pypy3.5
+
+[testenv:pypy35-lxml]
+basepython = pypy3.5
+
 [testenv:coverage]
 deps =
     strictyaml
