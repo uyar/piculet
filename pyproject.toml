@@ -67,7 +67,7 @@ line-length = 96
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{37,36,35}{,-lxml}, pypy{36,35}{,-lxml}, py35-yaml, style, docs
+envlist = py{37,36,35}{,-lxml}, py35-yaml, style, docs
 isolated_build = True
 
 [testenv]
