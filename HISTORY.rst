@@ -1,6 +1,11 @@
 History
 =======
 
+1.0.2 (unreleased)
+------------------
+
+- Include stub file in distribution.
+
 1.0.1 (2019-02-07)
 ------------------
 
