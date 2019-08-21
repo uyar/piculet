@@ -653,7 +653,7 @@ testing = ["pathlib2", "contextlib2", "unittest2"]
 yaml = ["pyyaml"]
 
 [metadata]
-content-hash = "2bfc11467566e1ea7e15556d92714a357e223cbe3dd704ee40471d91002b8676"
+content-hash = "006784127a1a602c954605a548a3b24c22365baaad12604611bbbff9b437f6bd"
 python-versions = "^3.4|^2.7"
 
 [metadata.hashes]
