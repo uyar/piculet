@@ -53,7 +53,7 @@ Download both of these files and run the command::
 Getting help
 ------------
 
-The documentation is available on: https://piculet.tekir.org/
+The documentation is available on: https://piculet.readthedocs.io/
 
 The source code can be obtained from: https://github.com/uyar/piculet
 
