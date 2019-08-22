@@ -8,7 +8,7 @@ authors = ["H. Turgut Uyar <uyar@tekir.org>"]
 license = "LGPL-3.0+"
 
 homepage = "https://piculet.tekir.org/"
-documentation = "https://piculet.readthedocs.org/"
+documentation = "https://piculet.readthedocs.io/"
 repository = "https://github.com/uyar/piculet"
 
 keywords = ["xml", "html", "xpath", "scrape"]
