@@ -1,4 +1,4 @@
-|pypi| |pyversions| |license| |azure| |codecov|
+|pypi| |pyversions| |license| |travis| |codecov|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/piculet.svg?style=flat-square
     :target: https://pypi.org/project/piculet/
@@ -12,9 +12,9 @@
     :target: https://github.com/uyar/piculet/blob/master/LICENSE.txt
     :alt: Project license.
 
-.. |azure| image:: https://dev.azure.com/tekir/piculet/_apis/build/status/uyar.piculet?branchName=master
-    :target: https://dev.azure.com/tekir/piculet/_build
-    :alt: Azure Pipelines build status.
+.. |travis| image:: https://travis-ci.org/uyar/piculet.svg?branch=master
+    :target: https://travis-ci.org/uyar/piculet
+    :alt: Travis CI build status.
 
 .. |codecov| image:: https://codecov.io/gh/uyar/piculet/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/uyar/piculet
