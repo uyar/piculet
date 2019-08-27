@@ -71,12 +71,12 @@ envlist = py{37,36,35}{,-lxml}, py35-yaml, style, docs
 isolated_build = True
 
 [testenv]
-whitelist_externals = poetry
 deps =
-    lxml: lxml
-    yaml: strictyaml
+    pytest==5.1.1
+    pathstring==1.0.0
+    lxml: lxml==4.4.1
+    yaml: strictyaml==1.0.3
 commands =
-    poetry install -v
     {posargs:pytest}
 
 [testenv:pypy36]
@@ -93,29 +93,35 @@ basepython = pypy3.5
 
 [testenv:coverage]
 deps =
-    strictyaml
+    {[testenv]deps}
+    pytest-cov==2.7.1
+    strictyaml==1.0.3
 commands =
-    poetry install -v
     {posargs:pytest} --cov-report term-missing --cov=piculet tests
 
 [testenv:codecov]
 passenv = CODECOV_TOKEN
 deps =
-    strictyaml
+    {[testenv:coverage]deps}
 commands =
-    poetry install -v
     {posargs:pytest} --cov
     {posargs:codecov}
 
 [testenv:style]
+deps =
+    flake8==3.7.8
+    flake8-isort==2.7.0
+    flake8-docstrings==1.3.1
 commands =
-    poetry install -v
     {posargs:flake8} piculet.py
 
 [testenv:docs]
+deps =
+    sphinx==2.2.0
+    sphinx_rtd_theme==0.4.3
+    pygenstub==1.4.0
 changedir = docs/
 commands =
-    poetry install -v
     sphinx-build -b html source/ build/html/
 """
 
