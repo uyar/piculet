@@ -96,6 +96,7 @@ commands =
 passenv = CODECOV_TOKEN
 deps =
     {[testenv:coverage]deps}
+    codecov==2.0.15
 commands =
     {posargs:pytest} --cov
     {posargs:codecov}
