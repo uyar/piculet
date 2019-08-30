@@ -69,7 +69,7 @@ line-length = 96
 legacy_tox_ini = """
 [tox]
 toxworkdir = .tox.v1-dev
-envlist = py{37,36,35,34,27}{,-lxml}, pypy{27}{,-lxml}, style, docs
+envlist = py{37,36,35,34,27}{,-lxml}, pypy{36,35,27}{,-lxml}, style, docs
 isolated_build = True
 
 [testenv]
@@ -87,12 +87,6 @@ basepython = pypy3.6
 
 [testenv:pypy36-lxml]
 basepython = pypy3.6
-
-[testenv:pypy35]
-basepython = pypy3.5
-
-[testenv:pypy35-lxml]
-basepython = pypy3.5
 
 [testenv:style]
 basepython = python3.7
