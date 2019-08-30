@@ -628,7 +628,7 @@ test = ["pytest (>=3.6)", "pytest-cov", "pytest-django", "sybil", "zope.componen
 [[package]]
 category = "dev"
 description = "Type Hints for Python"
-marker = "python_version < \"3.5\""
+marker = "python_version >= \"2.7\" and python_version < \"3.0\" or python_version < \"3.5\""
 name = "typing"
 optional = false
 python-versions = "*"
@@ -665,7 +665,7 @@ testing = ["pathlib2", "contextlib2", "unittest2"]
 yaml = ["pyyaml"]
 
 [metadata]
-content-hash = "0967829efe427090cea67a09168f09406f2d0ee6b2c19f64728fe8fd738e3cdd"
+content-hash = "ec98b351a1b982f41c52839d51f1973e511089337142abb0d464b67c57e4efed"
 python-versions = "^3.4|^2.7"
 
 [metadata.hashes]

@@ -58,6 +58,7 @@ sphinx = "^1.8.5"
 sphinx_rtd_theme = "^0.4.3"
 pygenstub = "^1.4.0"
 pydocstyle = "^3.0.0"
+typing = {version = "^3.7.4", python = "^2.7"}
 
 [tool.poetry.scripts]
 piculet = "piculet:main"
