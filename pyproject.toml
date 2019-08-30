@@ -73,11 +73,13 @@ envlist = py{37,36,35,34,27}{,-lxml}, pypy{27}{,-lxml}, style, docs
 isolated_build = True
 
 [testenv]
-whitelist_externals = poetry
 deps =
+    pytest==3.10.1
+    pytest-cov==2.7.1
     lxml: lxml==4.3.5
+    py27,pypy27: mock==3.0.5
+    py27,pypy27: typing==3.7.4
 commands =
-    poetry install -v
     {posargs:pytest}
 
 [testenv:pypy36]
@@ -92,21 +94,23 @@ basepython = pypy3.5
 [testenv:pypy35-lxml]
 basepython = pypy3.5
 
-[testenv:pypy27]
-basepython = pypy2.7
-
-[testenv:pypy27-lxml]
-basepython = pypy2.7
-
 [testenv:style]
+basepython = python3.7
+deps =
+    flake8==3.7.8
+    flake8-isort==2.7.0
+    flake8-docstrings==1.4.0
 commands =
-    poetry install -v
     {posargs:flake8} piculet.py
 
 [testenv:docs]
+basepython = python3.7
+deps =
+    sphinx==1.8.5
+    sphinx_rtd_theme==0.4.3
+    pygenstub==1.4.0
 changedir = docs/
 commands =
-    poetry install -v
     sphinx-build -b html source/ build/html/
 """
 
