@@ -72,10 +72,10 @@ isolated_build = True
 
 [testenv]
 deps =
-    pytest==5.1.1
-    pathstring==1.0.0
-    lxml: lxml==4.4.1
-    yaml: strictyaml==1.0.3
+    pytest>=5.1
+    pathstring>=1.0
+    lxml: lxml>=4.4
+    yaml: strictyaml>=1.0
 commands =
     {posargs:pytest}
 
