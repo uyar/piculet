@@ -72,12 +72,12 @@ isolated_build = True
 
 [testenv]
 deps =
-    pytest>=5.1
-    pathstring>=1.0
-    lxml: lxml>=4.4
-    yaml: strictyaml>=1.0
+    pytest~=5.1
+    pathstring~=1.0
+    lxml: lxml~=4.4
+    yaml: strictyaml~=1.0
 commands =
-    {posargs:pytest}
+    {posargs:pytest} tests/
 
 [testenv:pypy36]
 basepython = pypy3.6
@@ -86,37 +86,39 @@ basepython = pypy3.6
 basepython = pypy3.6
 
 [testenv:coverage]
+basepython = python3.7
 deps =
     {[testenv]deps}
-    pytest-cov==2.7.1
-    strictyaml==1.0.3
+    pytest-cov~=2.7
+    strictyaml~=1.0
 commands =
-    {posargs:pytest} --cov-report term-missing --cov=piculet tests
+    {posargs:pytest} --cov-report term-missing --cov=piculet tests/
 
 [testenv:codecov]
+basepython = python3.7
 passenv = CODECOV_TOKEN
 deps =
     {[testenv:coverage]deps}
-    codecov==2.0.15
+    codecov~=2.0
 commands =
-    {posargs:pytest} --cov
+    {posargs:pytest} --cov=piculet tests/
     {posargs:codecov}
 
 [testenv:style]
 basepython = python3.7
 deps =
-    flake8==3.7.8
-    flake8-isort==2.7.0
-    flake8-docstrings==1.3.1
+    flake8~=3.7
+    flake8-isort~=2.7
+    flake8-docstrings~=1.3
 commands =
     {posargs:flake8} piculet.py
 
 [testenv:docs]
 basepython = python3.7
 deps =
-    sphinx==2.2.0
-    sphinx_rtd_theme==0.4.3
-    pygenstub==1.4.0
+    sphinx~=2.2
+    sphinx_rtd_theme~=0.4
+    pygenstub~=1.4
 changedir = docs/
 commands =
     sphinx-build -b html source/ build/html/
