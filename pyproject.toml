@@ -82,7 +82,7 @@ deps =
     py27,pypy27: mock~=3.0
     py27,pypy27: typing~=3.7
 commands =
-    {posargs:pytest} tests/
+    pytest {posargs}
 
 [testenv:pypy36]
 basepython = pypy3.6
@@ -97,7 +97,7 @@ deps =
     flake8-isort~=2.7
     flake8-docstrings~=1.4
 commands =
-    {posargs:flake8} piculet.py
+    flake8 piculet.py
 
 [testenv:docs]
 basepython = python3.7
