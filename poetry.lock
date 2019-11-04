@@ -106,7 +106,7 @@ description = "the modular source code checker: pep8, pyflakes and co"
 name = "flake8"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "3.7.8"
+version = "3.7.9"
 
 [package.dependencies]
 entrypoints = ">=0.3.0,<0.4.0"
@@ -385,8 +385,8 @@ category = "main"
 description = "Extensions to the standard Python datetime module"
 name = "python-dateutil"
 optional = true
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
-version = "2.8.0"
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+version = "2.8.1"
 
 [package.dependencies]
 six = ">=1.5"
@@ -573,7 +573,7 @@ description = "Strict, typed YAML parser"
 name = "strictyaml"
 optional = true
 python-versions = "*"
-version = "1.0.5"
+version = "1.0.6"
 
 [package.dependencies]
 python-dateutil = ">=2.6.0"
@@ -585,7 +585,7 @@ description = "A collection of helpers and mock objects for unit tests and doc t
 name = "testfixtures"
 optional = false
 python-versions = "*"
-version = "6.10.0"
+version = "6.10.1"
 
 [package.extras]
 build = ["setuptools-git", "wheel", "twine"]
@@ -713,8 +713,8 @@ entrypoints = [
     {file = "entrypoints-0.3.tar.gz", hash = "sha256:c70dd71abe5a8c85e55e12c19bd91ccfeec11a6e99044204511f9ed547d48451"},
 ]
 flake8 = [
-    {file = "flake8-3.7.8-py2.py3-none-any.whl", hash = "sha256:8e9dfa3cecb2400b3738a42c54c3043e821682b9c840b0448c0503f781130696"},
-    {file = "flake8-3.7.8.tar.gz", hash = "sha256:19241c1cbc971b9962473e4438a2ca19749a7dd002dd1a946eaba171b4114548"},
+    {file = "flake8-3.7.9-py2.py3-none-any.whl", hash = "sha256:49356e766643ad15072a789a20915d3c91dc89fd313ccd71802303fd67e4deca"},
+    {file = "flake8-3.7.9.tar.gz", hash = "sha256:45681a117ecc81e870cbf1262835ae4af5e7a8b08e40b944a8a6e6b895914cfb"},
 ]
 flake8-docstrings = [
     {file = "flake8-docstrings-1.5.0.tar.gz", hash = "sha256:3d5a31c7ec6b7367ea6506a87ec293b94a0a46c0bce2bb4975b7f1d09b6f3717"},
@@ -835,8 +835,8 @@ pytest-cov = [
     {file = "pytest_cov-2.8.1-py2.py3-none-any.whl", hash = "sha256:cdbdef4f870408ebdbfeb44e63e07eb18bb4619fae852f6e760645fa36172626"},
 ]
 python-dateutil = [
-    {file = "python-dateutil-2.8.0.tar.gz", hash = "sha256:c89805f6f4d64db21ed966fda138f8a5ed7a4fdbc1a8ee329ce1b74e3c74da9e"},
-    {file = "python_dateutil-2.8.0-py2.py3-none-any.whl", hash = "sha256:7e6584c74aeed623791615e26efd690f29817a27c73085b78e4bad02493df2fb"},
+    {file = "python-dateutil-2.8.1.tar.gz", hash = "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c"},
+    {file = "python_dateutil-2.8.1-py2.py3-none-any.whl", hash = "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"},
 ]
 pytz = [
     {file = "pytz-2019.3-py2.py3-none-any.whl", hash = "sha256:1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d"},
@@ -911,11 +911,11 @@ sphinxcontrib-serializinghtml = [
     {file = "sphinxcontrib_serializinghtml-1.1.3-py2.py3-none-any.whl", hash = "sha256:db6615af393650bf1151a6cd39120c29abaf93cc60db8c48eb2dddbfdc3a9768"},
 ]
 strictyaml = [
-    {file = "strictyaml-1.0.5.tar.gz", hash = "sha256:aad8d90c4d300c5bfa7678b9680ce456406319859c7279e98110548b596b5ae7"},
+    {file = "strictyaml-1.0.6.tar.gz", hash = "sha256:dd687a32577e0b832619ce0552eac86d6afad5fa7b61ab041bb765881c6a1f36"},
 ]
 testfixtures = [
-    {file = "testfixtures-6.10.0-py2.py3-none-any.whl", hash = "sha256:665a298976c8d77f311b65c46f16b7cda7229a47dff5ad7c822e5b3371a439e2"},
-    {file = "testfixtures-6.10.0.tar.gz", hash = "sha256:9d230c5c80746f9f86a16a1f751a5cf5d8e317d4cc48243a19fb180d22303bce"},
+    {file = "testfixtures-6.10.1-py2.py3-none-any.whl", hash = "sha256:18f5ea13a40a3b3a9184b785d2abfbaabd2a24dace9158962cd6334bf08b7e70"},
+    {file = "testfixtures-6.10.1.tar.gz", hash = "sha256:abbca7ed381d34a77699c6cb68be67919a1e7f5cf8728b57396145417fa34110"},
 ]
 urllib3 = [
     {file = "urllib3-1.25.6-py2.py3-none-any.whl", hash = "sha256:3de946ffbed6e6746608990594d08faac602528ac7015ac28d33cee6a45b7398"},
