@@ -67,7 +67,7 @@ line-length = 96
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{38,37,36,35}{,-lxml}, pypy{36,35}{,-lxml}, py35-yaml, style, docs
+envlist = py{38,37,36,35}{,-lxml}, pypy3{,-lxml}, py35-yaml, style, docs
 isolated_build = True
 
 [testenv]
@@ -78,12 +78,6 @@ deps =
     yaml: strictyaml~=1.0
 commands =
     pytest {posargs:tests}
-
-[testenv:pypy36]
-basepython = pypy3.6
-
-[testenv:pypy36-lxml]
-basepython = pypy3.6
 
 [testenv:coverage]
 basepython = python3.7

@@ -30,7 +30,7 @@ It also provides a command line interface.
 Getting started
 ---------------
 
-Piculet has been tested with Python 3.5+ and compatible versions of PyPy.
+Piculet has been tested with Python 3.5+ and PyPy 3.6.
 You can install the latest version using ``pip``::
 
     pip install piculet
