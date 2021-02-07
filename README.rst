@@ -1,10 +1,14 @@
 Piculet is a module for extracting data from XML or HTML documents
 using XPath queries.
 It consists of a `single source file`_ with no dependencies other than
-the standard library, which makes it very easy to integrate into applications.
+the standard library,
+which makes it very easy to integrate into applications.
 It also provides a command line interface.
 
 .. _single source file: https://github.com/uyar/piculet/blob/master/piculet.py
+
+Piculet is used for the parsers
+of the `IMDbPY <https://github.com/alberanid/imdbpy>`_ project.
 
 Getting started
 ---------------
