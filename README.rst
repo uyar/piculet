@@ -1,24 +1,3 @@
-|pypi| |pyversions| |license| |travis| |codecov|
-
-.. |pypi| image:: https://img.shields.io/pypi/v/piculet.svg?style=flat-square
-    :target: https://pypi.org/project/piculet/
-    :alt: PyPI version.
-
-.. |pyversions| image:: https://img.shields.io/pypi/pyversions/piculet.svg?style=flat-square
-    :target: https://pypi.org/project/piculet/
-    :alt: Supported Python versions.
-
-.. |license| image:: https://img.shields.io/pypi/l/piculet.svg?style=flat-square
-    :target: https://github.com/uyar/piculet/blob/master/LICENSE.txt
-    :alt: Project license.
-
-.. |travis| image:: https://travis-ci.org/uyar/piculet.svg?branch=master
-    :target: https://travis-ci.org/uyar/piculet
-    :alt: Travis CI build status.
-
-.. |codecov| image:: https://codecov.io/gh/uyar/piculet/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/uyar/piculet
-
 Piculet is a module for extracting data from XML or HTML documents
 using XPath queries.
 It consists of a `single source file`_ with no dependencies other than

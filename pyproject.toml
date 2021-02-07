@@ -49,7 +49,6 @@ yaml = ["strictyaml"]
 [tool.poetry.dev-dependencies]
 pytest = "^5.1.1"
 pytest-cov = "^2.7.1"
-codecov = "^2.0.15"
 flake8 = "^3.7.8"
 flake8-isort = "^4.0.0"
 flake8-docstrings = "^1.4.0"
@@ -95,16 +94,6 @@ deps =
     strictyaml
 commands =
     pytest --cov=piculet --cov-report=term-missing tests
-
-[testenv:codecov]
-basepython = python3.8
-passenv = CODECOV_TOKEN
-deps =
-    {[testenv:coverage]deps}
-    codecov
-commands =
-    pytest --cov=piculet tests
-    codecov
 
 [testenv:style]
 basepython = python3.8
