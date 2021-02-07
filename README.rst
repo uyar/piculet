@@ -9,8 +9,8 @@ It also provides a command line interface.
 Getting started
 ---------------
 
-Piculet has been tested with Python 3.5+ and PyPy 3.6.
-You can install the latest version using ``pip``::
+Piculet works with Python 3.6 and later versions.
+You can install it using ``pip``::
 
     pip install piculet
 
@@ -39,7 +39,7 @@ The source code can be obtained from: https://github.com/uyar/piculet
 License
 -------
 
-Copyright (C) 2014-2019 H. Turgut Uyar <uyar@tekir.org>
+Copyright (C) 2014-2021 H. Turgut Uyar <uyar@tekir.org>
 
 Piculet is released under the LGPL license, version 3 or later.
 Read the included `LICENSE.txt`_ file for details.

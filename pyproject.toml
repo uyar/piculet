@@ -56,7 +56,6 @@ black = "^20.8b1"
 sphinx = "^2.2.0"
 sphinx_rtd_theme = "^0.4.3"
 pygenstub = "^1.4.0"
-pathstring = "^1.0.0"
 tox = "^3.21.4"
 
 [tool.poetry.scripts]
@@ -80,7 +79,6 @@ isolated_build = True
 [testenv]
 deps =
     pytest
-    pathstring
     lxml: lxml
     yaml: strictyaml
 commands =

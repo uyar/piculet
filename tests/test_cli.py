@@ -3,9 +3,9 @@ from unittest import mock
 
 import json
 from io import StringIO
+from pathlib import Path
 from tempfile import gettempdir
 
-from pathstring import Path
 from pkg_resources import get_distribution
 from pkgutil import find_loader
 
@@ -54,7 +54,7 @@ def test_if_given_no_command_should_print_usage_and_exit(capsys):
 
 def test_if_given_conflicting_commands_should_print_usage_and_exit(capsys):
     with pytest.raises(SystemExit):
-        piculet.main(argv=["piculet", "-s", movie_spec, "--h2x"])
+        piculet.main(argv=["piculet", "-s", str(movie_spec), "--h2x"])
     out, err = capsys.readouterr()
     assert err.startswith("usage: ")
     assert "error: argument --h2x: not allowed with argument -s/--spec" in err
@@ -62,7 +62,7 @@ def test_if_given_conflicting_commands_should_print_usage_and_exit(capsys):
 
 def test_scrape_should_print_data_extracted_from_stdin(capsys, shining_content):
     with mock.patch("sys.stdin", StringIO(shining_content)):
-        piculet.main(argv=["piculet", "-s", movie_spec])
+        piculet.main(argv=["piculet", "-s", str(movie_spec)])
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data["title"] == "The Shining"
@@ -81,7 +81,7 @@ def test_scrape_should_work_with_yaml_spec(capsys, shining_content):
 def test_scrape_should_fail_with_yaml_spec_if_no_yaml_support(capsys):
     with pytest.raises(SystemExit):
         with mock.patch("sys.stdin", StringIO("")):
-            piculet.main(argv=["piculet", "-s", movie_spec.with_suffix(".yaml")])
+            piculet.main(argv=["piculet", "-s", str(movie_spec.with_suffix(".yaml"))])
     out, err = capsys.readouterr()
     assert "YAML support not available" in err
 
@@ -89,7 +89,7 @@ def test_scrape_should_fail_with_yaml_spec_if_no_yaml_support(capsys):
 def test_scrape_should_honor_html_setting(capsys, shining_content):
     content = shining_content.replace('<meta charset="utf-8"/>', '<meta charset="utf-8">')
     with mock.patch("sys.stdin", StringIO(content)):
-        piculet.main(argv=["piculet", "-s", movie_spec, "--html"])
+        piculet.main(argv=["piculet", "-s", str(movie_spec), "--html"])
     out, err = capsys.readouterr()
     data = json.loads(out)
     assert data["title"] == "The Shining"
