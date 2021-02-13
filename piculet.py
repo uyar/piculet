@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2019 H. Turgut Uyar <uyar@tekir.org>
+# Copyright (C) 2014-2021 H. Turgut Uyar <uyar@tekir.org>
 #
 # Piculet is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -98,8 +98,8 @@ class HTMLNormalizer(HTMLParser):
         self.omit_attrs = frozenset(omit_attrs)  # sig: FrozenSet[str]
 
         # stacks used during normalization
-        self._open_tags = deque()
-        self._open_omitted_tags = deque()
+        self._open_tags = deque()  # sig: Deque[str]
+        self._open_omitted_tags = deque()  # sig: Deque[str]
 
     def handle_starttag(self, tag, attrs):
         """Process the starting of a new element."""
@@ -326,12 +326,11 @@ make_xpather = lru_cache(maxsize=None)(make_xpather)
 ###########################################################
 
 
-_EMPTY = {}
+_EMPTY = {}  # sig: Mapping
 
 
 # sigalias: StrTransformer = Callable[[str], Any]
 # sigalias: MapTransformer = Callable[[Mapping], Any]
-# sigalias: Transformer = Callable[[Any], Any]
 
 # sigalias: StrExtractor = Callable[[ElementTree.Element], str]
 # sigalias: MapExtractor = Callable[[ElementTree.Element], Mapping]
