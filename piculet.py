@@ -51,9 +51,9 @@ __version__ = "2.0.0a1"  # sig: str
 class HTMLNormalizer(HTMLParser):
     """HTML to XHTML converter.
 
-    Other than converting the document to valid XHTML, this will
-    remove unwanted tags and attributes, along with all comments
-    and DOCTYPE declarations.
+    In addition to converting the document to valid XHTML,
+    this will also remove unwanted tags and attributes,
+    along with all comments and DOCTYPE declarations.
     """
 
     VOID_ELEMENTS = frozenset(  # sig: ClassVar[FrozenSet[str]]
@@ -83,10 +83,10 @@ class HTMLNormalizer(HTMLParser):
             "wbr",
         }
     )
-    """Tags to handle as self-closing."""
+    """Tags to treat as self-closing."""
 
     def __init__(self, *, omit_tags=(), omit_attrs=()):
-        """Initialize this normalizer.
+        """Set the tags and attributes to remove.
 
         :sig: (Iterable[str], Iterable[str]) -> None
         :param omit_tags: Tags to remove.
@@ -102,7 +102,6 @@ class HTMLNormalizer(HTMLParser):
         self._open_omitted_tags = deque()  # sig: Deque[str]
 
     def handle_starttag(self, tag, attrs):
-        """Process the starting of a new element."""
         if tag in self.omit_tags:
             # omit starting tag
             self._open_omitted_tags.append(tag)
@@ -141,7 +140,6 @@ class HTMLNormalizer(HTMLParser):
                 self._open_tags.append(tag)
 
     def handle_endtag(self, tag):
-        """Process the ending of an element."""
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             if tag not in HTMLNormalizer.VOID_ELEMENTS:
@@ -168,7 +166,6 @@ class HTMLNormalizer(HTMLParser):
             self._open_omitted_tags.pop()
 
     def handle_data(self, data):
-        """Process collected character data."""
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             line = html_escape(data)
@@ -179,6 +176,12 @@ class HTMLNormalizer(HTMLParser):
     #     # close all remaining open tags
     #     for tag in reversed(self._open_tags):
     #         print('</%(tag)s>' % {'tag': tag}, end='')
+
+    def error(self, message):
+        """Ignore errors.
+
+        :sig: (str) -> None
+        """
 
 
 def html_to_xhtml(document, *, omit_tags=(), omit_attrs=()):
@@ -534,7 +537,7 @@ class transformers:
     rstrip = str.rstrip  # sig: Callable[[str], str]
     strip = str.strip  # sig: Callable[[str], str]
 
-    re_spaces = re.compile(r"\s+")
+    _re_spaces = re.compile(r"\s+")  # sig: re.Pattern
 
     @staticmethod
     def clean(s):
@@ -544,9 +547,9 @@ class transformers:
         :param s: String to remove extra whitespace from.
         :return: String with extra whitespace removed.
         """
-        return transformers.re_spaces.sub(" ", s.replace("\xa0", " ")).strip()
+        return transformers._re_spaces.sub(" ", s.replace("\xa0", " ")).strip()
 
-    re_symbols = re.compile(r"[^a-z0-9_]")
+    _re_symbols = re.compile(r"[^a-z0-9_]")  # sig: re.Pattern
 
     @staticmethod
     def normalize(s):
@@ -556,7 +559,7 @@ class transformers:
         :param s: String to normalize.
         :return: Normalized string.
         """
-        return transformers.re_symbols.sub("", s.lower().replace(" ", "_"))
+        return transformers._re_symbols.sub("", s.lower().replace(" ", "_"))
 
 
 def chain(*functions):

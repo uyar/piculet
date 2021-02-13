@@ -18,6 +18,8 @@ from typing import (
 from html.parser import HTMLParser
 from xml.etree import ElementTree
 
+import re
+
 XPathResult = Union[Sequence[str], Sequence[ElementTree.Element]]
 XPather = Callable[[ElementTree.Element], XPathResult]
 StrTransformer = Callable[[str], Any]
@@ -40,6 +42,7 @@ class HTMLNormalizer(HTMLParser):
     def __init__(
         self, *, omit_tags: Iterable[str] = ..., omit_attrs: Iterable[str] = ...
     ) -> None: ...
+    def error(self, message: str) -> None: ...
 
 def html_to_xhtml(
     document: str,
@@ -92,6 +95,8 @@ class transformers:
     lstrip: Callable[[str], str]
     rstrip: Callable[[str], str]
     strip: Callable[[str], str]
+    _re_spaces: re.Pattern
+    _re_symbols: re.Pattern
     @staticmethod
     def clean(s: str) -> str: ...
     @staticmethod
