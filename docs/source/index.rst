@@ -14,7 +14,7 @@ Contents
    preprocess
    low-level
    api
-   history
+   changes
 
 
 Indices and Tables

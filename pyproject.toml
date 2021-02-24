@@ -31,13 +31,7 @@ classifiers = [
     "Topic :: Utilities"
 ]
 
-include = [
-    "HISTORY.rst",
-    "*.pyi",
-    "tests/**/*.py",
-    "docs/source/**/*",
-    "docs/Makefile"
-]
+include = ["*.pyi"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
