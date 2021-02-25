@@ -26,6 +26,7 @@ https://piculet.tekir.org/
 
 
 import json
+import os
 import re
 import sys
 from argparse import ArgumentParser
@@ -36,7 +37,6 @@ from html import escape as html_escape
 from html.parser import HTMLParser
 from io import StringIO
 from itertools import dropwhile
-from pathlib import Path
 from pkgutil import find_loader
 
 
@@ -102,6 +102,12 @@ class HTMLNormalizer(HTMLParser):
         self._open_omitted_tags = deque()  # sig: Deque[str]
 
     def handle_starttag(self, tag, attrs):
+        """Process the start of an element.
+
+        :sig: (str, List[Tuple[str, str]]) -> None
+        :param tag: Tag name of the element.
+        :param attrs: Attributes of the element.
+        """
         if tag in self.omit_tags:
             # omit starting tag
             self._open_omitted_tags.append(tag)
@@ -140,6 +146,11 @@ class HTMLNormalizer(HTMLParser):
                 self._open_tags.append(tag)
 
     def handle_endtag(self, tag):
+        """Process the end of an element.
+
+        :sig: (str) -> None
+        :param tag: Tag name of the element.
+        """
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             if tag not in HTMLNormalizer.VOID_ELEMENTS:
@@ -166,6 +177,11 @@ class HTMLNormalizer(HTMLParser):
             self._open_omitted_tags.pop()
 
     def handle_data(self, data):
+        """Process the data in an element.
+
+        :sig: (str) -> None
+        :param data: Data to process.
+        """
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             line = html_escape(data)
@@ -178,10 +194,7 @@ class HTMLNormalizer(HTMLParser):
     #         print('</%(tag)s>' % {'tag': tag}, end='')
 
     def error(self, message):
-        """Ignore errors.
-
-        :sig: (str) -> None
-        """
+        """Ignore errors."""
 
 
 def html_to_xhtml(document, *, omit_tags=(), omit_attrs=()):
@@ -638,8 +651,8 @@ def load_spec(filepath):
     :param filepath: Path of specification file.
     :return: Loaded specification.
     """
-    path = Path(filepath)
-    if path.suffix in {".yaml", ".yml"}:
+    suffix = os.path.splitext(filepath)[-1]
+    if suffix in {".yaml", ".yml"}:
         if find_loader("strictyaml") is None:
             raise RuntimeError("YAML support not available")
         import strictyaml
@@ -648,7 +661,8 @@ def load_spec(filepath):
     else:
         spec_loader = json.loads
 
-    spec_content = path.read_text(encoding="utf-8")
+    with open(filepath, encoding="utf-8") as spec_file:
+        spec_content = spec_file.read()
     return spec_loader(spec_content)
 
 
