@@ -1,5 +1,5 @@
-from piculet import make_xpather as XPath
 from piculet import make_path as Path
+from piculet import make_xpather as XPath
 from piculet import preprocessors, transformers
 
 

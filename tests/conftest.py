@@ -1,31 +1,12 @@
 import pytest
-from unittest import mock
 
 import os
-from hashlib import md5
-from io import BytesIO
-from urllib.request import urlopen
 
 import piculet
 
 
 cache_dir = os.path.join(os.path.dirname(__file__), ".cache")
 os.makedirs(cache_dir, exist_ok=True)
-
-
-def mock_urlopen(url):
-    url_key = md5(url.encode("utf-8")).hexdigest()
-    cache_file = os.path.join(cache_dir, url_key)
-    if cache_file.exists():
-        content = cache_file.read_bytes()
-    else:
-        with urlopen(url) as connection:
-            content = connection.read()
-        cache_file.write_bytes(content)
-    return BytesIO(content)
-
-
-piculet.urlopen = mock.Mock(wraps=mock_urlopen)
 
 
 @pytest.fixture(scope="session")

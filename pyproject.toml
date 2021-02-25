@@ -58,7 +58,7 @@ piculet = "piculet:main"
 [tool.isort]
 line_length = 96
 lines_after_imports = 2
-known_test = "pytest"
+known_test = "pytest,unittest"
 sections = "TEST,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
 
 [tool.black]

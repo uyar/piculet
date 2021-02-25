@@ -4,10 +4,8 @@ from unittest import mock
 import json
 import os
 from io import StringIO
-from tempfile import gettempdir
-
-from pkg_resources import get_distribution
 from pkgutil import find_loader
+from tempfile import gettempdir
 
 import piculet
 
