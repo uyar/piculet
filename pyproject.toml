@@ -35,6 +35,7 @@ include = ["*.pyi"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
+lxml = {version = "^4.7.1", optional = true}
 strictyaml = {version = "^1.6.1", optional = true}
 
 [tool.poetry.extras]
