@@ -17,11 +17,11 @@
 """Module for scraping XML and HTML documents using XPath queries.
 
 It consists of this single source file with no dependencies
-other than the standard library, which makes it very easy
-to integrate into applications.
+other than the standard library,
+which makes it very easy to integrate into applications.
 
 For more information, please refer to the documentation:
-https://piculet.tekir.org/
+https://tekir.org/piculet/
 """
 
 
@@ -29,6 +29,7 @@ import json
 import os
 import re
 import sys
+from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from collections import deque
 from contextlib import redirect_stdout
@@ -38,6 +39,7 @@ from html.parser import HTMLParser
 from io import StringIO
 from itertools import dropwhile
 from pkgutil import find_loader
+from types import SimpleNamespace
 
 
 __version__ = "2.0.0a2"  # sig: str
@@ -54,6 +56,9 @@ class HTMLNormalizer(HTMLParser):
     In addition to converting the document to valid XHTML,
     this will also remove unwanted tags and attributes,
     along with all comments and DOCTYPE declarations.
+
+    :param omit_tags: Tags to remove.
+    :param omit_attrs: Attributes to remove.
     """
 
     VOID_ELEMENTS = frozenset(  # sig: ClassVar[FrozenSet[str]]
@@ -86,14 +91,8 @@ class HTMLNormalizer(HTMLParser):
     """Tags to treat as self-closing."""
 
     def __init__(self, *, omit_tags=(), omit_attrs=()):
-        """Set the tags and attributes to remove.
-
-        :sig: (Iterable[str], Iterable[str]) -> None
-        :param omit_tags: Tags to remove.
-        :param omit_attrs: Attributes to remove.
-        """
+        # :sig: (Iterable[str], Iterable[str]) -> None
         super().__init__(convert_charrefs=True)
-
         self.omit_tags = frozenset(omit_tags)  # sig: FrozenSet[str]
         self.omit_attrs = frozenset(omit_attrs)  # sig: FrozenSet[str]
 
@@ -102,12 +101,7 @@ class HTMLNormalizer(HTMLParser):
         self._open_omitted_tags = deque()  # sig: Deque[str]
 
     def handle_starttag(self, tag, attrs):
-        """Process the start of an element.
-
-        :sig: (str, List[Tuple[str, str]]) -> None
-        :param tag: Tag name of the element.
-        :param attrs: Attributes of the element.
-        """
+        # :sig: (str, List[Tuple[str, str]]) -> None
         if tag in self.omit_tags:
             # omit starting tag
             self._open_omitted_tags.append(tag)
@@ -115,12 +109,12 @@ class HTMLNormalizer(HTMLParser):
             # stack empty -> not in omit mode
             if "@" in tag:
                 # email address in angular brackets
-                print("&lt;%s&gt;" % tag, end="")
+                print(f"&lt;{tag}&gt;", end="")
                 return
             if (tag == "li") and (self._open_tags[-1] == "li"):
                 # opening <li> without closing previous <li>, add </li>
                 self.handle_endtag("li")
-            attributes = []
+            attribs = []
             for attr_name, attr_value in attrs:
                 if attr_name in self.omit_attrs:
                     # omit attribute
@@ -135,10 +129,10 @@ class HTMLNormalizer(HTMLParser):
                     "name": attr_name,
                     "value": html_escape(attr_value, quote=True),
                 }
-                attributes.append(markup)
+                attribs.append(markup)
             line = "<%(tag)s%(attrs)s%(slash)s>" % {
                 "tag": tag,
-                "attrs": (" " + " ".join(attributes)) if len(attributes) > 0 else "",
+                "attrs": (" " + " ".join(attribs)) if len(attribs) > 0 else "",
                 "slash": "/" if tag in HTMLNormalizer.VOID_ELEMENTS else "",
             }
             print(line, end="")
@@ -146,11 +140,7 @@ class HTMLNormalizer(HTMLParser):
                 self._open_tags.append(tag)
 
     def handle_endtag(self, tag):
-        """Process the end of an element.
-
-        :sig: (str) -> None
-        :param tag: Tag name of the element.
-        """
+        # :sig: (str) -> None
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
             if tag not in HTMLNormalizer.VOID_ELEMENTS:
@@ -160,7 +150,7 @@ class HTMLNormalizer(HTMLParser):
                     self.handle_endtag("li")
                 if tag == last:
                     # expected end tag
-                    print("</%(tag)s>" % {"tag": tag}, end="")
+                    print(f"</{tag}>", end="")
                     self._open_tags.pop()
                 elif tag not in self._open_tags:
                     # closing tag without opening tag
@@ -168,8 +158,8 @@ class HTMLNormalizer(HTMLParser):
                     pass
                 elif tag == self._open_tags[-2]:
                     # unexpected closing tag, close both
-                    print("</%(tag)s>" % {"tag": last}, end="")
-                    print("</%(tag)s>" % {"tag": tag}, end="")
+                    print(f"</{last}>", end="")
+                    print(f"</{tag}>", end="")
                     self._open_tags.pop()
                     self._open_tags.pop()
         elif (tag in self.omit_tags) and (tag == self._open_omitted_tags[-1]):
@@ -177,21 +167,16 @@ class HTMLNormalizer(HTMLParser):
             self._open_omitted_tags.pop()
 
     def handle_data(self, data):
-        """Process the data in an element.
-
-        :sig: (str) -> None
-        :param data: Data to process.
-        """
+        # :sig: (str) -> None
         if not self._open_omitted_tags:
             # stack empty -> not in omit mode
-            line = html_escape(data)
-            print(line, end="")
+            print(html_escape(data), end="")
 
     # def feed(self, data):
     #     super().feed(data)
     #     # close all remaining open tags
     #     for tag in reversed(self._open_tags):
-    #         print('</%(tag)s>' % {'tag': tag}, end='')
+    #         print(f"</{tag}>", end='')
 
     def error(self, message):
         """Ignore errors."""
@@ -253,7 +238,8 @@ else:
 
         root = ElementTree.fromstring(document)
 
-        # ElementTree doesn't support parent queries, so we'll build a map for it
+        # ElementTree doesn't support parent queries,
+        # so we'll build a map for it
         parents = {e: p for p in root.iter() for e in p}
         root.set("__parents__", parents)
         root.set("__root__", root)
@@ -302,7 +288,12 @@ else:
 
         def descendant_text(element):
             # strip trailing '//text()'
-            return [t for e in prep(element).findall(path[:-8]) for t in e.itertext() if t]
+            return [
+                t
+                for e in prep(element).findall(path[:-8])
+                for t in e.itertext()
+                if t
+            ]
 
         def child_text(element):
             # strip trailing '/text()'
@@ -334,7 +325,7 @@ else:
         return apply
 
 
-make_xpather = lru_cache(maxsize=None)(make_xpather)
+xpather = lru_cache(maxsize=None)(make_xpather)
 
 
 ###########################################################
@@ -350,238 +341,309 @@ _EMPTY = {}  # sig: Mapping
 
 # sigalias: StrExtractor = Callable[[ElementTree.Element], str]
 # sigalias: MapExtractor = Callable[[ElementTree.Element], Mapping]
-# sigalias: Extractor = Callable[[ElementTree.Element], Any]
 
 
-def _make_extractor(raw, transform=None, foreach=None):
-    iterate = make_xpather(foreach) if foreach is not None else None
+class Extractor(ABC):
+    """An abstract base extractor.
 
-    def apply(element):
-        if iterate is None:
-            raw_value = raw(element)
-            if raw_value is _EMPTY:
-                return raw_value
-            return raw_value if transform is None else transform(raw_value)
+    This class handles the common extraction operations such as
+    transforming obtained raw values and handling multi-valued data.
+    """
+
+    def _init(self, transform=None, foreach=None):
+        self.transform = transform
+        self.iterate = xpather(foreach) if foreach is not None else None
+
+    @staticmethod
+    def from_desc(desc):
+        """Create an extractor from a description."""
+        if isinstance(desc, str):
+            path, *transforms = [s.strip() for s in desc.split("|")]
+            sep = None
+            foreach = None
         else:
-            raw_values = [raw(r) for r in iterate(element)]
-            raw_values = [v for v in raw_values if v is not _EMPTY]
-            if len(raw_values) == 0:
+            path = desc.get("path")
+            sep = desc.get("sep")
+            transforms = [
+                s.strip()
+                for s in desc.get("transform", "").split("|")
+            ]
+            foreach = desc.get("foreach")
+        transforms = [s for s in transforms if len(s) > 0]
+
+        if len(transforms) == 0:
+            transform = None
+        else:
+            ops = []
+            for op_name in transforms:
+                op = getattr(transformers, op_name, None)
+                if op is None:
+                    raise ValueError(f"Unknown transformer: '{op_name}'")
+                ops.append(op)
+            transform = chain(*ops)
+
+        if path is not None:
+            extractor = Path(
+                path=path,
+                sep=sep,
+                transform=transform,
+                foreach=foreach,
+            )
+        else:
+            extractor = Items(
+                rules=[Rule.from_desc(i) for i in desc.get("items", [])],
+                section=desc.get("section"),
+                transform=transform,
+                foreach=foreach,
+            )
+        return extractor
+
+    @abstractmethod
+    def _raw(self, element):
+        """Get the raw data from the element."""
+
+    def __call__(self, element):
+        """Extract the data from the element."""
+        if self.iterate is None:
+            raw = self._raw(element)
+            if raw is _EMPTY:
                 return _EMPTY
-            return raw_values if transform is None else list(map(transform, raw_values))
+            return raw if self.transform is None else self.transform(raw)
+        else:
+            raw_ = [self._raw(r) for r in self.iterate(element)]
+            raw = [v for v in raw_ if v is not _EMPTY]
+            if len(raw) == 0:
+                return _EMPTY
+            return raw if self.transform is None else [
+                self.transform(v) for v in raw
+            ]
 
-    return apply
 
+class Path(Extractor):
+    """An extractor that can get a single piece of data from an element.
 
-def make_path(path, sep=None, transform=None, foreach=None):
-    """Create an extractor that can get a single piece of data from an element.
-
-    :sig: (str, Optional[str], Optional[StrTransformer], Optional[str]) -> Extractor
     :param path: XPath expression for getting the raw data values.
     :param sep: Separator for joining the raw data values.
-    :param transform: Function for transforming the obtained value.
+    :param transform: Function for transforming the raw data.
     :param foreach: XPath expression for selecting multiple subelements.
-    :return: Function to apply to an element to extract the data as specified.
     """
-    xpath = make_xpather(path)
-    sep = sep if sep is not None else ""
 
-    def get_raw(element):
-        selected = xpath(element)
-        return sep.join(selected) if len(selected) > 0 else _EMPTY
+    def __init__(self, path, sep=None, transform=None, foreach=None):
+        # :sig: (str, Optional[str], Optional[StrTransformer], Optional[str])
+        super()._init(transform=transform, foreach=foreach)
+        self.xpath = xpather(path)
+        self.sep = sep if sep is not None else ""
 
-    return _make_extractor(get_raw, transform=transform, foreach=foreach)
+    def _raw(self, element):
+        selected = self.xpath(element)
+        return self.sep.join(selected) if len(selected) > 0 else _EMPTY
 
 
-def make_items(rules, section=None, transform=None, foreach=None):
-    """Create an extractor that can get multiple pieces of data from an element.
+class Items(Extractor):
+    """An extractor that can get multiple pieces of data from an element.
 
-    :sig:
-        (
-            Sequence[MapExtractor],
-            Optional[str],
-            Optional[MapTransformer],
-            Optional[str]
-        ) -> Extractor
     :param rules: Functions for generating the items from the element.
     :param section: XPath expression for selecting the root element for queries.
-    :param transform: Function for transforming the extracted data items.
-    :param foreach: XPath expression for selecting multiple subelements to extract data from.
-    :return: Function to apply to an element to extract the data as specified.
+    :param transform: Function for transforming the raw data items.
+    :param foreach: XPath expression for selecting multiple subelements.
     """
-    sections = make_xpather(section) if section is not None else None
 
-    def get_raw(element):
-        if sections is None:
+    def __init__(self, rules, section=None, transform=None, foreach=None):
+        # :sig: (Sequence[MapExtractor], Optional[str], Optional[MapTransformer], Optional[str])
+        super()._init(transform=transform, foreach=foreach)
+        self.rules = rules
+        self.sections = xpather(section) if section is not None else None
+
+    def _raw(self, element):
+        if self.sections is None:
             subroot = element
         else:
-            subroots = sections(element)
+            subroots = self.sections(element)
             if len(subroots) == 0:
                 return _EMPTY
             if len(subroots) > 1:
-                raise ValueError("Section path should select exactly one element")
+                raise ValueError("Section path must select exactly one element")
             subroot = subroots[0]
 
         data = {}
-        for rule in rules:
+        for rule in self.rules:
             item = rule(subroot)
             data.update(item)
         return data if len(data) > 0 else _EMPTY
 
-    return _make_extractor(get_raw, transform=transform, foreach=foreach)
 
+class Rule:
+    """A data generator.
 
-def make_rule(key, value, *, foreach=None):
-    """Create a data generator that can be applied to an element.
-
-    :sig: (Union[str, StrExtractor], Extractor, Optional[str]) -> MapExtractor
     :param key: Name to distinguish the data.
     :param value: Extractor that will generate the data.
     :param foreach: XPath expression for generating multiple data items.
-    :return: Function to apply to an element to generate the data as specified.
     """
-    iterate = make_xpather(foreach) if foreach is not None else None
 
-    def apply(element):
+    def __init__(self, key, value, *, foreach=None):
+        # :sig: (Union[str, StrExtractor], Extractor, Optional[str]) -> None
+        self.key = key
+        self.value = value
+        self.iterate = xpather(foreach) if foreach is not None else None
+
+    @staticmethod
+    def from_desc(desc):
+        """Create a rule from a description."""
+        key_ = desc["key"]
+        key = key_ if isinstance(key_, str) else Extractor.from_desc(key_)
+        value = Extractor.from_desc(desc["value"])
+        return Rule(key=key, value=value, foreach=desc.get("foreach"))
+
+    def __call__(self, element):
+        """Apply this rule to an element."""
         data = {}
-        subroots = [element] if iterate is None else iterate(element)
+        subroots = [element] if self.iterate is None else self.iterate(element)
         for subroot in subroots:
-            key_ = key if isinstance(key, str) else key(subroot)
-            if key_ is _EMPTY:
+            key = self.key if isinstance(self.key, str) else self.key(subroot)
+            if key is _EMPTY:
                 continue
 
-            value_ = value(subroot)
-            if value_ is _EMPTY:
+            value = self.value(subroot)
+            if value is _EMPTY:
                 continue
-            data[key_] = value_
+            data[key] = value
         return data if len(data) > 0 else _EMPTY
-
-    return apply
 
 
 ###########################################################
-# PREDEFINED HELPERS
+# PREPROCESSORS
 ###########################################################
 
 
 # sigalias: Preprocessor = Callable[[ElementTree.Element], None]
 
 
-class preprocessors:
-    """Predefined preprocessors."""
+def _remove(path):
+    """Create a preprocessor that will remove selected elements from a tree.
 
-    @staticmethod
-    def remove(path):
-        """Create a preprocessor that will remove selected elements from a tree.
+    :sig: (str) -> Preprocessor
+    :param path: XPath expression to select the elements to remove.
+    :return: Function to apply to a root to remove the selected elements.
+    """
+    applier = xpather(path)
 
-        :sig: (str) -> Preprocessor
-        :param path: XPath expression to select the elements to remove.
-        :return: Function to apply to a root to remove the selected elements.
-        """
-        xpather = make_xpather(path)
-
-        def apply(root):
-            elements = xpather(root)
-            if len(elements) > 0:
-                for element in elements:
-                    # XXX: could this be hazardous? parent removed in earlier iteration?
-                    get_parent(element).remove(element)
-
-        return apply
-
-    @staticmethod
-    def set_attr(path, name, value):
-        """Create a preprocessor that will set an attribute for selected elements.
-
-        :sig: (str, Union[str, StrExtractor], Union[str, StrExtractor]) -> Preprocessor
-        :param path: XPath to select the elements to set attributes for.
-        :param name: Name of attribute to set.
-        :param value: Value of attribute to set.
-        :return: Function to apply to a root to set the attributes.
-        """
-        xpather = make_xpather(path)
-
-        def apply(root):
-            elements = xpather(root)
+    def apply(root):
+        elements = applier(root)
+        if len(elements) > 0:
             for element in elements:
-                name_ = name if isinstance(name, str) else name(element)
-                if name_ is _EMPTY:
-                    continue
+                # XXX: could this be hazardous? parent removed in earlier iteration?
+                get_parent(element).remove(element)
 
-                value_ = value if isinstance(value, str) else value(element)
-                if value_ is _EMPTY:
-                    continue
-
-                element.set(name_, value_)
-
-        return apply
-
-    @staticmethod
-    def set_text(path, text):
-        """Create a preprocessor that will set the text for selected elements.
-
-        :sig: (str, Union[str, StrExtractor]) -> Preprocessor
-        :param path: XPath to select the elements to set attributes for.
-        :param text: Value of text to set.
-        :return: Function to apply to a root to set the text values.
-        """
-        xpather = make_xpather(path)
-
-        def apply(root):
-            elements = xpather(root)
-            for element in elements:
-                text_ = text if isinstance(text, str) else text(element)
-                # note that if the text is empty the existing text will be cleared
-                element.text = text_ if text_ is not _EMPTY else None
-
-        return apply
+    return apply
 
 
-class transformers:
-    """Predefined transformers."""
+def _set_attr(path, name, value):
+    """Create a preprocessor that will set an attribute for selected elements.
 
-    int = int.__call__  # sig: Callable[[Any], int]
-    float = float.__call__  # sig: Callable[[Any], float]
-    bool = bool.__call__  # sig: Callable[[Any], bool]
-    len = len  # sig: Callable[[Sequence], int]
-    lower = str.lower  # sig: Callable[[str], str]
-    upper = str.upper  # sig: Callable[[str], str]
-    capitalize = str.capitalize  # sig: Callable[[str], str]
-    lstrip = str.lstrip  # sig: Callable[[str], str]
-    rstrip = str.rstrip  # sig: Callable[[str], str]
-    strip = str.strip  # sig: Callable[[str], str]
+    :sig: (str, Union[str, StrExtractor], Union[str, StrExtractor]) -> Preprocessor
+    :param path: XPath to select the elements to set attributes for.
+    :param name: Name of attribute to set.
+    :param value: Value of attribute to set.
+    :return: Function to apply to a root to set the attributes.
+    """
+    applier = xpather(path)
 
-    _re_spaces = re.compile(r"\s+")  # sig: re.Pattern
+    def apply(root):
+        elements = applier(root)
+        for element in elements:
+            name_ = name if isinstance(name, str) else name(element)
+            if name_ is _EMPTY:
+                continue
 
-    @staticmethod
-    def clean(s):
-        """Remove extra whitespace.
+            value_ = value if isinstance(value, str) else value(element)
+            if value_ is _EMPTY:
+                continue
 
-        :sig: (str) -> str
-        :param s: String to remove extra whitespace from.
-        :return: String with extra whitespace removed.
-        """
-        return transformers._re_spaces.sub(" ", s.replace("\xa0", " ")).strip()
+            element.set(name_, value_)
 
-    _re_symbols = re.compile(r"[^a-z0-9_]")  # sig: re.Pattern
+    return apply
 
-    @staticmethod
-    def normalize(s):
-        """Remove punctuation symbols and replace spaces with underscores.
 
-        :sig: (str) -> str
-        :param s: String to normalize.
-        :return: Normalized string.
-        """
-        return transformers._re_symbols.sub("", s.lower().replace(" ", "_"))
+def _set_text(path, text):
+    """Create a preprocessor that will set the text for selected elements.
+
+    :sig: (str, Union[str, StrExtractor]) -> Preprocessor
+    :param path: XPath to select the elements to set attributes for.
+    :param text: Value of text to set.
+    :return: Function to apply to a root to set the text values.
+    """
+    applier = xpather(path)
+
+    def apply(root):
+        elements = applier(root)
+        for element in elements:
+            text_ = text if isinstance(text, str) else text(element)
+            # note that if the text is empty the existing text will be cleared
+            element.text = text_ if text_ is not _EMPTY else None
+
+    return apply
+
+
+preprocessors = SimpleNamespace(
+    remove=_remove,
+    set_attr=_set_attr,
+    set_text=_set_text,
+)
+"""Predefined preprocessors."""
+
+
+def preprocessor(desc):
+    """Create a preprocessor from a description."""
+    op = desc["op"]
+    func = getattr(preprocessors, op, None)
+    if func is None:
+        raise ValueError(f"Unknown preprocessing operation: '{op}'")
+    args = {
+        k: v if isinstance(v, str) else Extractor.from_desc(v)
+        for k, v in desc.items()
+        if k not in {"op", "path"}
+    }
+    return func(path=desc["path"], **args)
+
+
+###########################################################
+# TRANSFORMERS
+###########################################################
+
+
+_re_spaces = re.compile(r"\s+")
+_re_symbols = re.compile(r"[^a-z0-9_]")
+
+
+def _clean(s):
+    """Remove extra whitespace."""
+    return _re_spaces.sub(" ", s.replace("\xa0", " ")).strip()
+
+
+def _normalize(s):
+    """Remove punctuation symbols and replace spaces with underscores."""
+    return _re_symbols.sub("", s.lower().replace(" ", "_"))
+
+
+transformers = SimpleNamespace(
+    int=int.__call__,
+    float=float.__call__,
+    bool=bool.__call__,
+    len=len,
+    lower=str.lower,
+    upper=str.upper,
+    capitalize=str.capitalize,
+    lstrip=str.lstrip,
+    rstrip=str.rstrip,
+    strip=str.strip,
+    clean=_clean,
+    normalize=_normalize,
+)
+"""Predefined transformers."""
 
 
 def chain(*functions):
-    """Chain functions to apply the output of one as the input of the next.
-
-    :sig: () -> Callable[[Any], Any]
-    :param functions: Functions to chain.
-    :return: Single function that will apply all chained functions in order.
-    """
+    """Chain functions to apply the output of one as the input of the next."""
     return reduce(lambda f, g: lambda x: g(f(x)), functions)
 
 
@@ -590,66 +652,10 @@ def chain(*functions):
 ###########################################################
 
 
-def _make_extractor_from_desc(desc):
-    if isinstance(desc, str):
-        path, *transforms = [s.strip() for s in desc.split("|")]
-        sep = None
-        foreach = None
-    else:
-        path = desc.get("path")
-        sep = desc.get("sep")
-        transforms = [s.strip() for s in desc.get("transform", "").split("|")]
-        foreach = desc.get("foreach")
-    transforms = [s for s in transforms if len(s) > 0]
-
-    if len(transforms) == 0:
-        transform = None
-    else:
-        ops = []
-        for op_name in transforms:
-            op = getattr(transformers, op_name, None)
-            if op is None:
-                raise ValueError("Unknown transformer: '%(t)s'", {"t": op_name})
-            ops.append(op)
-        transform = chain(*ops)
-
-    if path is not None:
-        extractor = make_path(path=path, sep=sep, transform=transform, foreach=foreach)
-    else:
-        items = desc.get("items", [])
-        rules = [_make_rule_from_desc(i) for i in items]
-        extractor = make_items(
-            rules=rules, section=desc.get("section"), transform=transform, foreach=foreach
-        )
-
-    return extractor
-
-
-def _make_rule_from_desc(desc):
-    key = desc["key"]
-    key_ = key if isinstance(key, str) else _make_extractor_from_desc(key)
-    value_ = _make_extractor_from_desc(desc["value"])
-    return make_rule(key=key_, value=value_, foreach=desc.get("foreach"))
-
-
-def _make_preprocessor_from_desc(desc):
-    preprocessor = getattr(preprocessors, desc["op"], None)
-    if preprocessor is None:
-        raise ValueError("Unknown preprocessing operation: '%(o)s'", {"o": desc["op"]})
-    args = {
-        k: v if isinstance(v, str) else _make_extractor_from_desc(v)
-        for k, v in desc.items()
-        if k not in {"op", "path"}
-    }
-    return preprocessor(path=desc["path"], **args)
-
-
 def load_spec(filepath):
     """Load an extraction specification from a file.
 
     :sig: (str) -> Mapping
-    :param filepath: Path of specification file.
-    :return: Loaded specification.
     """
     suffix = os.path.splitext(filepath)[-1]
     if suffix in {".yaml", ".yml"}:
@@ -670,16 +676,16 @@ def parse_spec(spec):
     """Parse a specification.
 
     :sig: (Mapping) -> Tuple[Sequence[Preprocessor], Extractor]
-    :param spec: Specification to parse.
     :return: Preprocessor functions and data extractor function.
     """
     pre = spec.get("pre")
-    parsed_pre = [_make_preprocessor_from_desc(p) for p in pre] if pre is not None else []
+    parsed_pre = [preprocessor(p) for p in pre] if pre is not None else []
 
     items = spec.get("items", [])
     section = spec.get("section")
-    parsed_items = make_items(
-        rules=[_make_rule_from_desc(item) for item in items], section=section
+    parsed_items = Items(
+        rules=[Rule.from_desc(item) for item in items],
+        section=section,
     )
 
     return parsed_pre, parsed_items
@@ -713,11 +719,6 @@ def scrape(document, spec, *, lxml_html=False):
 
 
 def main(argv=None):
-    """Entry point of the command line utility.
-
-    :sig: (Optional[List[str]]) -> None
-    :param argv: Command line arguments.
-    """
     parser = ArgumentParser(prog="piculet", description="extract data from XML/HTML")
     parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
     parser.add_argument("--html", action="store_true", help="document is in HTML format")

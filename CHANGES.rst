@@ -5,6 +5,7 @@ History
 --------------------
 
 - Drop support for Python 3.6.
+- Revert API to OOP style.
 
 2.0.0a1 (2019-07-23)
 --------------------

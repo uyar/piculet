@@ -1,9 +1,6 @@
 import pytest
 
-from piculet import build_tree, chain
-from piculet import make_items as Items
-from piculet import make_path as Path
-from piculet import make_rule as Rule
+from piculet import Items, Path, Rule, build_tree, chain
 
 
 def test_empty_rules_should_return_empty_result(shining):
