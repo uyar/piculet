@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2021 H. Turgut Uyar <uyar@tekir.org>
+# Copyright (C) 2014-2022 H. Turgut Uyar <uyar@tekir.org>
 #
 # Piculet is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -40,7 +40,7 @@ from itertools import dropwhile
 from pkgutil import find_loader
 
 
-__version__ = "2.0.0a1"  # sig: str
+__version__ = "2.0.0a2"  # sig: str
 
 
 ###########################################################
