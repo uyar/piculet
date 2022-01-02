@@ -1,11 +1,8 @@
 import pytest
-from unittest import mock
 
 import json
-import os
-from io import StringIO
+import subprocess
 from pkgutil import find_loader
-from tempfile import gettempdir
 
 import piculet
 
@@ -13,88 +10,68 @@ import piculet
 YAML_AVAILABLE = find_loader("strictyaml") is not None
 
 
-movie_spec = os.path.join(os.path.dirname(os.path.dirname(__file__)), "examples", "movie.json")
-
-tempdir = "/dev/shm"
-if not os.path.exists(tempdir):
-    tempdir = gettempdir()
-
-
-def test_help_should_print_usage_and_exit(capsys):
-    with pytest.raises(SystemExit):
-        piculet.main(argv=["piculet", "--help"])
-    out, err = capsys.readouterr()
-    assert out.startswith("usage: ")
+def test_help_should_print_usage_and_exit(capfd):
+    subprocess.run(["piculet", "--help"])
+    std = capfd.readouterr()
+    assert std.out.startswith("usage: ")
 
 
-def test_version_should_print_version_number_and_exit(capsys):
-    with pytest.raises(SystemExit):
-        piculet.main(argv=["piculet", "--version"])
-    out, err = capsys.readouterr()
-    assert out == "piculet %(v)s\n" % {"v": piculet.__version__}
+def test_version_should_print_version_number_and_exit(capfd):
+    subprocess.run(["piculet", "--version"])
+    std = capfd.readouterr()
+    assert std.out == f"{piculet.__version__}\n"
 
 
-def test_errors_should_be_caught_and_printed(capsys):
-    with pytest.raises(SystemExit):
-        with mock.patch("sys.stdin", StringIO("")):
-            piculet.main(argv=["piculet", "-s", "foo.json"])
-    out, err = capsys.readouterr()
-    assert "No such file or directory: 'foo.json'" in err
+def test_if_given_no_command_should_print_usage_and_exit(capfd):
+    subprocess.run(["piculet"])
+    std = capfd.readouterr()
+    assert std.err.startswith("usage: ")
+    assert "error: one of the arguments -s/--spec --h2x is required" in std.err
 
 
-def test_if_given_no_command_should_print_usage_and_exit(capsys):
-    with pytest.raises(SystemExit):
-        piculet.main(argv=["piculet"])
-    out, err = capsys.readouterr()
-    assert err.startswith("usage: ")
-    assert "error: one of the arguments -s/--spec --h2x is required" in err
+def test_if_given_conflicting_commands_should_print_usage_and_exit(capfd, movie_spec):
+    subprocess.run(["piculet", "-s", movie_spec, "--h2x"])
+    std = capfd.readouterr()
+    assert std.err.startswith("usage: ")
+    assert "error: argument --h2x: not allowed with argument -s/--spec" in std.err
 
 
-def test_if_given_conflicting_commands_should_print_usage_and_exit(capsys):
-    with pytest.raises(SystemExit):
-        piculet.main(argv=["piculet", "-s", movie_spec, "--h2x"])
-    out, err = capsys.readouterr()
-    assert err.startswith("usage: ")
-    assert "error: argument --h2x: not allowed with argument -s/--spec" in err
-
-
-def test_scrape_should_print_data_extracted_from_stdin(capsys, shining_content):
-    with mock.patch("sys.stdin", StringIO(shining_content)):
-        piculet.main(argv=["piculet", "-s", movie_spec])
-    out, err = capsys.readouterr()
-    data = json.loads(out)
+def test_scrape_should_print_data_extracted_from_stdin(capfd, shining_file, movie_spec):
+    cat = subprocess.run(["cat", shining_file], check=True, capture_output=True)
+    subprocess.run(["piculet", "-s", movie_spec], input=cat.stdout)
+    std = capfd.readouterr()
+    data = json.loads(std.out)
     assert data["title"] == "The Shining"
 
 
 @pytest.mark.skipif(not YAML_AVAILABLE, reason="requires YAML support")
-def test_scrape_should_work_with_yaml_spec(capsys, shining_content):
-    with mock.patch("sys.stdin", StringIO(shining_content)):
-        piculet.main(argv=["piculet", "-s", movie_spec.replace(".json", ".yaml")])
-    out, err = capsys.readouterr()
-    data = json.loads(out)
+def test_scrape_should_work_with_yaml_spec(capfd, shining_file, movie_spec):
+    cat = subprocess.run(["cat", shining_file], check=True, capture_output=True)
+    subprocess.run(["piculet", "-s", movie_spec.with_suffix(".yaml")], input=cat.stdout)
+    std = capfd.readouterr()
+    data = json.loads(std.out)
     assert data["title"] == "The Shining"
 
 
 @pytest.mark.skipif(YAML_AVAILABLE, reason="wants exception if no YAML support")
-def test_scrape_should_fail_with_yaml_spec_if_no_yaml_support(capsys):
-    with pytest.raises(SystemExit):
-        with mock.patch("sys.stdin", StringIO("")):
-            piculet.main(argv=["piculet", "-s", movie_spec.replace(".json", ".yaml")])
-    out, err = capsys.readouterr()
-    assert "YAML support not available" in err
+def test_scrape_should_fail_with_yaml_spec_if_no_yaml_support(capfd, movie_spec):
+    echo = subprocess.run(["echo"], check=True, capture_output=True)
+    subprocess.run(["piculet", "-s", movie_spec.with_suffix(".yaml")], input=echo.stdout)
+    std = capfd.readouterr()
+    assert "YAML support not available" in std.err
 
 
-def test_scrape_should_honor_html_setting(capsys, shining_content):
+def test_scrape_should_honor_html_setting(capfd, shining_content, movie_spec):
     content = shining_content.replace('<meta charset="utf-8"/>', '<meta charset="utf-8">')
-    with mock.patch("sys.stdin", StringIO(content)):
-        piculet.main(argv=["piculet", "-s", movie_spec, "--html"])
-    out, err = capsys.readouterr()
-    data = json.loads(out)
+    echo = subprocess.run(["echo", content], check=True, capture_output=True)
+    subprocess.run(["piculet", "-s", movie_spec, "--html"], input=echo.stdout)
+    std = capfd.readouterr()
+    data = json.loads(std.out)
     assert data["title"] == "The Shining"
 
 
-def test_h2x_should_convert_document_from_stdin(capsys):
-    with mock.patch("sys.stdin", StringIO("<img>")):
-        piculet.main(argv=["piculet", "--h2x"])
-    out, err = capsys.readouterr()
-    assert out == "<img/>"
+def test_h2x_should_convert_document_from_stdin(capfd):
+    echo = subprocess.run(["echo", "<img>"], check=True, capture_output=True)
+    subprocess.run(["piculet", "--h2x"], input=echo.stdout)
+    std = capfd.readouterr()
+    assert std.out == "<img/>\n"

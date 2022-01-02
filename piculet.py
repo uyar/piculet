@@ -615,16 +615,6 @@ _re_spaces = re.compile(r"\s+")
 _re_symbols = re.compile(r"[^a-z0-9_]")
 
 
-def _clean(s):
-    """Remove extra whitespace."""
-    return _re_spaces.sub(" ", s.replace("\xa0", " ")).strip()
-
-
-def _normalize(s):
-    """Remove punctuation symbols and replace spaces with underscores."""
-    return _re_symbols.sub("", s.lower().replace(" ", "_"))
-
-
 transformers = SimpleNamespace(
     int=int.__call__,
     float=float.__call__,
@@ -636,8 +626,8 @@ transformers = SimpleNamespace(
     lstrip=str.lstrip,
     rstrip=str.rstrip,
     strip=str.strip,
-    clean=_clean,
-    normalize=_normalize,
+    clean=lambda s: _re_spaces.sub(" ", s.replace("\xa0", " ")).strip(),
+    normalize=lambda s: _re_symbols.sub("", s.lower().replace(" ", "_")),
 )
 """Predefined transformers."""
 
@@ -648,7 +638,38 @@ def chain(*functions):
 
 
 ###########################################################
-# SPECIFICATION OPERATIONS
+# MAIN API
+###########################################################
+
+
+def scrape(document, spec, *, lxml_html=False):
+    """Extract data from a document after optionally preprocessing it.
+
+    :sig: (str, Mapping, bool) -> Mapping
+    :param document: Document to scrape.
+    :param spec: Extraction specification.
+    :param lxml_html: Whether to use the lxml.html builder.
+    :return: Extracted data.
+    """
+    pre_ = spec.get("pre")
+    pre = [preprocessor(p) for p in pre_] if pre_ is not None else []
+
+    items_ = spec.get("items", [])
+    section = spec.get("section")
+    rules = Items(
+        rules=[Rule.from_desc(item) for item in items_],
+        section=section,
+    )
+
+    root = build_tree(document, lxml_html=lxml_html)
+    for preprocess in pre:
+        preprocess(root)
+    data = rules(root)
+    return data
+
+
+###########################################################
+# COMMAND-LINE INTERFACE
 ###########################################################
 
 
@@ -672,77 +693,34 @@ def load_spec(filepath):
     return spec_loader(spec_content)
 
 
-def parse_spec(spec):
-    """Parse a specification.
-
-    :sig: (Mapping) -> Tuple[Sequence[Preprocessor], Extractor]
-    :return: Preprocessor functions and data extractor function.
-    """
-    pre = spec.get("pre")
-    parsed_pre = [preprocessor(p) for p in pre] if pre is not None else []
-
-    items = spec.get("items", [])
-    section = spec.get("section")
-    parsed_items = Items(
-        rules=[Rule.from_desc(item) for item in items],
-        section=section,
+def main():
+    parser = ArgumentParser(description="extract data from XML/HTML")
+    parser.add_argument(
+        "--version", action="version", version=f"{__version__}"
+    )
+    parser.add_argument(
+        "--html", action="store_true", help="document is in HTML format"
     )
 
-    return parsed_pre, parsed_items
-
-
-###########################################################
-# MAIN API
-###########################################################
-
-
-def scrape(document, spec, *, lxml_html=False):
-    """Extract data from a document after optionally preprocessing it.
-
-    :sig: (str, Mapping, bool) -> Mapping
-    :param document: Document to scrape.
-    :param spec: Extraction specification.
-    :param lxml_html: Whether to use the lxml.html builder.
-    :return: Extracted data.
-    """
-    pre, rules = parse_spec(spec)
-    root = build_tree(document, lxml_html=lxml_html)
-    for preprocess in pre:
-        preprocess(root)
-    data = rules(root)
-    return data
-
-
-###########################################################
-# COMMAND-LINE INTERFACE
-###########################################################
-
-
-def main(argv=None):
-    parser = ArgumentParser(prog="piculet", description="extract data from XML/HTML")
-    parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
-    parser.add_argument("--html", action="store_true", help="document is in HTML format")
-
     command = parser.add_mutually_exclusive_group(required=True)
-    command.add_argument("-s", "--spec", help="spec file")
-    command.add_argument("--h2x", action="store_true", help="convert HTML to XHTML")
+    command.add_argument(
+        "-s", "--spec", help="spec file"
+    )
+    command.add_argument(
+        "--h2x", action="store_true", help="convert HTML to XHTML"
+    )
 
-    argv = argv if argv is not None else sys.argv
-    arguments = parser.parse_args(argv[1:])
+    arguments = parser.parse_args()
 
-    try:
-        content = sys.stdin.read()
-        if arguments.h2x:
-            print(html_to_xhtml(content), end="")
-        else:
-            spec = load_spec(arguments.spec)
-            if arguments.html:
-                content = html_to_xhtml(content)
-            data = scrape(content, spec)
-            print(json.dumps(data, indent=2, sort_keys=True))
-    except Exception as e:
-        print(e, file=sys.stderr)
-        sys.exit(1)
+    content = sys.stdin.read()
+    if arguments.h2x:
+        print(html_to_xhtml(content), end="")
+    else:
+        spec = load_spec(arguments.spec)
+        if arguments.html:
+            content = html_to_xhtml(content)
+        data = scrape(content, spec)
+        print(json.dumps(data, indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":
