@@ -29,7 +29,7 @@ __version__ = "2.0.0a2"
 
 
 import json
-import os
+import pathlib
 import re
 import sys
 from abc import ABC, abstractmethod
@@ -675,9 +675,8 @@ def scrape(document: str, spec: Mapping, *, html: bool = False) -> Mapping:
 ############################################################
 
 
-def _load_spec(filepath: str) -> Mapping:
-    suffix = os.path.splitext(filepath)[-1]
-    if suffix in {".yaml", ".yml"}:
+def _load_spec(filepath: pathlib.Path) -> Mapping:
+    if filepath.suffix in {".yaml", ".yml"}:
         if find_loader("strictyaml") is None:
             raise RuntimeError("YAML support not available")
         import strictyaml
@@ -686,8 +685,7 @@ def _load_spec(filepath: str) -> Mapping:
     else:
         spec_loader = json.loads
 
-    with open(filepath, encoding="utf-8") as spec_file:
-        spec_content = spec_file.read()
+    spec_content = filepath.read_text()
     return spec_loader(spec_content)
 
 
@@ -714,7 +712,7 @@ def main():
     if arguments.h2x:
         print(html_to_xhtml(content), end="")
     else:
-        spec = _load_spec(arguments.spec)
+        spec = _load_spec(pathlib.Path(arguments.spec))
         data = scrape(content, spec, html=arguments.html)
         print(json.dumps(data, indent=2, sort_keys=True))
 
