@@ -68,8 +68,8 @@ class HTMLNormalizer(HTMLParser):
     this will also remove unwanted tags and attributes,
     along with all comments and DOCTYPE declarations.
 
-    :param omit_tags: Tags to remove.
-    :param omit_attrs: Attributes to remove.
+    :param skip_tags: Tags to remove.
+    :param skip_attrs: Attributes to remove.
     """
 
     VOID_ELEMENTS: FrozenSet[str] = frozenset(
@@ -102,24 +102,24 @@ class HTMLNormalizer(HTMLParser):
     """Tags to treat as self-closing."""
 
     def __init__(
-        self, *, omit_tags: Iterable[str] = (), omit_attrs: Iterable[str] = ()
+        self, *, skip_tags: Iterable[str] = (), skip_attrs: Iterable[str] = ()
     ) -> None:
         super().__init__(convert_charrefs=True)
-        self.omit_tags: FrozenSet[str] = frozenset(omit_tags)
-        self.omit_attrs: FrozenSet[str] = frozenset(omit_attrs)
+        self.skip_tags: FrozenSet[str] = frozenset(skip_tags)
+        self.skip_attrs: FrozenSet[str] = frozenset(skip_attrs)
 
         # stacks used during normalization
         self._open_tags: Deque[str] = deque()
-        self._open_omitted_tags: Deque[str] = deque()
+        self._open_skip_tags: Deque[str] = deque()
 
     def handle_starttag(
         self, tag: str, attrs: List[Tuple[str, Optional[str]]]
     ) -> None:
-        if tag in self.omit_tags:
-            # omit starting tag
-            self._open_omitted_tags.append(tag)
-        if len(self._open_omitted_tags) == 0:
-            # stack empty -> not in omit mode
+        if tag in self.skip_tags:
+            # skip starting tag
+            self._open_skip_tags.append(tag)
+        if len(self._open_skip_tags) == 0:
+            # stack empty -> not in skip mode
             if "@" in tag:
                 # email address in angular brackets
                 print(f"&lt;{tag}&gt;", end="")
@@ -129,8 +129,8 @@ class HTMLNormalizer(HTMLParser):
                 self.handle_endtag("li")
             attribs = []
             for attr_name, attr_value in attrs:
-                if attr_name in self.omit_attrs:
-                    # omit attribute
+                if attr_name in self.skip_attrs:
+                    # skip attribute
                     continue
                 if (not attr_name[0].isalpha()) or ('"' in attr_name):
                     # malformed attribute name, ignore
@@ -153,8 +153,8 @@ class HTMLNormalizer(HTMLParser):
                 self._open_tags.append(tag)
 
     def handle_endtag(self, tag: str) -> None:
-        if len(self._open_omitted_tags) == 0:
-            # stack empty -> not in omit mode
+        if len(self._open_skip_tags) == 0:
+            # stack empty -> not in skip mode
             if tag not in HTMLNormalizer.VOID_ELEMENTS:
                 last = self._open_tags[-1]
                 if (tag == "ul") and (last == "li"):
@@ -174,13 +174,13 @@ class HTMLNormalizer(HTMLParser):
                     print(f"</{tag}>", end="")
                     self._open_tags.pop()
                     self._open_tags.pop()
-        elif (tag in self.omit_tags) and (tag == self._open_omitted_tags[-1]):
-            # end of expected omitted tag
-            self._open_omitted_tags.pop()
+        elif (tag in self.skip_tags) and (tag == self._open_skip_tags[-1]):
+            # end of expected skip tag
+            self._open_skip_tags.pop()
 
     def handle_data(self, data: str) -> None:
-        if len(self._open_omitted_tags) == 0:
-            # stack empty -> not in omit mode
+        if len(self._open_skip_tags) == 0:
+            # stack empty -> not in skip mode
             print(html_escape(data), end="")
 
     # def feed(self, data: str) -> None:
@@ -194,16 +194,16 @@ class HTMLNormalizer(HTMLParser):
 
 
 def html_to_xhtml(
-    document: str, *, omit_tags: Iterable[str] = (), omit_attrs: Iterable[str] = ()
+    document: str, *, skip_tags: Iterable[str] = (), skip_attrs: Iterable[str] = ()
 ) -> str:
     """Convert an HTML document to XHTML.
 
     :param document: HTML document to convert.
-    :param omit_tags: Tags to exclude from the output.
-    :param omit_attrs: Attributes to exclude from the output.
+    :param skip_tags: Tags to exclude from the output.
+    :param skip_attrs: Attributes to exclude from the output.
     """
     out = StringIO()
-    normalizer = HTMLNormalizer(omit_tags=omit_tags, omit_attrs=omit_attrs)
+    normalizer = HTMLNormalizer(skip_tags=skip_tags, skip_attrs=skip_attrs)
     with redirect_stdout(out):
         normalizer.feed(document)
     return out.getvalue()
