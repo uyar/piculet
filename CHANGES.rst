@@ -1,4 +1,4 @@
-History
+Changes
 =======
 
 2.0.0a2 (unreleased)
@@ -6,6 +6,7 @@ History
 
 - Drop support for Python 3.6.
 - Revert API to OOP style.
+- Move type annotations from stub into source.
 
 2.0.0a1 (2019-07-23)
 --------------------
