@@ -5,9 +5,6 @@ from pkgutil import find_loader
 from piculet import scrape, transformers
 
 
-LXML_AVAILABLE = find_loader("lxml") is not None
-
-
 def test_empty_rules_should_return_empty_result(shining_content):
     data = scrape(shining_content, {"items": []})
     assert data == {}
@@ -276,21 +273,6 @@ def test_section_multiple_roots_should_raise_error(shining_content):
             }
         ]
         scrape(shining_content, {"items": items})
-
-
-@pytest.mark.skipif(not LXML_AVAILABLE, reason="requires support for LXML")
-def test_scrape_should_use_lxml_html_parser_if_requested(shining_content):
-    content = shining_content.replace('<meta charset="utf-8"/>', '<meta charset="utf-8">')
-    items = [{"key": "title", "value": {"path": "//title/text()"}}]
-    data = scrape(content, {"items": items}, lxml_html=True)
-    assert data == {"title": "The Shining"}
-
-
-@pytest.mark.skipif(LXML_AVAILABLE, reason="wants exception if no LXML support")
-def test_scrape_should_fail_for_lxml_html_parser_if_no_lxml_support(shining_content):
-    with pytest.raises(RuntimeError) as e:
-        scrape(shining_content, {}, lxml_html=True)
-        assert "LXML not available" in str(e)
 
 
 def test_unknown_preprocessor_should_raise_error(shining_content):

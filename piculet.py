@@ -25,6 +25,9 @@ https://tekir.org/piculet/
 """
 
 
+__version__ = "2.0.0a2"
+
+
 import json
 import os
 import re
@@ -40,14 +43,22 @@ from io import StringIO
 from itertools import dropwhile
 from pkgutil import find_loader
 from types import SimpleNamespace
+from typing import Any, Callable, Deque, FrozenSet, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
 
-__version__ = "2.0.0a2"  # sig: str
+_LXML_AVAILABLE = find_loader("lxml") is not None
+
+if _LXML_AVAILABLE:
+    import lxml.etree as ElementTree
+    import lxml.html
+    from lxml.etree import XPath as make_xpather
+else:
+    from xml.etree import ElementTree
 
 
-###########################################################
+############################################################
 # HTML OPERATIONS
-###########################################################
+############################################################
 
 
 class HTMLNormalizer(HTMLParser):
@@ -61,7 +72,7 @@ class HTMLNormalizer(HTMLParser):
     :param omit_attrs: Attributes to remove.
     """
 
-    VOID_ELEMENTS = frozenset(  # sig: ClassVar[FrozenSet[str]]
+    VOID_ELEMENTS: FrozenSet[str] = frozenset(
         {
             "area",
             "base",
@@ -90,22 +101,24 @@ class HTMLNormalizer(HTMLParser):
     )
     """Tags to treat as self-closing."""
 
-    def __init__(self, *, omit_tags=(), omit_attrs=()):
-        # :sig: (Iterable[str], Iterable[str]) -> None
+    def __init__(
+        self, *, omit_tags: Iterable[str] = (), omit_attrs: Iterable[str] = ()
+    ) -> None:
         super().__init__(convert_charrefs=True)
-        self.omit_tags = frozenset(omit_tags)  # sig: FrozenSet[str]
-        self.omit_attrs = frozenset(omit_attrs)  # sig: FrozenSet[str]
+        self.omit_tags: FrozenSet[str] = frozenset(omit_tags)
+        self.omit_attrs: FrozenSet[str] = frozenset(omit_attrs)
 
         # stacks used during normalization
-        self._open_tags = deque()  # sig: Deque[str]
-        self._open_omitted_tags = deque()  # sig: Deque[str]
+        self._open_tags: Deque[str] = deque()
+        self._open_omitted_tags: Deque[str] = deque()
 
-    def handle_starttag(self, tag, attrs):
-        # :sig: (str, List[Tuple[str, str]]) -> None
+    def handle_starttag(
+        self, tag: str, attrs: List[Tuple[str, Optional[str]]]
+    ) -> None:
         if tag in self.omit_tags:
             # omit starting tag
             self._open_omitted_tags.append(tag)
-        if not self._open_omitted_tags:
+        if len(self._open_omitted_tags) == 0:
             # stack empty -> not in omit mode
             if "@" in tag:
                 # email address in angular brackets
@@ -139,9 +152,8 @@ class HTMLNormalizer(HTMLParser):
             if tag not in HTMLNormalizer.VOID_ELEMENTS:
                 self._open_tags.append(tag)
 
-    def handle_endtag(self, tag):
-        # :sig: (str) -> None
-        if not self._open_omitted_tags:
+    def handle_endtag(self, tag: str) -> None:
+        if len(self._open_omitted_tags) == 0:
             # stack empty -> not in omit mode
             if tag not in HTMLNormalizer.VOID_ELEMENTS:
                 last = self._open_tags[-1]
@@ -166,30 +178,29 @@ class HTMLNormalizer(HTMLParser):
             # end of expected omitted tag
             self._open_omitted_tags.pop()
 
-    def handle_data(self, data):
-        # :sig: (str) -> None
-        if not self._open_omitted_tags:
+    def handle_data(self, data: str) -> None:
+        if len(self._open_omitted_tags) == 0:
             # stack empty -> not in omit mode
             print(html_escape(data), end="")
 
-    # def feed(self, data):
+    # def feed(self, data: str) -> None:
     #     super().feed(data)
     #     # close all remaining open tags
     #     for tag in reversed(self._open_tags):
     #         print(f"</{tag}>", end='')
 
-    def error(self, message):
+    def error(self, message: str) -> None:
         """Ignore errors."""
 
 
-def html_to_xhtml(document, *, omit_tags=(), omit_attrs=()):
+def html_to_xhtml(
+    document: str, *, omit_tags: Iterable[str] = (), omit_attrs: Iterable[str] = ()
+) -> str:
     """Convert an HTML document to XHTML.
 
-    :sig: (str, Iterable[str], Iterable[str]) -> str
     :param document: HTML document to convert.
     :param omit_tags: Tags to exclude from the output.
     :param omit_attrs: Attributes to exclude from the output.
-    :return: Normalized XHTML content.
     """
     out = StringIO()
     normalizer = HTMLNormalizer(omit_tags=omit_tags, omit_attrs=omit_attrs)
@@ -198,74 +209,26 @@ def html_to_xhtml(document, *, omit_tags=(), omit_attrs=()):
     return out.getvalue()
 
 
-###########################################################
+############################################################
 # ELEMENTTREE-LXML COMPATIBILITY
-###########################################################
+############################################################
 
 
-# sigalias: XPathResult = Union[Sequence[str], Sequence[ElementTree.Element]]
-# sigalias: XPather = Callable[[ElementTree.Element], XPathResult]
+XPathResult = Union[Sequence[str], Sequence[ElementTree.Element]]
+XPather = Callable[[ElementTree.Element], XPathResult]
 
 
-if find_loader("lxml") is not None:
-    from lxml import etree
-    from lxml.etree import XPath as make_xpather
-
-    def build_tree(document, *, lxml_html=False):
-        """Build a tree from an XML document."""
-        if lxml_html:
-            import lxml.html
-
-            return lxml.html.fromstring(document)
-        return etree.fromstring(document)
-
-    get_parent = etree._Element.getparent
-
-
+if _LXML_AVAILABLE:
+    get_parent = ElementTree._Element.getparent
 else:
-    from xml.etree import ElementTree
-
-    def build_tree(document, *, lxml_html=False):
-        """Build a tree from an XML document.
-
-        :sig: (str, bool) -> ElementTree.Element
-        :param document: XML document to build the tree from.
-        :param lxml_html: Whether to use the lxml.html builder.
-        :return: Root element of the XML tree.
-        """
-        if lxml_html:
-            raise RuntimeError("LXML not available")
-
-        root = ElementTree.fromstring(document)
-
-        # ElementTree doesn't support parent queries,
-        # so we'll build a map for it
-        parents = {e: p for p in root.iter() for e in p}
-        root.set("__parents__", parents)
-        root.set("__root__", root)
-        for element in parents:
-            element.set("__root__", root)
-
-        return root
-
-    def get_parent(element):
-        """Get the parent node of an element.
-
-        :sig: (ElementTree.Element) -> ElementTree.Element
-        :param element: Element for which to find the parent.
-        :return: Parent of element.
-        """
+    def get_parent(element: ElementTree.Element) -> ElementTree.Element:
         return element.get("__root__").get("__parents__").get(element)
 
-    def make_xpather(path):
+    def make_xpather(path: str) -> XPather:
         """Get an XPath evaluator that can be applied to an element.
 
         This is needed to compensate for the lack of some features
         in ElementTree XPath support.
-
-        :sig: (str) -> XPather
-        :param path: XPath expression to apply.
-        :return: Evaluator that applies the expression to an element.
         """
         preps = []
         if path[0] == "/":
@@ -325,22 +288,50 @@ else:
         return apply
 
 
-xpather = lru_cache(maxsize=None)(make_xpather)
+xpather: Callable[[str], XPather] = lru_cache(maxsize=None)(make_xpather)
 
 
-###########################################################
+def build_tree(document: str, *, html: bool = False) -> ElementTree.Element:
+    """Build a tree from an XML document.
+
+    :param document: XML document to build the tree from.
+    :param html: Whether the document is in HTML format.
+    :return: Root element of the XML tree.
+    """
+    if _LXML_AVAILABLE:
+        if html:
+            return lxml.html.fromstring(document)
+        return ElementTree.fromstring(document)
+    else:
+        if html:
+            document = html_to_xhtml(document)
+
+        root = ElementTree.fromstring(document)
+
+        # ElementTree doesn't support parent queries,
+        # so we'll build a map for it
+        parents = {e: p for p in root.iter() for e in p}
+        root.set("__parents__", parents)
+        root.set("__root__", root)
+        for element in parents:
+            element.set("__root__", root)
+
+        return root
+
+
+############################################################
 # DATA EXTRACTION OPERATIONS
-###########################################################
+############################################################
 
 
-_EMPTY = {}  # sig: Mapping
+_EMPTY: Mapping = {}
 
 
-# sigalias: StrTransformer = Callable[[str], Any]
-# sigalias: MapTransformer = Callable[[Mapping], Any]
+StrTransformer = Callable[[str], Any]
+MapTransformer = Callable[[Mapping], Any]
 
-# sigalias: StrExtractor = Callable[[ElementTree.Element], str]
-# sigalias: MapExtractor = Callable[[ElementTree.Element], Mapping]
+StrExtractor = Callable[[ElementTree.Element], str]
+MapExtractor = Callable[[ElementTree.Element], Mapping]
 
 
 class Extractor(ABC):
@@ -428,8 +419,14 @@ class Path(Extractor):
     :param foreach: XPath expression for selecting multiple subelements.
     """
 
-    def __init__(self, path, sep=None, transform=None, foreach=None):
-        # :sig: (str, Optional[str], Optional[StrTransformer], Optional[str])
+    def __init__(
+        self,
+        path: str,
+        *,
+        sep: Optional[str] = None,
+        transform: Optional[StrTransformer] = None,
+        foreach: Optional[str] = None
+    ) -> None:
         super()._init(transform=transform, foreach=foreach)
         self.xpath = xpather(path)
         self.sep = sep if sep is not None else ""
@@ -448,8 +445,14 @@ class Items(Extractor):
     :param foreach: XPath expression for selecting multiple subelements.
     """
 
-    def __init__(self, rules, section=None, transform=None, foreach=None):
-        # :sig: (Sequence[MapExtractor], Optional[str], Optional[MapTransformer], Optional[str])
+    def __init__(
+        self,
+        rules: Sequence[MapExtractor],
+        *,
+        section: Optional[str] = None,
+        transform: Optional[MapTransformer] = None,
+        foreach: Optional[str] = None
+    ) -> None:
         super()._init(transform=transform, foreach=foreach)
         self.rules = rules
         self.sections = xpather(section) if section is not None else None
@@ -480,8 +483,13 @@ class Rule:
     :param foreach: XPath expression for generating multiple data items.
     """
 
-    def __init__(self, key, value, *, foreach=None):
-        # :sig: (Union[str, StrExtractor], Extractor, Optional[str]) -> None
+    def __init__(
+        self,
+        key: Union[str, StrExtractor],
+        value: Extractor,
+        *,
+        foreach: Optional[str] = None
+    ) -> None:
         self.key = key
         self.value = value
         self.iterate = xpather(foreach) if foreach is not None else None
@@ -510,20 +518,18 @@ class Rule:
         return data if len(data) > 0 else _EMPTY
 
 
-###########################################################
+############################################################
 # PREPROCESSORS
-###########################################################
+############################################################
 
 
-# sigalias: Preprocessor = Callable[[ElementTree.Element], None]
+Preprocessor = Callable[[ElementTree.Element], None]
 
 
-def _remove(path):
+def _remove(path: str) -> Preprocessor:
     """Create a preprocessor that will remove selected elements from a tree.
 
-    :sig: (str) -> Preprocessor
     :param path: XPath expression to select the elements to remove.
-    :return: Function to apply to a root to remove the selected elements.
     """
     applier = xpather(path)
 
@@ -537,14 +543,14 @@ def _remove(path):
     return apply
 
 
-def _set_attr(path, name, value):
+def _set_attr(
+    path: str, name: Union[str, StrExtractor], value: Union[str, StrExtractor]
+) -> Preprocessor:
     """Create a preprocessor that will set an attribute for selected elements.
 
-    :sig: (str, Union[str, StrExtractor], Union[str, StrExtractor]) -> Preprocessor
     :param path: XPath to select the elements to set attributes for.
     :param name: Name of attribute to set.
     :param value: Value of attribute to set.
-    :return: Function to apply to a root to set the attributes.
     """
     applier = xpather(path)
 
@@ -564,13 +570,11 @@ def _set_attr(path, name, value):
     return apply
 
 
-def _set_text(path, text):
+def _set_text(path: str, text: Union[str, StrExtractor]) -> Preprocessor:
     """Create a preprocessor that will set the text for selected elements.
 
-    :sig: (str, Union[str, StrExtractor]) -> Preprocessor
     :param path: XPath to select the elements to set attributes for.
     :param text: Value of text to set.
-    :return: Function to apply to a root to set the text values.
     """
     applier = xpather(path)
 
@@ -606,9 +610,9 @@ def preprocessor(desc):
     return func(path=desc["path"], **args)
 
 
-###########################################################
+############################################################
 # TRANSFORMERS
-###########################################################
+############################################################
 
 
 _re_spaces = re.compile(r"\s+")
@@ -637,19 +641,17 @@ def chain(*functions):
     return reduce(lambda f, g: lambda x: g(f(x)), functions)
 
 
-###########################################################
+############################################################
 # MAIN API
-###########################################################
+############################################################
 
 
-def scrape(document, spec, *, lxml_html=False):
-    """Extract data from a document after optionally preprocessing it.
+def scrape(document: str, spec: Mapping, *, html: bool = False) -> Mapping:
+    """Extract data from a document.
 
-    :sig: (str, Mapping, bool) -> Mapping
     :param document: Document to scrape.
-    :param spec: Extraction specification.
-    :param lxml_html: Whether to use the lxml.html builder.
-    :return: Extracted data.
+    :param spec: Preprocessing and extraction specification.
+    :param html: Whether to use the HTML builder.
     """
     pre_ = spec.get("pre")
     pre = [preprocessor(p) for p in pre_] if pre_ is not None else []
@@ -661,23 +663,19 @@ def scrape(document, spec, *, lxml_html=False):
         section=section,
     )
 
-    root = build_tree(document, lxml_html=lxml_html)
+    root = build_tree(document, html=html)
     for preprocess in pre:
         preprocess(root)
     data = rules(root)
     return data
 
 
-###########################################################
+############################################################
 # COMMAND-LINE INTERFACE
-###########################################################
+############################################################
 
 
-def load_spec(filepath):
-    """Load an extraction specification from a file.
-
-    :sig: (str) -> Mapping
-    """
+def _load_spec(filepath: str) -> Mapping:
     suffix = os.path.splitext(filepath)[-1]
     if suffix in {".yaml", ".yml"}:
         if find_loader("strictyaml") is None:
@@ -716,10 +714,8 @@ def main():
     if arguments.h2x:
         print(html_to_xhtml(content), end="")
     else:
-        spec = load_spec(arguments.spec)
-        if arguments.html:
-            content = html_to_xhtml(content)
-        data = scrape(content, spec)
+        spec = _load_spec(arguments.spec)
+        data = scrape(content, spec, html=arguments.html)
         print(json.dumps(data, indent=2, sort_keys=True))
 
 
