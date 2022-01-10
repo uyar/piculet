@@ -42,7 +42,7 @@ from html.parser import HTMLParser
 from io import StringIO
 from itertools import dropwhile
 from pkgutil import find_loader
-from types import SimpleNamespace
+from types import MappingProxyType, SimpleNamespace
 from typing import Any, Callable, Deque, FrozenSet, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
 
@@ -324,7 +324,7 @@ def build_tree(document: str, *, html: bool = False) -> ElementTree.Element:
 ############################################################
 
 
-_EMPTY: Mapping = {}
+_EMPTY: Mapping = MappingProxyType({})
 
 
 StrTransformer = Callable[[str], Any]
