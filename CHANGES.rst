@@ -5,6 +5,7 @@ Changes
 --------------------
 
 - Drop support for Python 3.6.
+- Drop direct support for YAML.
 - Revert API to OOP style.
 - Move type annotations from stub into source.
 

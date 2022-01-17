@@ -35,11 +35,6 @@ include = ["*.pyi"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-lxml = {version = "^4.7.1", optional = true}
-strictyaml = {version = "^1.6.1", optional = true}
-
-[tool.poetry.extras]
-yaml = ["strictyaml"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
@@ -65,14 +60,13 @@ sections = "TEST,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{310,39,38,37}{,-lxml}, pypy{38,37}{,-lxml}, py37-yaml, style, docs
+envlist = py{310,39,38,37}{,-lxml}, pypy{38,37}{,-lxml}, style, docs
 isolated_build = True
 
 [testenv]
 deps =
     pytest
     lxml: lxml
-    yaml: strictyaml
 commands =
     pytest {posargs:tests}
 
@@ -80,7 +74,6 @@ commands =
 deps =
     {[testenv]deps}
     pytest-cov
-    strictyaml
 commands =
     pytest --cov=piculet --cov-report=term-missing tests
 

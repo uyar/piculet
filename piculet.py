@@ -29,7 +29,6 @@ __version__ = "2.0.0a2"
 
 
 import json
-import pathlib
 import re
 import sys
 from abc import ABC, abstractmethod
@@ -43,7 +42,8 @@ from io import StringIO
 from itertools import dropwhile
 from pkgutil import find_loader
 from types import MappingProxyType, SimpleNamespace
-from typing import Any, Callable, Deque, FrozenSet, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import (Any, Callable, Deque, FrozenSet, Iterable, List, Mapping,
+                    Optional, Sequence, Tuple, Union)
 
 
 _LXML_AVAILABLE = find_loader("lxml") is not None
@@ -51,7 +51,7 @@ _LXML_AVAILABLE = find_loader("lxml") is not None
 if _LXML_AVAILABLE:
     import lxml.etree as ElementTree
     import lxml.html
-    from lxml.etree import XPath as make_xpather
+    from lxml.etree import XPath
 else:
     from xml.etree import ElementTree
 
@@ -166,7 +166,8 @@ class HTMLNormalizer(HTMLParser):
                     self._open_tags.pop()
                 elif tag not in self._open_tags:
                     # closing tag without opening tag
-                    # XXX: for <a><b></a></b>, this case gets invoked after the case below
+                    # for <a><b></a></b>,
+                    #   this case gets invoked after the case below
                     pass
                 elif tag == self._open_tags[-2]:
                     # unexpected closing tag, close both
@@ -194,7 +195,10 @@ class HTMLNormalizer(HTMLParser):
 
 
 def html_to_xhtml(
-    document: str, *, skip_tags: Iterable[str] = (), skip_attrs: Iterable[str] = ()
+    document: str,
+    *,
+    skip_tags: Iterable[str] = (),
+    skip_attrs: Iterable[str] = (),
 ) -> str:
     """Convert an HTML document to XHTML.
 
@@ -281,14 +285,18 @@ else:
         else:
             *front, last = path.split("/")
             if last.startswith("@"):
-                apply = partial(attribute, subpath="/".join(front), attr=last[1:])
+                apply = partial(
+                    attribute, subpath="/".join(front), attr=last[1:]
+                )
             else:
                 apply = regular
 
         return apply
 
 
-xpather: Callable[[str], XPather] = lru_cache(maxsize=None)(make_xpather)
+xpather: Callable[[str], XPather] = lru_cache(maxsize=None)(
+    XPath if _LXML_AVAILABLE else make_xpather
+)
 
 
 def build_tree(document: str, *, html: bool = False) -> ElementTree.Element:
@@ -356,8 +364,7 @@ class Extractor(ABC):
             path = desc.get("path")
             sep = desc.get("sep")
             transforms = [
-                s.strip()
-                for s in desc.get("transform", "").split("|")
+                s.strip() for s in desc.get("transform", "").split("|")
             ]
             foreach = desc.get("foreach")
         transforms = [s for s in transforms if len(s) > 0]
@@ -425,7 +432,7 @@ class Path(Extractor):
         *,
         sep: Optional[str] = None,
         transform: Optional[StrTransformer] = None,
-        foreach: Optional[str] = None
+        foreach: Optional[str] = None,
     ) -> None:
         super()._init(transform=transform, foreach=foreach)
         self.xpath = xpather(path)
@@ -440,7 +447,7 @@ class Items(Extractor):
     """An extractor that can get multiple pieces of data from an element.
 
     :param rules: Functions for generating the items from the element.
-    :param section: XPath expression for selecting the root element for queries.
+    :param section: XPath expression for selecting the root element.
     :param transform: Function for transforming the raw data items.
     :param foreach: XPath expression for selecting multiple subelements.
     """
@@ -451,7 +458,7 @@ class Items(Extractor):
         *,
         section: Optional[str] = None,
         transform: Optional[MapTransformer] = None,
-        foreach: Optional[str] = None
+        foreach: Optional[str] = None,
     ) -> None:
         super()._init(transform=transform, foreach=foreach)
         self.rules = rules
@@ -465,7 +472,7 @@ class Items(Extractor):
             if len(subroots) == 0:
                 return _EMPTY
             if len(subroots) > 1:
-                raise ValueError("Section path must select exactly one element")
+                raise ValueError("Section path must select a single element")
             subroot = subroots[0]
 
         data = {}
@@ -488,7 +495,7 @@ class Rule:
         key: Union[str, StrExtractor],
         value: Extractor,
         *,
-        foreach: Optional[str] = None
+        foreach: Optional[str] = None,
     ) -> None:
         self.key = key
         self.value = value
@@ -537,7 +544,8 @@ def _remove(path: str) -> Preprocessor:
         elements = applier(root)
         if len(elements) > 0:
             for element in elements:
-                # XXX: could this be hazardous? parent removed in earlier iteration?
+                # XXX: could this be hazardous?
+                #   parent removed in earlier iteration?
                 get_parent(element).remove(element)
 
     return apply
@@ -675,20 +683,6 @@ def scrape(document: str, spec: Mapping, *, html: bool = False) -> Mapping:
 ############################################################
 
 
-def _load_spec(filepath: pathlib.Path) -> Mapping:
-    if filepath.suffix in {".yaml", ".yml"}:
-        if find_loader("strictyaml") is None:
-            raise RuntimeError("YAML support not available")
-        import strictyaml
-
-        spec_loader = lambda s: strictyaml.load(s).data
-    else:
-        spec_loader = json.loads
-
-    spec_content = filepath.read_text()
-    return spec_loader(spec_content)
-
-
 def main():
     parser = ArgumentParser(description="extract data from XML/HTML")
     parser.add_argument(
@@ -712,7 +706,9 @@ def main():
     if arguments.h2x:
         print(html_to_xhtml(content), end="")
     else:
-        spec = _load_spec(pathlib.Path(arguments.spec))
+        with open(arguments.spec) as f:
+            spec_content = f.read()
+        spec = json.loads(spec_content)
         data = scrape(content, spec, html=arguments.html)
         print(json.dumps(data, indent=2, sort_keys=True))
 

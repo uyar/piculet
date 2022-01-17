@@ -18,7 +18,7 @@ Scraping a document consists of three stages:
 The preprocessing and extraction stages are expressed
 as part of a scraping specification.
 The specification is a mapping which can be stored in a file format
-that can represent a mapping, such as JSON or YAML.
+that can represent a mapping, such as JSON.
 Details about the specification are given in later chapters.
 
 Command-line interface
@@ -89,21 +89,8 @@ by invoking it with the ``--h2x`` option::
 
   $ cat foo.html | piculet --h2x
 
-YAML support
-------------
-
-To use YAML for specification, Piculet has to be installed with YAML support::
-
-   pip install piculet[yaml]
-
-Note that this will install an external module for parsing YAML files.
-
-The YAML version of the configuration example above can be found in
-`movie.yaml`_.
-
 .. _shining.html: https://github.com/uyar/piculet/blob/master/examples/shining.html
 .. _movie.json: https://github.com/uyar/piculet/blob/master/examples/movie.json
-.. _movie.yaml: https://github.com/uyar/piculet/blob/master/examples/movie.yaml
 .. _wikipedia.json: https://github.com/uyar/piculet/blob/master/examples/wikipedia.json
 .. _David Bowie: https://en.wikipedia.org/wiki/David_Bowie
 .. _Merlene Ottey: https://en.wikipedia.org/wiki/Merlene_Ottey

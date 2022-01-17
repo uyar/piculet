@@ -1,7 +1,5 @@
 import pytest
 
-from pkgutil import find_loader
-
 from piculet import scrape, transformers
 
 

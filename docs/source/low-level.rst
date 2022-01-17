@@ -33,12 +33,12 @@ the :func:`html_to_xhtml <piculet.html_to_xhtml>` function:
    >>> converted = html_to_xhtml(document)
    >>> root = build_tree(converted)
 
-If lxml is available, you can use the ``lxml_html`` parameter for building
+If lxml is available, you can use the ``html`` parameter for building
 the tree without converting an HTML document into XHTML:
 
 .. code-block:: python
 
-   >>> root = build_tree(document, lxml_html=True)
+   >>> root = build_tree(document, html=True)
 
 .. note::
 
