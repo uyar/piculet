@@ -33,7 +33,6 @@ import re
 import sys
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
-from collections import deque
 from contextlib import redirect_stdout
 from functools import lru_cache, partial, reduce
 from html import escape as html_escape
@@ -42,8 +41,7 @@ from io import StringIO
 from itertools import dropwhile
 from pkgutil import find_loader
 from types import MappingProxyType, SimpleNamespace
-from typing import (Any, Callable, Deque, FrozenSet, Iterable, List, Mapping,
-                    Optional, Sequence, Tuple, Union)
+from typing import Any, Callable, FrozenSet, Mapping, Optional, Sequence, Union
 
 
 _LXML_AVAILABLE = find_loader("lxml") is not None
@@ -62,152 +60,48 @@ else:
 
 
 class HTMLNormalizer(HTMLParser):
-    """HTML to XHTML converter.
+    """HTML to XHTML convertor.
 
-    In addition to converting the document to valid XHTML,
-    this will also remove unwanted tags and attributes,
-    along with all comments and DOCTYPE declarations.
-
-    :param skip_tags: Tags to remove.
-    :param skip_attrs: Attributes to remove.
+    This will remove all comments and DOCTYPE declarations.
     """
 
-    VOID_ELEMENTS: FrozenSet[str] = frozenset(
-        {
-            "area",
-            "base",
-            "basefont",
-            "bgsound",
-            "br",
-            "col",
-            "command",
-            "embed",
-            "frame",
-            "hr",
-            "image",
-            "img",
-            "input",
-            "isindex",
-            "keygen",
-            "link",
-            "menuitem",
-            "meta",
-            "nextid",
-            "param",
-            "source",
-            "track",
-            "wbr",
-        }
-    )
-    """Tags to treat as self-closing."""
+    VOID_ELEMENTS: FrozenSet[str] = frozenset({
+        "area", "base", "basefont", "bgsound", "br", "col", "command", "embed",
+        "frame", "hr", "image", "img", "input", "isindex", "keygen", "link",
+        "menuitem", "meta", "nextid", "param", "source", "track", "wbr"
+    })
 
-    def __init__(
-        self, *, skip_tags: Iterable[str] = (), skip_attrs: Iterable[str] = ()
-    ) -> None:
-        super().__init__(convert_charrefs=True)
-        self.skip_tags: FrozenSet[str] = frozenset(skip_tags)
-        self.skip_attrs: FrozenSet[str] = frozenset(skip_attrs)
-
-        # stacks used during normalization
-        self._open_tags: Deque[str] = deque()
-        self._open_skip_tags: Deque[str] = deque()
-
-    def handle_starttag(
-        self, tag: str, attrs: List[Tuple[str, Optional[str]]]
-    ) -> None:
-        if tag in self.skip_tags:
-            # skip starting tag
-            self._open_skip_tags.append(tag)
-        if len(self._open_skip_tags) == 0:
-            # stack empty -> not in skip mode
-            if "@" in tag:
-                # email address in angular brackets
-                print(f"&lt;{tag}&gt;", end="")
-                return
-            if (tag == "li") and (self._open_tags[-1] == "li"):
-                # opening <li> without closing previous <li>, add </li>
-                self.handle_endtag("li")
-            attribs = []
-            for attr_name, attr_value in attrs:
-                if attr_name in self.skip_attrs:
-                    # skip attribute
-                    continue
-                if (not attr_name[0].isalpha()) or ('"' in attr_name):
-                    # malformed attribute name, ignore
-                    continue
-                if attr_value is None:
-                    # add empty value for attribute
-                    attr_value = ""
-                markup = '%(name)s="%(value)s"' % {
-                    "name": attr_name,
-                    "value": html_escape(attr_value, quote=True),
-                }
-                attribs.append(markup)
-            line = "<%(tag)s%(attrs)s%(slash)s>" % {
-                "tag": tag,
-                "attrs": (" " + " ".join(attribs)) if len(attribs) > 0 else "",
-                "slash": "/" if tag in HTMLNormalizer.VOID_ELEMENTS else "",
+    def handle_starttag(self, tag, attrs):
+        attribs = []
+        for attr_name, attr_value in attrs:
+            if attr_value is None:
+                attr_value = ""
+            markup = '%(name)s="%(value)s"' % {
+                "name": attr_name,
+                "value": html_escape(attr_value, quote=True),
             }
-            print(line, end="")
-            if tag not in HTMLNormalizer.VOID_ELEMENTS:
-                self._open_tags.append(tag)
+            attribs.append(markup)
+        line = "<%(tag)s%(attrs)s%(slash)s>" % {
+            "tag": tag,
+            "attrs": (" " + " ".join(attribs)) if len(attribs) > 0 else "",
+            "slash": "/" if tag in HTMLNormalizer.VOID_ELEMENTS else "",
+        }
+        print(line, end="")
 
-    def handle_endtag(self, tag: str) -> None:
-        if len(self._open_skip_tags) == 0:
-            # stack empty -> not in skip mode
-            if tag not in HTMLNormalizer.VOID_ELEMENTS:
-                last = self._open_tags[-1]
-                if (tag == "ul") and (last == "li"):
-                    # closing <ul> without closing last <li>, add </li>
-                    self.handle_endtag("li")
-                if tag == last:
-                    # expected end tag
-                    print(f"</{tag}>", end="")
-                    self._open_tags.pop()
-                elif tag not in self._open_tags:
-                    # closing tag without opening tag
-                    # for <a><b></a></b>,
-                    #   this case gets invoked after the case below
-                    pass
-                elif tag == self._open_tags[-2]:
-                    # unexpected closing tag, close both
-                    print(f"</{last}>", end="")
-                    print(f"</{tag}>", end="")
-                    self._open_tags.pop()
-                    self._open_tags.pop()
-        elif (tag in self.skip_tags) and (tag == self._open_skip_tags[-1]):
-            # end of expected skip tag
-            self._open_skip_tags.pop()
+    def handle_endtag(self, tag):
+        print(f"</{tag}>", end="")
 
-    def handle_data(self, data: str) -> None:
-        if len(self._open_skip_tags) == 0:
-            # stack empty -> not in skip mode
-            print(html_escape(data), end="")
+    def handle_data(self, data):
+        print(html_escape(data), end="")
 
-    # def feed(self, data: str) -> None:
-    #     super().feed(data)
-    #     # close all remaining open tags
-    #     for tag in reversed(self._open_tags):
-    #         print(f"</{tag}>", end='')
-
-    def error(self, message: str) -> None:
-        """Ignore errors."""
+    def error(self, message):
+        pass
 
 
-def html_to_xhtml(
-    document: str,
-    *,
-    skip_tags: Iterable[str] = (),
-    skip_attrs: Iterable[str] = (),
-) -> str:
-    """Convert an HTML document to XHTML.
-
-    :param document: HTML document to convert.
-    :param skip_tags: Tags to exclude from the output.
-    :param skip_attrs: Attributes to exclude from the output.
-    """
+def html_to_xhtml(document: str, *, Normalizer: type = HTMLNormalizer) -> str:
+    """Convert an HTML document to XHTML."""
     out = StringIO()
-    normalizer = HTMLNormalizer(skip_tags=skip_tags, skip_attrs=skip_attrs)
+    normalizer = Normalizer()
     with redirect_stdout(out):
         normalizer.feed(document)
     return out.getvalue()
@@ -307,13 +201,11 @@ def build_tree(document: str, *, html: bool = False) -> ElementTree.Element:
     :return: Root element of the XML tree.
     """
     if _LXML_AVAILABLE:
-        if html:
-            return lxml.html.fromstring(document)
-        return ElementTree.fromstring(document)
+        fromstring = lxml.html.fromstring if html else ElementTree.fromstring
+        return fromstring(document)
     else:
         if html:
             document = html_to_xhtml(document)
-
         root = ElementTree.fromstring(document)
 
         # ElementTree doesn't support parent queries,

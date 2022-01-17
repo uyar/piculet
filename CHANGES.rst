@@ -8,6 +8,7 @@ Changes
 - Drop direct support for YAML.
 - Revert API to OOP style.
 - Move type annotations from stub into source.
+- Reduce HTML normalization down to the bare essentials.
 
 2.0.0a1 (2019-07-23)
 --------------------
