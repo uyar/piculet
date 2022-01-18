@@ -22,7 +22,7 @@ Installing Piculet creates a script named ``piculet`` which can be used
 to invoke the command line interface::
 
    $ piculet -h
-   usage: piculet [-h] [--version] [--html] (-s SPEC | --h2x)
+   usage: piculet [-h] [--version] [--html] -s SPEC
 
 For example, say you want to extract some data from the file `shining.html`_.
 An example specification is given in `movie.json`_.

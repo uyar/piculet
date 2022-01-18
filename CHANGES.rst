@@ -9,6 +9,7 @@ Changes
 - Revert API to OOP style.
 - Move type annotations from stub into source.
 - Reduce HTML normalization down to the bare essentials.
+- Remove the h2x command from the CLI.
 
 2.0.0a1 (2019-07-23)
 --------------------
