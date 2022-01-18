@@ -51,6 +51,12 @@ def test_html_to_xhtml_self_closing_tags_should_have_slash_at_end():
     assert normalized == """<html><br/></html>"""
 
 
+def test_html_to_xhtml_self_closing_tags_should_not_have_closing_tags():
+    content = """<html><br/></html>"""
+    normalized = html_to_xhtml(content)
+    assert normalized == """<html><br/></html>"""
+
+
 def test_html_to_xhtml_attributes_should_have_values():
     content = """<html><option checked></option></html>"""
     normalized = html_to_xhtml(content)

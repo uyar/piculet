@@ -91,11 +91,14 @@ class HTMLNormalizer(HTMLParser):
     def handle_endtag(self, tag):
         print(f"</{tag}>", end="")
 
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+
     def handle_data(self, data):
         print(html_escape(data), end="")
 
     def error(self, message):
-        pass
+        """Ignore errors."""
 
 
 def html_to_xhtml(document: str, *, Normalizer: type = HTMLNormalizer) -> str:
@@ -165,8 +168,8 @@ else:
                 if t
             ]
 
-        def attribute(element, subpath, attr):
-            result = [e.get(attr) for e in prep(element).findall(subpath)]
+        def attribute(element, path, attr):
+            result = [e.get(attr) for e in prep(element).findall(path)]
             return [r for r in result if r is not None]
 
         def regular(element):
@@ -179,9 +182,7 @@ else:
         else:
             *front, last = path.split("/")
             if last.startswith("@"):
-                apply = partial(
-                    attribute, subpath="/".join(front), attr=last[1:]
-                )
+                apply = partial(attribute, path="/".join(front), attr=last[1:])
             else:
                 apply = regular
 
