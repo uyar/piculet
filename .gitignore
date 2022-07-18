@@ -13,6 +13,7 @@ build
 dist
 prof
 coverage.xml
+*.whl
 
 *.wpr
 *.wpu
