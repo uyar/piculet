@@ -84,11 +84,6 @@ and you will get similar data for `Merlene Ottey`_.
 Note that since the markup used in Wikipedia pages for persons varies,
 the kinds of data you get with this specification will also vary.
 
-Piculet can also be used as a simplistic HTML to XHTML converter
-by invoking it with the ``--h2x`` option::
-
-  $ cat foo.html | piculet --h2x
-
 .. _shining.html: https://github.com/uyar/piculet/blob/master/examples/shining.html
 .. _movie.json: https://github.com/uyar/piculet/blob/master/examples/movie.json
 .. _wikipedia.json: https://github.com/uyar/piculet/blob/master/examples/wikipedia.json
