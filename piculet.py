@@ -578,8 +578,7 @@ def scrape(document: str, spec: Mapping, *, html: bool = False) -> Mapping:
 
 def main():
     parser = ArgumentParser(description="extract data from XML/HTML")
-    parser.add_argument("--version", action="version",
-                        version=f"{__version__}")
+    parser.add_argument("--version", action="version", version=__version__)
     parser.add_argument("--html", action="store_true",
                         help="document is in HTML format")
     parser.add_argument("-s", "--spec", required=True, help="spec file")
