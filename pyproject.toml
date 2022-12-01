@@ -70,6 +70,7 @@ isolated_build = True
 deps =
     pytest
     py37: importlib-metadata
+    pypy37: importlib-metadata
     lxml: lxml
 commands =
     pytest {posargs:tests}
