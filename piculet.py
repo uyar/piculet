@@ -72,21 +72,13 @@ class HTMLNormalizer(HTMLParser):
     })
 
     def handle_starttag(self, tag, attrs):
-        attribs = []
-        for attr_name, attr_value in attrs:
-            if attr_value is None:
-                attr_value = ""
-            markup = '%(name)s="%(value)s"' % {
-                "name": attr_name,
-                "value": html_escape(attr_value, quote=True),
-            }
-            attribs.append(markup)
-        line = "<%(tag)s%(attrs)s%(slash)s>" % {
-            "tag": tag,
-            "attrs": (" " + " ".join(attribs)) if len(attribs) > 0 else "",
-            "slash": "/" if tag in HTMLNormalizer.VOID_ELEMENTS else "",
-        }
-        print(line, end="")
+        print(f"<{tag}", end="")
+        for name, value in attrs:
+            value = html_escape(value, quote=True) if value is not None else ""
+            print(f' {name}="{value}"', end="")
+        if tag in HTMLNormalizer.VOID_ELEMENTS:
+            print("/", end="")
+        print(">", end="")
 
     def handle_endtag(self, tag):
         print(f"</{tag}>", end="")
@@ -98,13 +90,13 @@ class HTMLNormalizer(HTMLParser):
         print(html_escape(data), end="")
 
     def error(self, message):
-        """Ignore errors."""
+        raise RuntimeError(message)
 
 
-def html_to_xhtml(document: str, *, Normalizer: type = HTMLNormalizer) -> str:
+def html_to_xhtml(document: str) -> str:
     """Convert an HTML document to XHTML."""
     out = StringIO()
-    normalizer = Normalizer()
+    normalizer = HTMLNormalizer()
     with redirect_stdout(out):
         normalizer.feed(document)
     return out.getvalue()
