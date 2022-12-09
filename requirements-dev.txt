@@ -2,6 +2,7 @@
 alabaster==0.7.12
 attrs==22.1.0
 Babel==2.11.0
+build==0.9.0
 certifi==2022.12.7
 charset-normalizer==2.1.1
 coverage==6.5.0
@@ -22,6 +23,7 @@ mccabe==0.7.0
 mypy==0.991
 mypy-extensions==0.4.3
 packaging==21.3
+pep517==0.13.0
 platformdirs==2.5.4
 pluggy==1.0.0
 py==1.11.0

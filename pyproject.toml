@@ -41,6 +41,7 @@ dev = [
     "sphinx",
     "sphinx-rtd-theme",
     "tox",
+    "build",
 ]
 
 [project.scripts]
