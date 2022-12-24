@@ -42,16 +42,13 @@ from itertools import dropwhile
 from pkgutil import find_loader
 from types import MappingProxyType, SimpleNamespace
 from typing import Any, Callable, FrozenSet, Mapping, Optional, Sequence, Union
+from xml.etree import ElementTree
 
 
 _LXML_AVAILABLE = find_loader("lxml") is not None
-
 if _LXML_AVAILABLE:
-    import lxml.etree as ElementTree
+    import lxml.etree
     import lxml.html
-    from lxml.etree import XPath
-else:
-    from xml.etree import ElementTree
 
 
 ############################################################
@@ -111,77 +108,78 @@ XPather = Callable[[ElementTree.Element], XPathResult]
 
 
 if _LXML_AVAILABLE:
-    get_parent = ElementTree._Element.getparent
+    get_parent = lxml.etree._Element.getparent
 else:
     def get_parent(element: ElementTree.Element) -> ElementTree.Element:
         return element.get("__root__").get("__parents__").get(element)
 
-    def make_xpather(path: str) -> XPather:
-        """Get an XPath evaluator that can be applied to an element.
 
-        This is needed to compensate for the lack of some features
-        in ElementTree XPath support.
-        """
-        preps = []
-        if path[0] == "/":
-            # ElementTree doesn't support absolute paths
-            preps.append(lambda e: e.get("__root__"))
-            path = "." + path
+def make_xpather(path: str) -> XPather:
+    """Get an XPath evaluator that can be applied to an element.
 
-        # ElementTree doesn't support paths starting with a parent
-        if path.startswith(".."):
-            path_steps = path.split("/")
-            down_steps = list(dropwhile(lambda x: x == "..", path_steps))
-            for _ in range(len(path_steps) - len(down_steps)):
-                preps.append(get_parent)
-            path = "./" + "/".join(down_steps)
+    This is needed to compensate for the lack of some features
+    in ElementTree XPath support.
+    """
+    preps = []
+    if path[0] == "/":
+        # ElementTree doesn't support absolute paths
+        preps.append(lambda e: e.get("__root__"))
+        path = "." + path
 
-        def prep(e):
-            for func in preps:
-                e = func(e)
-            return e
+    # ElementTree doesn't support paths starting with a parent
+    if path.startswith(".."):
+        path_steps = path.split("/")
+        down_steps = list(dropwhile(lambda x: x == "..", path_steps))
+        for _ in range(len(path_steps) - len(down_steps)):
+            preps.append(get_parent)
+        path = "./" + "/".join(down_steps)
 
-        def descendant_text(element):
-            # strip trailing '//text()'
-            return [
-                t
-                for e in prep(element).findall(path[:-8])
-                for t in e.itertext()
-                if t
-            ]
+    def prep(e):
+        for func in preps:
+            e = func(e)
+        return e
 
-        def child_text(element):
-            # strip trailing '/text()'
-            return [
-                t
-                for e in prep(element).findall(path[:-7])
-                for t in ([e.text] + [c.tail if c.tail else "" for c in e])
-                if t
-            ]
+    def descendant_text(element):
+        # strip trailing '//text()'
+        return [
+            t
+            for e in prep(element).findall(path[:-8])
+            for t in e.itertext()
+            if t
+        ]
 
-        def attribute(element, path, attr):
-            result = [e.get(attr) for e in prep(element).findall(path)]
-            return [r for r in result if r is not None]
+    def child_text(element):
+        # strip trailing '/text()'
+        return [
+            t
+            for e in prep(element).findall(path[:-7])
+            for t in ([e.text] + [c.tail if c.tail else "" for c in e])
+            if t
+        ]
 
-        def regular(element):
-            return prep(element).findall(path)
+    def attribute(element, path, attr):
+        result = [e.get(attr) for e in prep(element).findall(path)]
+        return [r for r in result if r is not None]
 
-        if path.endswith("//text()"):
-            apply = descendant_text
-        elif path.endswith("/text()"):
-            apply = child_text
+    def regular(element):
+        return prep(element).findall(path)
+
+    if path.endswith("//text()"):
+        apply = descendant_text
+    elif path.endswith("/text()"):
+        apply = child_text
+    else:
+        *front, last = path.split("/")
+        if last.startswith("@"):
+            apply = partial(attribute, path="/".join(front), attr=last[1:])
         else:
-            *front, last = path.split("/")
-            if last.startswith("@"):
-                apply = partial(attribute, path="/".join(front), attr=last[1:])
-            else:
-                apply = regular
+            apply = regular
 
-        return apply
+    return apply
 
 
 xpather: Callable[[str], XPather] = lru_cache(maxsize=None)(
-    XPath if _LXML_AVAILABLE else make_xpather
+    lxml.etree.XPath if _LXML_AVAILABLE else make_xpather
 )
 
 
@@ -193,7 +191,7 @@ def build_tree(document: str, *, html: bool = False) -> ElementTree.Element:
     :return: Root element of the XML tree.
     """
     if _LXML_AVAILABLE:
-        fromstring = lxml.html.fromstring if html else ElementTree.fromstring
+        fromstring = lxml.html.fromstring if html else lxml.etree.fromstring
         return fromstring(document)
     else:
         if html:
