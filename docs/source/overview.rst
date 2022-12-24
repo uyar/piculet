@@ -5,7 +5,7 @@ Scraping a document consists of three stages:
 
 #. Building a DOM tree out of the document.
    This is a straightforward operation for an XML document.
-   For an HTML document, Piculet will first try to convert it into XHTML,
+   For an HTML document, Piculet will first try to convert it into XML,
    and then build the tree from that.
 
 #. Preprocessing the tree.

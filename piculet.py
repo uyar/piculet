@@ -57,7 +57,7 @@ if _LXML_AVAILABLE:
 
 
 class HTMLNormalizer(HTMLParser):
-    """HTML to XHTML convertor.
+    """HTML to XML convertor.
 
     This will remove all comments and DOCTYPE declarations.
     """
@@ -88,14 +88,11 @@ class HTMLNormalizer(HTMLParser):
     def error(self, message):
         raise RuntimeError(message)
 
-
-def html_to_xhtml(document: str) -> str:
-    """Convert an HTML document to XHTML."""
-    out = StringIO()
-    normalizer = HTMLNormalizer()
-    with redirect_stdout(out):
-        normalizer.feed(document)
-    return out.getvalue()
+    def __call__(self, document: str) -> str:
+        out = StringIO()
+        with redirect_stdout(out):
+            self.feed(document)
+        return out.getvalue()
 
 
 ############################################################
@@ -195,7 +192,7 @@ def build_tree(document: str, *, html: bool = False) -> ElementTree.Element:
         return fromstring(document)
     else:
         if html:
-            document = html_to_xhtml(document)
+            document = HTMLNormalizer()(document)
         root = ElementTree.fromstring(document)
 
         # ElementTree doesn't support parent queries,

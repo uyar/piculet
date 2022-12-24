@@ -26,7 +26,7 @@ from the document:
 
 This function assumes that the document is in XML format.
 So, if any conversion is needed, it has to be done before calling
-this function. [#xhtml]_
+this function. [#xml]_
 
 After building the DOM tree, the function will apply the extraction rules
 to the root element of the tree, and return a mapping
@@ -518,7 +518,7 @@ For example, the "director" example above can also be written using sections:
    >>> scrape(document, spec)
    {'director': {'name': 'Stanley Kubrick', 'link': '/people/1'}}
 
-.. [#xhtml]
+.. [#xml]
 
    Note that the example document is already in XML format.
 
