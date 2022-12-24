@@ -66,9 +66,8 @@ class HTMLNormalizer(HTMLParser):
     """
 
     VOID_ELEMENTS: FrozenSet[str] = frozenset({
-        "area", "base", "basefont", "bgsound", "br", "col", "command", "embed",
-        "frame", "hr", "image", "img", "input", "isindex", "keygen", "link",
-        "menuitem", "meta", "nextid", "param", "source", "track", "wbr"
+        "area", "base", "br", "col", "command", "embed", "hr", "img", "input",
+        "keygen", "link", "meta", "param", "source", "track", "wbr",
     })
 
     def handle_starttag(self, tag, attrs):
