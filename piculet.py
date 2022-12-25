@@ -52,6 +52,16 @@ if _LXML_AVAILABLE:
 
 
 ############################################################
+# UTILITY FUNCTIONS
+############################################################
+
+
+def chain(*functions):
+    """Chain functions to apply the output of one as the input of the next."""
+    return reduce(lambda f, g: lambda x: g(f(x)), functions)
+
+
+############################################################
 # HTML OPERATIONS
 ############################################################
 
@@ -131,10 +141,7 @@ def make_xpather(path: str) -> XPather:
             preps.append(get_parent)
         path = "./" + "/".join(down_steps)
 
-    def prep(e):
-        for func in preps:
-            e = func(e)
-        return e
+    prep = chain(*preps) if len(preps) > 0 else lambda e: e
 
     def descendant_text(element):
         # strip trailing '//text()'
@@ -521,11 +528,6 @@ transformers = SimpleNamespace(
     normalize=lambda s: _re_symbols.sub("", s.lower().replace(" ", "_")),
 )
 """Predefined transformers."""
-
-
-def chain(*functions):
-    """Chain functions to apply the output of one as the input of the next."""
-    return reduce(lambda f, g: lambda x: g(f(x)), functions)
 
 
 ############################################################
