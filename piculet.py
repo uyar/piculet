@@ -252,9 +252,8 @@ class Extractor(ABC):
         else:
             path = desc.get("path")
             sep = desc.get("sep")
-            transforms = [
-                s.strip() for s in desc.get("transform", "").split("|")
-            ]
+            transforms = [s.strip()
+                          for s in desc.get("transform", "").split("|")]
             foreach = desc.get("foreach")
         transforms = [s for s in transforms if len(s) > 0]
 
@@ -301,9 +300,8 @@ class Extractor(ABC):
             raw = [v for v in raw_ if v is not _EMPTY]
             if len(raw) == 0:
                 return _EMPTY
-            return raw if self.transform is None else [
-                self.transform(v) for v in raw
-            ]
+            return raw if self.transform is None else \
+                [self.transform(v) for v in raw]
 
 
 class Path(Extractor):
@@ -315,14 +313,9 @@ class Path(Extractor):
     :param foreach: XPath expression for selecting multiple subelements.
     """
 
-    def __init__(
-        self,
-        path: str,
-        *,
-        sep: Optional[str] = None,
-        transform: Optional[StrTransformer] = None,
-        foreach: Optional[str] = None,
-    ) -> None:
+    def __init__(self, path: str, *, sep: Optional[str] = None,
+                 transform: Optional[StrTransformer] = None,
+                 foreach: Optional[str] = None) -> None:
         super()._init(transform=transform, foreach=foreach)
         self.xpath = xpath(path)
         self.sep = sep if sep is not None else ""
@@ -341,14 +334,10 @@ class Items(Extractor):
     :param foreach: XPath expression for selecting multiple subelements.
     """
 
-    def __init__(
-        self,
-        rules: Sequence[MapExtractor],
-        *,
-        section: Optional[str] = None,
-        transform: Optional[MapTransformer] = None,
-        foreach: Optional[str] = None,
-    ) -> None:
+    def __init__(self, rules: Sequence[MapExtractor], *,
+                 section: Optional[str] = None,
+                 transform: Optional[MapTransformer] = None,
+                 foreach: Optional[str] = None) -> None:
         super()._init(transform=transform, foreach=foreach)
         self.rules = rules
         self.sections = xpath(section) if section is not None else None
@@ -379,13 +368,8 @@ class Rule:
     :param foreach: XPath expression for generating multiple data items.
     """
 
-    def __init__(
-        self,
-        key: Union[str, StrExtractor],
-        value: Extractor,
-        *,
-        foreach: Optional[str] = None,
-    ) -> None:
+    def __init__(self, key: Union[str, StrExtractor], value: Extractor, *,
+                 foreach: Optional[str] = None) -> None:
         self.key = key
         self.value = value
         self.iterate = xpath(foreach) if foreach is not None else None
@@ -443,9 +427,8 @@ def _remove(path: str) -> Preprocessor:
     return apply
 
 
-def _set_attr(
-    path: str, name: Union[str, StrExtractor], value: Union[str, StrExtractor]
-) -> Preprocessor:
+def _set_attr(path: str, name: Union[str, StrExtractor],
+              value: Union[str, StrExtractor]) -> Preprocessor:
     """Create a preprocessor that will set an attribute for selected elements.
 
     :param path: XPath to select the elements to set attributes for.
@@ -553,10 +536,8 @@ def scrape(document: str, spec: Mapping, *, html: bool = False) -> Mapping:
 
     items_ = spec.get("items", [])
     section = spec.get("section")
-    rules = Items(
-        rules=[Rule.from_desc(item) for item in items_],
-        section=section,
-    )
+    rules = Items(rules=[Rule.from_desc(item) for item in items_],
+                  section=section)
 
     root = build_tree(document, html=html)
     for preprocess in pre:
