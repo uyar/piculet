@@ -37,16 +37,16 @@ from contextlib import redirect_stdout
 from functools import lru_cache, partial, reduce
 from html import escape as html_escape
 from html.parser import HTMLParser
+from importlib.util import find_spec
 from io import StringIO
 from itertools import dropwhile
-from pkgutil import find_loader
 from types import MappingProxyType, SimpleNamespace
 from typing import Any, Callable, FrozenSet, Mapping, Optional, Sequence, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
 
-_LXML_AVAILABLE = find_loader("lxml") is not None
+_LXML_AVAILABLE = find_spec("lxml") is not None
 if _LXML_AVAILABLE:
     import lxml.etree
     import lxml.html
@@ -114,13 +114,6 @@ class HTMLNormalizer(HTMLParser):
 XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
 
 
-if _LXML_AVAILABLE:
-    get_parent = lxml.etree._Element.getparent
-else:
-    def get_parent(element: Element) -> Element:
-        return element.get("__root__").get("__parents__").get(element)
-
-
 def make_xpather(path: str) -> XPather:
     """Get an XPath evaluator that can be applied to an element.
 
@@ -138,7 +131,7 @@ def make_xpather(path: str) -> XPather:
         path_steps = path.split("/")
         down_steps = list(dropwhile(lambda x: x == "..", path_steps))
         for _ in range(len(path_steps) - len(down_steps)):
-            preps.append(get_parent)
+            preps.append(lambda e: e.get("__parent__"))
         path = "./" + "/".join(down_steps)
 
     prep = chain(*preps) if len(preps) > 0 else lambda e: e
@@ -165,9 +158,6 @@ def make_xpather(path: str) -> XPather:
         result = [e.get(attr) for e in prep(element).findall(path)]
         return [r for r in result if r is not None]
 
-    def regular(element):
-        return prep(element).findall(path)
-
     if path.endswith("//text()"):
         apply = descendant_text
     elif path.endswith("/text()"):
@@ -177,7 +167,7 @@ def make_xpather(path: str) -> XPather:
         if last.startswith("@"):
             apply = partial(attribute, path="/".join(front), attr=last[1:])
         else:
-            apply = regular
+            apply = lambda e: prep(e).findall(path)
 
     return apply
 
@@ -202,13 +192,14 @@ def build_tree(document: str, *, html: bool = False) -> Element:
             document = HTMLNormalizer()(document)
         root = ElementTree.fromstring(document)
 
-        # ElementTree doesn't support parent queries,
-        # so we'll build a map for it
-        parents = {e: p for p in root.iter() for e in p}
-        root.set("__parents__", parents)
+        # ElementTree doesn't support absolute and parent queries
+        # so we add attributes for root and parent
         root.set("__root__", root)
-        for element in parents:
-            element.set("__root__", root)
+        root.set("__parent__", root)
+        for parent in root.iter():
+            for element in parent:
+                element.set("__root__", root)
+                element.set("__parent__", parent)
 
         return root
 
@@ -428,11 +419,14 @@ def _remove(path: str) -> Preprocessor:
 
     def apply(root):
         elements = applier(root)
-        if len(elements) > 0:
-            for element in elements:
-                # XXX: could this be hazardous?
-                #   parent removed in earlier iteration?
-                get_parent(element).remove(element)
+        for element in elements:
+            # XXX: could this be hazardous?
+            #   parent removed in earlier iteration?
+            try:
+                parent = element.getparent()
+            except AttributeError:
+                parent = element.get("__parent__")
+            parent.remove(element)
 
     return apply
 
