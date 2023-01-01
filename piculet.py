@@ -43,6 +43,7 @@ from pkgutil import find_loader
 from types import MappingProxyType, SimpleNamespace
 from typing import Any, Callable, FrozenSet, Mapping, Optional, Sequence, Union
 from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
 
 
 _LXML_AVAILABLE = find_loader("lxml") is not None
@@ -110,14 +111,13 @@ class HTMLNormalizer(HTMLParser):
 ############################################################
 
 
-XPathResult = Union[Sequence[str], Sequence[ElementTree.Element]]
-XPather = Callable[[ElementTree.Element], XPathResult]
+XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
 
 
 if _LXML_AVAILABLE:
     get_parent = lxml.etree._Element.getparent
 else:
-    def get_parent(element: ElementTree.Element) -> ElementTree.Element:
+    def get_parent(element: Element) -> Element:
         return element.get("__root__").get("__parents__").get(element)
 
 
@@ -187,7 +187,7 @@ xpather: Callable[[str], XPather] = lru_cache(maxsize=None)(
 )
 
 
-def build_tree(document: str, *, html: bool = False) -> ElementTree.Element:
+def build_tree(document: str, *, html: bool = False) -> Element:
     """Build a tree from an XML document.
 
     :param document: XML document to build the tree from.
@@ -224,8 +224,8 @@ _EMPTY: Mapping = MappingProxyType({})
 StrTransformer = Callable[[str], Any]
 MapTransformer = Callable[[Mapping], Any]
 
-StrExtractor = Callable[[ElementTree.Element], str]
-MapExtractor = Callable[[ElementTree.Element], Mapping]
+StrExtractor = Callable[[Element], str]
+MapExtractor = Callable[[Element], Mapping]
 
 
 class Extractor(ABC):
@@ -416,7 +416,7 @@ class Rule:
 ############################################################
 
 
-Preprocessor = Callable[[ElementTree.Element], None]
+Preprocessor = Callable[[Element], None]
 
 
 def _remove(path: str) -> Preprocessor:
