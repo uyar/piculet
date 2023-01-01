@@ -121,10 +121,10 @@ def html_to_xml(document: str, *,
 ############################################################
 
 
-XPather = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
+XPath = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
 
 
-def make_xpather(path: str) -> XPather:
+def make_xpath(path: str) -> XPath:
     """Get an XPath evaluator that can be applied to an element.
 
     This is needed to compensate for the lack of some features
@@ -182,8 +182,8 @@ def make_xpather(path: str) -> XPather:
     return apply
 
 
-xpather: Callable[[str], XPather] = lru_cache(maxsize=None)(
-    lxml.etree.XPath if _LXML_AVAILABLE else make_xpather
+xpath: Callable[[str], XPath] = lru_cache(maxsize=None)(
+    lxml.etree.XPath if _LXML_AVAILABLE else make_xpath
 )
 
 
@@ -238,7 +238,7 @@ class Extractor(ABC):
 
     def _init(self, transform=None, foreach=None):
         self.transform = transform
-        self.iterate = xpather(foreach) if foreach is not None else None
+        self.iterate = xpath(foreach) if foreach is not None else None
 
     @staticmethod
     def from_desc(desc):
@@ -322,7 +322,7 @@ class Path(Extractor):
         foreach: Optional[str] = None,
     ) -> None:
         super()._init(transform=transform, foreach=foreach)
-        self.xpath = xpather(path)
+        self.xpath = xpath(path)
         self.sep = sep if sep is not None else ""
 
     def _raw(self, element):
@@ -349,7 +349,7 @@ class Items(Extractor):
     ) -> None:
         super()._init(transform=transform, foreach=foreach)
         self.rules = rules
-        self.sections = xpather(section) if section is not None else None
+        self.sections = xpath(section) if section is not None else None
 
     def _raw(self, element):
         if self.sections is None:
@@ -386,7 +386,7 @@ class Rule:
     ) -> None:
         self.key = key
         self.value = value
-        self.iterate = xpather(foreach) if foreach is not None else None
+        self.iterate = xpath(foreach) if foreach is not None else None
 
     @staticmethod
     def from_desc(desc):
@@ -425,7 +425,7 @@ def _remove(path: str) -> Preprocessor:
 
     :param path: XPath expression to select the elements to remove.
     """
-    applier = xpather(path)
+    applier = xpath(path)
 
     def apply(root):
         elements = applier(root)
@@ -450,7 +450,7 @@ def _set_attr(
     :param name: Name of attribute to set.
     :param value: Value of attribute to set.
     """
-    applier = xpather(path)
+    applier = xpath(path)
 
     def apply(root):
         elements = applier(root)
@@ -474,7 +474,7 @@ def _set_text(path: str, text: Union[str, StrExtractor]) -> Preprocessor:
     :param path: XPath to select the elements to set attributes for.
     :param text: Value of text to set.
     """
-    applier = xpather(path)
+    applier = xpath(path)
 
     def apply(root):
         elements = applier(root)
