@@ -45,6 +45,8 @@ from typing import Any, Callable, FrozenSet, Mapping, Optional, Sequence, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
+from typing_extensions import TypeAlias
+
 
 _LXML_AVAILABLE = find_spec("lxml") is not None
 if _LXML_AVAILABLE:
@@ -121,7 +123,7 @@ def html_to_xml(document: str, *,
 ############################################################
 
 
-XPath = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
+XPath: TypeAlias = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
 
 
 def make_xpath(path: str) -> XPath:
@@ -222,11 +224,11 @@ def build_tree(document: str, *, html: bool = False) -> Element:
 _EMPTY: Mapping = MappingProxyType({})
 
 
-StrTransformer = Callable[[str], Any]
-MapTransformer = Callable[[Mapping], Any]
+StrTransformer: TypeAlias = Callable[[str], Any]
+MapTransformer: TypeAlias = Callable[[Mapping], Any]
 
-StrExtractor = Callable[[Element], str]
-MapExtractor = Callable[[Element], Mapping]
+StrExtractor: TypeAlias = Callable[[Element], str]
+MapExtractor: TypeAlias = Callable[[Element], Mapping]
 
 
 class Extractor(ABC):
@@ -417,7 +419,7 @@ class Rule:
 ############################################################
 
 
-Preprocessor = Callable[[Element], None]
+Preprocessor: TypeAlias = Callable[[Element], None]
 
 
 def _remove(path: str) -> Preprocessor:
