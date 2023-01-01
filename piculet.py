@@ -99,11 +99,21 @@ class HTMLNormalizer(HTMLParser):
     def error(self, message):
         raise RuntimeError(message)
 
-    def __call__(self, document: str) -> str:
-        out = StringIO()
-        with redirect_stdout(out):
-            self.feed(document)
-        return out.getvalue()
+
+def html_to_xml(document: str, *,
+                parser: Optional[HTMLNormalizer] = None) -> str:
+    """Convert an HTML document into XML.
+
+    :param document: Document to convert.
+    :param parser: Parser to handle the conversion.
+    :return: Converted document.
+    """
+    if parser is None:
+        parser = HTMLNormalizer()
+    out = StringIO()
+    with redirect_stdout(out):
+        parser.feed(document)
+    return out.getvalue()
 
 
 ############################################################
@@ -189,7 +199,7 @@ def build_tree(document: str, *, html: bool = False) -> Element:
         return fromstring(document)
     else:
         if html:
-            document = HTMLNormalizer()(document)
+            document = html_to_xml(document)
         root = ElementTree.fromstring(document)
 
         # ElementTree doesn't support absolute and parent queries

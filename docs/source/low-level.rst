@@ -25,13 +25,12 @@ the :func:`build_tree <piculet.build_tree>` function:
    >>> root = build_tree(document)
 
 If the document needs to be converted from HTML to XML, you can use
-the :func:`HTMLNormalizer <piculet.HTMLNormalizer>` class:
+the :func:`html_to_xml <piculet.html_to_xml>` function:
 
 .. code-block:: python
 
-   >>> from piculet import HTMLNormalizer
-   >>> normalize = HTMLNormalizer()
-   >>> converted = normalize(document)
+   >>> from piculet import html_to_xml
+   >>> converted = html_to_xml(document)
    >>> root = build_tree(converted)
 
 If lxml is available, you can use the ``html`` parameter for building
