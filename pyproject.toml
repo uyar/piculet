@@ -64,7 +64,7 @@ sections = "TEST,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{311,310,39,38,37}{,-lxml}, pypy{39,38,37}{,-lxml}, style, docs
+envlist = py{311,310,39,38,37}{,-lxml}, pypy{39,38,37}{,-lxml}, types, style, docs
 isolated_build = True
 
 [testenv]

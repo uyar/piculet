@@ -194,12 +194,12 @@ def build_tree(document: str, *, html: bool = False) -> Element:
 
         # ElementTree doesn't support absolute and parent queries
         # so we add attributes for root and parent
-        root.set("__root__", root)
-        root.set("__parent__", root)
+        root.set("__root__", root)  # type: ignore
+        root.set("__parent__", root)  # type: ignore
         for parent in root.iter():
             for element in parent:
-                element.set("__root__", root)
-                element.set("__parent__", parent)
+                element.set("__root__", root)  # type: ignore
+                element.set("__parent__", parent)  # type: ignore
 
         return root
 
