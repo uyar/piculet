@@ -41,7 +41,7 @@ from importlib.util import find_spec
 from io import StringIO
 from itertools import dropwhile
 from types import MappingProxyType, SimpleNamespace
-from typing import Any, Callable, FrozenSet, Mapping, Optional, Sequence, Union
+from typing import Any, Callable, FrozenSet, Mapping, Sequence, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -107,7 +107,7 @@ class HTMLNormalizer(HTMLParser):
 
 
 def html_to_xml(document: str, *,
-                parser: Optional[HTMLNormalizer] = None) -> str:
+                parser: Union[HTMLNormalizer, None] = None) -> str:
     """Convert an HTML document into XML.
 
     :param document: Document to convert.
@@ -325,9 +325,9 @@ class Path(Extractor):
     :param foreach: XPath expression for selecting multiple subelements.
     """
 
-    def __init__(self, path: str, *, sep: Optional[str] = None,
-                 transform: Optional[StrTransformer] = None,
-                 foreach: Optional[str] = None) -> None:
+    def __init__(self, path: str, *, sep: Union[str, None] = None,
+                 transform: Union[StrTransformer, None] = None,
+                 foreach: Union[str, None] = None) -> None:
         super()._init(transform=transform, foreach=foreach)
         self.xpath = xpath(path)
         self.sep = sep if sep is not None else ""
@@ -347,9 +347,9 @@ class Items(Extractor):
     """
 
     def __init__(self, rules: Sequence[MapExtractor], *,
-                 section: Optional[str] = None,
-                 transform: Optional[MapTransformer] = None,
-                 foreach: Optional[str] = None) -> None:
+                 section: Union[str, None] = None,
+                 transform: Union[MapTransformer, None] = None,
+                 foreach: Union[str, None] = None) -> None:
         super()._init(transform=transform, foreach=foreach)
         self.rules = rules
         self.sections = xpath(section) if section is not None else None
@@ -381,7 +381,7 @@ class Rule:
     """
 
     def __init__(self, key: Union[str, StrExtractor], value: Extractor, *,
-                 foreach: Optional[str] = None) -> None:
+                 foreach: Union[str, None] = None) -> None:
         self.key = key
         self.value = value
         self.iterate = xpath(foreach) if foreach is not None else None
