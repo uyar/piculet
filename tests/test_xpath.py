@@ -1,4 +1,6 @@
-from piculet import build_tree, xpath
+from pytest import mark
+
+from piculet import _LXML_AVAILABLE, build_tree, xpath
 
 
 content = '<d><t1>foo</t1><t1 a="v"><t2>bar</t2></t1></d>'
@@ -46,3 +48,9 @@ def test_queries_starting_with_multiple_parents_should_be_ok():
     element = xpath("//t2")(root)[0]
     selected = xpath("../../t1")(element)
     assert [s.tag for s in selected] == ["t1", "t1"]
+
+
+@mark.skipif(not _LXML_AVAILABLE, reason="xpath function not supported in ElementTree")
+def test_lxml_should_be_used_if_available():
+    selected = xpath(".//t1[starts-with(text(), 'f')]")(root)
+    assert [s.tag for s in selected] == ["t1"]

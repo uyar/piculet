@@ -127,19 +127,59 @@ def html_to_xml(document: str, *,
 ############################################################
 
 
-XPath: TypeAlias = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
+def build_tree(document: str, *, html: bool = False) -> Element:
+    """Build a tree from an XML document.
+
+    :param document: XML document to build the tree from.
+    :param html: Whether the document is in HTML format.
+    :return: Root element of the XML tree.
+    """
+    if _LXML_AVAILABLE:
+        fromstring = lxml.html.fromstring if html else lxml.etree.fromstring
+        return fromstring(document)
+    else:
+        if html:
+            document = html_to_xml(document)
+        root = ElementTree.fromstring(document)
+
+        # ElementTree doesn't support absolute and parent queries
+        # so we add attributes for root and parent
+        root.set("__root__", root)  # type: ignore
+        root.set("__parent__", root)  # type: ignore
+        for parent in root.iter():
+            for element in parent:
+                element.set("__root__", root)  # type: ignore
+                element.set("__parent__", parent)  # type: ignore
+
+        return root
 
 
-def make_xpath(path: str) -> XPath:
+get_root: Callable[[Element], Element] = \
+    chain(lxml.etree._Element.getroottree, lxml.etree._ElementTree.getroot) \
+    if _LXML_AVAILABLE else \
+    partial(Element.get, key="__root__")
+
+get_parent: Callable[[Element], Element] = \
+    lxml.etree._Element.getparent \
+    if _LXML_AVAILABLE else \
+    partial(Element.get, key="__parent__")
+
+
+@lru_cache(maxsize=None)
+def xpath(path: str) -> Callable[[Element],
+                                 Union[Sequence[str], Sequence[Element]]]:
     """Get an XPath evaluator that can be applied to an element.
 
     This is needed to compensate for the lack of some features
     in ElementTree XPath support.
     """
+    if _LXML_AVAILABLE:
+        return lxml.etree.XPath(path)
+
     preps = []
     if path[0] == "/":
         # ElementTree doesn't support absolute paths
-        preps.append(lambda e: e.get("__root__"))
+        preps.append(get_root)
         path = "." + path
 
     # ElementTree doesn't support paths starting with a parent
@@ -147,7 +187,7 @@ def make_xpath(path: str) -> XPath:
         path_steps = path.split("/")
         down_steps = list(dropwhile(lambda x: x == "..", path_steps))
         for _ in range(len(path_steps) - len(down_steps)):
-            preps.append(lambda e: e.get("__parent__"))
+            preps.append(get_parent)
         path = "./" + "/".join(down_steps)
 
     prep = chain(*preps) if len(preps) > 0 else lambda e: e
@@ -186,38 +226,6 @@ def make_xpath(path: str) -> XPath:
             apply = lambda e: prep(e).findall(path)
 
     return apply
-
-
-xpath: Callable[[str], XPath] = lru_cache(maxsize=None)(
-    lxml.etree.XPath if _LXML_AVAILABLE else make_xpath
-)
-
-
-def build_tree(document: str, *, html: bool = False) -> Element:
-    """Build a tree from an XML document.
-
-    :param document: XML document to build the tree from.
-    :param html: Whether the document is in HTML format.
-    :return: Root element of the XML tree.
-    """
-    if _LXML_AVAILABLE:
-        fromstring = lxml.html.fromstring if html else lxml.etree.fromstring
-        return fromstring(document)
-    else:
-        if html:
-            document = html_to_xml(document)
-        root = ElementTree.fromstring(document)
-
-        # ElementTree doesn't support absolute and parent queries
-        # so we add attributes for root and parent
-        root.set("__root__", root)  # type: ignore
-        root.set("__parent__", root)  # type: ignore
-        for parent in root.iter():
-            for element in parent:
-                element.set("__root__", root)  # type: ignore
-                element.set("__parent__", parent)  # type: ignore
-
-        return root
 
 
 ############################################################
@@ -422,10 +430,7 @@ def _remove(path: str) -> Preprocessor:
         for element in elements:
             # XXX: could this be hazardous?
             #   parent removed in earlier iteration?
-            try:
-                parent = element.getparent()
-            except AttributeError:
-                parent = element.get("__parent__")
+            parent = get_parent(element)
             parent.remove(element)
 
     return apply
