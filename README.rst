@@ -3,7 +3,12 @@ using XPath queries.
 It consists of a `single source file`_ with no dependencies
 other than the standard library,
 which makes it very easy to integrate into applications.
-It also provides a command line interface.
+
+.. note::
+
+   In Python 3.7-3.9, it requires the `typing_extensions` module.
+
+Piculet also provides a command line interface.
 
 .. _single source file: https://github.com/uyar/piculet/blob/master/piculet.py
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2022 H. Turgut Uyar <uyar@tekir.org>
+# Copyright (C) 2014-2023 H. Turgut Uyar <uyar@tekir.org>
 #
 # Piculet is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -45,7 +45,11 @@ from typing import Any, Callable, FrozenSet, Mapping, Optional, Sequence, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
-from typing_extensions import TypeAlias
+
+if sys.version_info >= (3, 10):
+    from typing import TypeAlias
+else:
+    from typing_extensions import TypeAlias
 
 
 _LXML_AVAILABLE = find_spec("lxml") is not None
