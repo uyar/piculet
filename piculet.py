@@ -41,7 +41,7 @@ from importlib.util import find_spec
 from io import StringIO
 from itertools import dropwhile
 from types import MappingProxyType, SimpleNamespace
-from typing import Any, Callable, FrozenSet, Mapping, Sequence, Union
+from typing import Any, Callable, FrozenSet, List, Mapping, Sequence, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -176,7 +176,7 @@ def xpath(path: str) -> Callable[[Element],
     if _LXML_AVAILABLE:
         return lxml.etree.XPath(path)
 
-    preps = []
+    preps: List[Callable[[Element], Element]] = []
     if path[0] == "/":
         # ElementTree doesn't support absolute paths
         preps.append(get_root)
@@ -190,9 +190,10 @@ def xpath(path: str) -> Callable[[Element],
             preps.append(get_parent)
         path = "./" + "/".join(down_steps)
 
-    prep = chain(*preps) if len(preps) > 0 else lambda e: e
+    prep: Callable[[Element], Element] = \
+        chain(*preps) if len(preps) > 0 else lambda e: e
 
-    def descendant_text(element):
+    def descendant_text(element: Element) -> Sequence[str]:
         # strip trailing '//text()'
         return [
             t
@@ -201,7 +202,7 @@ def xpath(path: str) -> Callable[[Element],
             if t
         ]
 
-    def child_text(element):
+    def child_text(element: Element) -> Sequence[str]:
         # strip trailing '/text()'
         return [
             t
@@ -210,22 +211,20 @@ def xpath(path: str) -> Callable[[Element],
             if t
         ]
 
-    def attribute(element, path, attr):
+    def attribute(element: Element, path: str, attr: str) -> Sequence[str]:
         result = [e.get(attr) for e in prep(element).findall(path)]
         return [r for r in result if r is not None]
 
     if path.endswith("//text()"):
-        apply = descendant_text
+        return descendant_text
     elif path.endswith("/text()"):
-        apply = child_text
+        return child_text
     else:
         *front, last = path.split("/")
         if last.startswith("@"):
-            apply = partial(attribute, path="/".join(front), attr=last[1:])
+            return partial(attribute, path="/".join(front), attr=last[1:])
         else:
-            apply = lambda e: prep(e).findall(path)
-
-    return apply
+            return lambda e: prep(e).findall(path)
 
 
 ############################################################
