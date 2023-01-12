@@ -15,6 +15,13 @@ def test_if_given_no_spec_should_print_usage_and_exit(capfd):
     assert "error: the following arguments are required: -s/--spec" in std.err
 
 
+def test_scrape_should_print_data_extracted_from_file(capfd):
+    subprocess.run(["piculet", "-s", movie_spec, movie_doc])
+    std = capfd.readouterr()
+    data = json.loads(std.out)
+    assert data["title"] == "The Shining"
+
+
 def test_scrape_should_print_data_extracted_from_stdin(capfd):
     content = movie_doc.read_text()
     echo = subprocess.run(["echo", content], check=True, capture_output=True)

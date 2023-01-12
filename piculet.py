@@ -28,6 +28,7 @@ __version__ = "2.0.0a2"
 
 
 import json
+import pathlib
 import re
 import sys
 from abc import ABC, abstractmethod
@@ -582,14 +583,20 @@ def scrape(document: str, spec: Mapping, *, html: bool = False) -> Mapping:
 def main():
     parser = ArgumentParser(description="extract data from XML/HTML")
     parser.add_argument("--version", action="version", version=__version__)
+    parser.add_argument("document", nargs="?", type=pathlib.Path,
+                        help="document to extract data from")
     parser.add_argument("--html", action="store_true",
                         help="document is in HTML format")
-    parser.add_argument("-s", "--spec", required=True, help="spec file")
+    parser.add_argument("-s", "--spec", required=True, type=pathlib.Path,
+                        help="spec file")
     arguments = parser.parse_args()
 
-    content = sys.stdin.read()
-    with open(arguments.spec) as f:
-        spec_content = f.read()
+    if arguments.document is not None:
+        content = arguments.document.read_text()
+    else:
+        content = sys.stdin.read()
+
+    spec_content = arguments.spec.read_text()
     spec = json.loads(spec_content)
     data = scrape(content, spec, html=arguments.html)
     print(json.dumps(data, indent=2, sort_keys=True))

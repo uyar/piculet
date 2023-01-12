@@ -31,7 +31,7 @@ For example, say you want to extract some data from the file `shining.html`_.
 An example specification is given in `movie.json`_.
 Download both of these files and run the command::
 
-   $ cat shining.html | piculet -s movie.json
+   $ piculet -s movie.json shining.html
 
 .. _shining.html: https://github.com/uyar/piculet/blob/master/examples/shining.html
 .. _movie.json: https://github.com/uyar/piculet/blob/master/examples/movie.json
