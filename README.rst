@@ -6,7 +6,7 @@ other than the standard library.
 .. note::
 
    In Python versions earlier than 3.10,
-   it requires the `typing_extensions` module.
+   it requires the ``typing_extensions`` module.
 
 Piculet is used for the parsers
 of the `Cinemagoer <https://github.com/cinemagoer/cinemagoer>`_ project.
@@ -25,7 +25,7 @@ Installing Piculet creates a script named ``piculet``
 which can be used to invoke the command line interface::
 
    $ piculet -h
-   usage: piculet [-h] [--version] [--html] -s SPEC
+   usage: piculet [-h] [--version] [--html] -s SPEC [document]
 
 For example, say you want to extract some data from the file `shining.html`_.
 An example specification is given in `movie.json`_.

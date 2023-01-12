@@ -28,7 +28,7 @@ The command-line interface reads the document from the standard input.
 After downloading the example files `shining.html`_ and `movie.json`_,
 run the command::
 
-   $ cat shining.html | piculet -s movie.json
+   $ piculet -s movie.json shining.html
 
 This should print the following output::
 
