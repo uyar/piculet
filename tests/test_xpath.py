@@ -50,6 +50,32 @@ def test_queries_starting_with_multiple_parents_should_be_ok():
     assert [s.tag for s in selected] == ["t1", "t1"]
 
 
+def test_queries_starting_with_parent_from_root_should_be_ok():
+    selected = xpath("../a")(root)
+    assert selected == []
+
+
+def test_queries_climbing_above_root_should_be_ok():
+    element = xpath("//t2")(root)[0]
+    selected = xpath("../../../../../../a")(element)
+    assert selected == []
+
+
+def test_child_text_queries_starting_with_parent_from_root_should_be_ok():
+    selected = xpath("../a/text()")(root)
+    assert selected == []
+
+
+def test_descendant_text_queries_starting_with_parent_from_root_should_be_ok():
+    selected = xpath("..//a/text()")(root)
+    assert selected == []
+
+
+def test_attribute_queries_starting_with_parent_from_root_should_be_ok():
+    selected = xpath("../@a")(root)
+    assert selected == []
+
+
 @mark.skipif(not _LXML_AVAILABLE, reason="xpath function not supported in ElementTree")
 def test_lxml_should_be_used_if_available():
     selected = xpath(".//t1[starts-with(text(), 'f')]")(root)

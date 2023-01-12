@@ -144,7 +144,6 @@ def build_tree(document: str, *, html: bool = False) -> Element:
         # ElementTree doesn't support absolute and parent queries
         # so we add attributes for root and parent
         root.set("__root__", root)  # type: ignore
-        root.set("__parent__", root)  # type: ignore
         for parent in root.iter():
             for element in parent:
                 element.set("__root__", root)  # type: ignore
@@ -157,6 +156,7 @@ get_root: Callable[[Element], Element] = \
     chain(lxml.etree._Element.getroottree, lxml.etree._ElementTree.getroot) \
     if _LXML_AVAILABLE else \
     partial(Element.get, key="__root__")
+
 
 get_parent: Callable[[Element], Element] = \
     lxml.etree._Element.getparent \
@@ -191,30 +191,49 @@ def xpath(path: str) -> XPath:
             preps.append(get_parent)
         path = "./" + "/".join(down_steps)
 
-    prep: Callable[[Element], Element] = \
-        chain(*preps) if len(preps) > 0 else lambda e: e
+    def prep(element: Element) -> Union[Element, None]:
+        for stage in preps:
+            element = stage(element)
+            if element is None:
+                break
+        return element
 
     def descendant_text(element: Element) -> Sequence[str]:
+        start: Union[Element, None] = prep(element)
+        if start is None:
+            return []
+
         # strip trailing '//text()'
         return [
             t
-            for e in prep(element).findall(path[:-8])
+            for e in start.findall(path[:-8])
             for t in e.itertext()
             if t
         ]
 
     def child_text(element: Element) -> Sequence[str]:
+        start: Union[Element, None] = prep(element)
+        if start is None:
+            return []
+
         # strip trailing '/text()'
         return [
             t
-            for e in prep(element).findall(path[:-7])
+            for e in start.findall(path[:-7])
             for t in ([e.text] + [c.tail if c.tail else "" for c in e])
             if t
         ]
 
     def attribute(element: Element, path: str, attr: str) -> Sequence[str]:
-        result = [e.get(attr) for e in prep(element).findall(path)]
+        start: Union[Element, None] = prep(element)
+        if start is None:
+            return []
+        result = [e.get(attr) for e in start.findall(path)]
         return [r for r in result if r is not None]
+
+    def etree(element: Element, path: str) -> Sequence[Element]:
+        start: Union[Element, None] = prep(element)
+        return start.findall(path) if start is not None else []
 
     if path.endswith("//text()"):
         return descendant_text
@@ -225,7 +244,7 @@ def xpath(path: str) -> XPath:
         if last.startswith("@"):
             return partial(attribute, path="/".join(front), attr=last[1:])
         else:
-            return lambda e: prep(e).findall(path)
+            return partial(etree, path=path)
 
 
 ############################################################
