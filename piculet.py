@@ -250,7 +250,7 @@ class Extractor(ABC):
     transforming obtained raw values and handling multi-valued data.
     """
 
-    def _init(self, transform=None, foreach=None):
+    def __init__(self, transform=None, foreach=None):
         self.transform = transform
         self.iterate = xpath(foreach) if foreach is not None else None
 
@@ -297,18 +297,18 @@ class Extractor(ABC):
         return extractor
 
     @abstractmethod
-    def _raw(self, element):
-        """Get the raw data from the element."""
+    def extract(self, element):
+        """Extract the raw data from the element."""
 
     def __call__(self, element):
         """Extract the data from the element."""
         if self.iterate is None:
-            raw = self._raw(element)
+            raw = self.extract(element)
             if raw is _EMPTY:
                 return _EMPTY
             return raw if self.transform is None else self.transform(raw)
         else:
-            raw_ = [self._raw(r) for r in self.iterate(element)]
+            raw_ = [self.extract(r) for r in self.iterate(element)]
             raw = [v for v in raw_ if v is not _EMPTY]
             if len(raw) == 0:
                 return _EMPTY
@@ -328,11 +328,11 @@ class Path(Extractor):
     def __init__(self, path: str, *, sep: Union[str, None] = None,
                  transform: Union[StrTransformer, None] = None,
                  foreach: Union[str, None] = None) -> None:
-        super()._init(transform=transform, foreach=foreach)
+        super().__init__(transform=transform, foreach=foreach)
         self.xpath = xpath(path)
         self.sep = sep if sep is not None else ""
 
-    def _raw(self, element):
+    def extract(self, element):
         selected = self.xpath(element)
         return self.sep.join(selected) if len(selected) > 0 else _EMPTY
 
@@ -350,11 +350,11 @@ class Items(Extractor):
                  section: Union[str, None] = None,
                  transform: Union[MapTransformer, None] = None,
                  foreach: Union[str, None] = None) -> None:
-        super()._init(transform=transform, foreach=foreach)
+        super().__init__(transform=transform, foreach=foreach)
         self.rules = rules
         self.sections = xpath(section) if section is not None else None
 
-    def _raw(self, element):
+    def extract(self, element):
         if self.sections is None:
             subroot = element
         else:
