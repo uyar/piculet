@@ -1,18 +1,24 @@
 from pytest import fixture
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import piculet
 
 
-@fixture(scope="session")
-def shining_content():
-    """Contents of the test file for the movie "The Shining"."""
-    examples_dir = Path(__file__).parent.parent / "examples"
-    return examples_dir.joinpath("shining.html").read_text()
+EXAMPLES = Path(__file__).parent.parent / "examples"
 
 
 @fixture
-def shining(shining_content):
-    """Root element of the test XML tree for the movie "The Shining"."""
-    return piculet.build_tree(shining_content)
+def examples():
+    """Piculet example specs and documents."""
+    movie_spec = EXAMPLES / "movie.json"
+    shining_doc = EXAMPLES / "shining.html"
+    shining_content = shining_doc.read_text()
+    shining = piculet.build_tree(shining_content)
+    return SimpleNamespace(
+        movie_spec=movie_spec,
+        shining_doc=shining_doc,
+        shining_content=shining_content,
+        shining=shining,
+    )
