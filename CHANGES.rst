@@ -8,6 +8,7 @@ Changes
 - Drop direct support for YAML.
 - Revert API to OOP style.
 - Move type annotations from stub into source.
+- Remove transformer chaining.
 - Reduce HTML normalization down to essentials.
 - Remove the h2x command from the CLI.
 - Add back the option to specify input file in CLI.

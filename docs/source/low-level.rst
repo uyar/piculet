@@ -90,19 +90,6 @@ The ``sep`` parameter can be used concatenate using a separator string:
    >>> path(root)
    'Jack Nicholson, Shelley Duvall'
 
-You can use the :func:`chain <piculet.chain>` utility function
-to generate chained transformers:
-
-.. code-block:: python
-
-   >>> from piculet import chain
-   >>> path = Path(
-   ...     '//span[@class="year"]/text()',
-   ...     transform=chain(int, lambda x: x // 100 + 1),
-   ... )
-   >>> path(root)
-   20
-
 Every item in the result mapping is generated
 by a :class:`Rule <piculet.Rule>` in the API.
 Rules are applied to elements to extract data items in the result mapping,

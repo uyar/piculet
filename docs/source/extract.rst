@@ -203,32 +203,11 @@ If you want to use a custom transformer, you have to register it first:
    >>> scrape(document, spec)
    {'title': 'The_Shining}
 
-
-You can chain transformers using the ``|`` symbol:
-
-.. code-block:: python
-
-   >>> transformers.century = lambda x: x // 100 + 1
-   >>> spec = {
-   ...     "items": [
-   ...         {
-   ...             "key": "century",
-   ...             "value": {
-   ...                 "path": '//span[@class="year"]/text()',
-   ...                 "transform": "int|century"
-   ...             }
-   ...         }
-   ...     ]
-   ... }
-   >>> scrape(document, spec)
-   {'century': 20}
-
 Shorthand notation
 ------------------
 
-To make the specification more concise, you can write the value
-as a single string to combine the path  and transform operations
-by splitting them with the ``|`` symbol:
+If the value is only a path with no custom seperator and transformer,
+it can be directly given as a string:
 
 .. code-block:: python
 
@@ -237,19 +216,11 @@ by splitting them with the ``|`` symbol:
    ...         {
    ...             "key": "title",
    ...             "value": "//title/text()"
-   ...         },
-   ...         {
-   ...             "key": "year",
-   ...             "value": '//span[@class="year"]/text() | int'
-   ...         },
-   ...         {
-   ...             "key": "century",
-   ...             "value": '//span[@class="year"]/text() | int | century'
    ...         }
    ...     ]
    ... }
    >>> scrape(document, spec)
-   {'title': 'The Shining', 'year': 1980, 'century': 20}
+   {'title': 'The Shining'}
 
 .. note::
 

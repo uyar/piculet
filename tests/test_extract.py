@@ -1,6 +1,6 @@
 import pytest
 
-from piculet import Items, Path, Rule, build_tree, chain
+from piculet import Items, Path, Rule, build_tree
 
 
 def test_empty_rules_should_return_empty_result(examples):
@@ -32,19 +32,6 @@ def test_extracted_text_should_be_transformable(examples):
     rules = [Rule(key="year", value=Path('//span[@class="year"]/text()', transform=int))]
     data = Items(rules)(examples.shining)
     assert data == {"year": 1980}
-
-
-def test_transformers_should_be_chainable(examples):
-    rules = [
-        Rule(
-            key="century",
-            value=Path(
-                '//span[@class="year"]/text()', transform=chain(int, lambda x: x // 100 + 1)
-            ),
-        )
-    ]
-    data = Items(rules)(examples.shining)
-    assert data == {"century": 20}
 
 
 def test_multiple_rules_should_generate_multiple_items(examples):

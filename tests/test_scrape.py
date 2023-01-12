@@ -46,18 +46,6 @@ def test_added_transformer_should_be_usable(examples):
     assert data == {"title": "The_Shining"}
 
 
-def test_transformers_should_be_chainable(examples):
-    transformers.century = lambda x: x // 100 + 1
-    items = [
-        {
-            "key": "century",
-            "value": {"path": '//span[@class="year"]/text()', "transform": "int|century"},
-        }
-    ]
-    data = scrape(examples.shining_content, {"items": items})
-    assert data == {"century": 20}
-
-
 def test_unknown_transformer_should_raise_error(examples):
     with pytest.raises(ValueError):
         items = [
@@ -69,10 +57,10 @@ def test_unknown_transformer_should_raise_error(examples):
         scrape(examples.shining_content, {"items": items})
 
 
-def test_shorthand_notation_should_be_path_and_transform(examples):
-    items = [{"key": "year", "value": '//span[@class="year"]/text() | int'}]
+def test_shorthand_notation_should_be_path(examples):
+    items = [{"key": "year", "value": '//span[@class="year"]/text()'}]
     data = scrape(examples.shining_content, {"items": items})
-    assert data == {"year": 1980}
+    assert data == {"year": "1980"}
 
 
 def test_multiple_rules_should_generate_multiple_items(examples):

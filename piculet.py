@@ -59,16 +59,6 @@ if _LXML_AVAILABLE:
 
 
 ############################################################
-# UTILITY FUNCTIONS
-############################################################
-
-
-def chain(*functions):
-    """Chain functions to apply the output of one as the input of the next."""
-    return reduce(lambda f, g: lambda x: g(f(x)), functions)
-
-
-############################################################
 # HTML OPERATIONS
 ############################################################
 
@@ -154,7 +144,7 @@ def build_tree(document: str, *, html: bool = False) -> Element:
 
 
 get_root: Callable[[Element], Element] = \
-    chain(lxml.etree._Element.getroottree, lxml.etree._ElementTree.getroot) \
+    (lambda e: e.getroottree().getroot()) \
     if _LXML_AVAILABLE else \
     partial(Element.get, key="__root__")
 
@@ -278,27 +268,20 @@ class Extractor(ABC):
     def from_desc(desc):
         """Create an extractor from a description."""
         if isinstance(desc, str):
-            path, *transforms = [s.strip() for s in desc.split("|")]
-            sep = None
-            foreach = None
-        else:
-            path = desc.get("path")
-            sep = desc.get("sep")
-            transforms = [s.strip()
-                          for s in desc.get("transform", "").split("|")]
-            foreach = desc.get("foreach")
-        transforms = [s for s in transforms if len(s) > 0]
+            return Path(desc)
 
-        if len(transforms) == 0:
+        path = desc.get("path")
+        sep = desc.get("sep")
+
+        op_name = desc.get("transform")
+        if op_name is None:
             transform = None
         else:
-            ops = []
-            for op_name in transforms:
-                op = getattr(transformers, op_name, None)
-                if op is None:
-                    raise ValueError(f"Unknown transformer: '{op_name}'")
-                ops.append(op)
-            transform = chain(*ops)
+            transform = getattr(transformers, op_name, None)
+            if transform is None:
+                raise ValueError(f"Unknown transformer: '{op_name}'")
+
+        foreach = desc.get("foreach")
 
         if path is not None:
             extractor = Path(
