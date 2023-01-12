@@ -34,14 +34,15 @@ import sys
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from contextlib import redirect_stdout
-from functools import lru_cache, partial, reduce
+from functools import lru_cache, partial
 from html import escape as html_escape
 from html.parser import HTMLParser
 from importlib.util import find_spec
 from io import StringIO
 from itertools import dropwhile
 from types import MappingProxyType, SimpleNamespace
-from typing import Any, Callable, FrozenSet, List, Mapping, Sequence, Union
+from typing import Any, Callable, FrozenSet, List, Mapping, MutableMapping, \
+    Sequence, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -143,16 +144,15 @@ def build_tree(document: str, *, html: bool = False) -> Element:
         return root
 
 
-get_root: Callable[[Element], Element] = \
-    (lambda e: e.getroottree().getroot()) \
-    if _LXML_AVAILABLE else \
-    partial(Element.get, key="__root__")
+get_root: Callable[[Element], Element]
+get_parent: Callable[[Element], Element]
 
-
-get_parent: Callable[[Element], Element] = \
-    lxml.etree._Element.getparent \
-    if _LXML_AVAILABLE else \
-    partial(Element.get, key="__parent__")
+if _LXML_AVAILABLE:
+    get_root = lambda e: lxml.etree._Element.getroottree(e).getroot()
+    get_parent = lxml.etree._Element.getparent
+else:
+    get_root = partial(Element.get, key="__root__")  # type: ignore
+    get_parent = partial(Element.get, key="__parent__")  # type: ignore
 
 
 XPath: TypeAlias = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
@@ -264,41 +264,6 @@ class Extractor(ABC):
         self.transform = transform
         self.iterate = xpath(foreach) if foreach is not None else None
 
-    @staticmethod
-    def from_desc(desc):
-        """Create an extractor from a description."""
-        if isinstance(desc, str):
-            return Path(desc)
-
-        path = desc.get("path")
-        sep = desc.get("sep")
-
-        op_name = desc.get("transform")
-        if op_name is None:
-            transform = None
-        else:
-            transform = getattr(transformers, op_name, None)
-            if transform is None:
-                raise ValueError(f"Unknown transformer: '{op_name}'")
-
-        foreach = desc.get("foreach")
-
-        if path is not None:
-            extractor = Path(
-                path=path,
-                sep=sep,
-                transform=transform,
-                foreach=foreach,
-            )
-        else:
-            extractor = Items(
-                rules=[Rule.from_desc(i) for i in desc.get("items", [])],
-                section=desc.get("section"),
-                transform=transform,
-                foreach=foreach,
-            )
-        return extractor
-
     @abstractmethod
     def extract(self, element):
         """Extract the raw data from the element."""
@@ -328,12 +293,12 @@ class Path(Extractor):
     :param foreach: XPath expression for selecting multiple subelements.
     """
 
-    def __init__(self, path: str, *, sep: Union[str, None] = None,
+    def __init__(self, path: str, *, sep: str = "",
                  transform: Union[StrTransformer, None] = None,
                  foreach: Union[str, None] = None) -> None:
         super().__init__(transform=transform, foreach=foreach)
         self.xpath = xpath(path)
-        self.sep = sep if sep is not None else ""
+        self.sep = sep
 
     def extract(self, element):
         selected = self.xpath(element)
@@ -389,14 +354,6 @@ class Rule:
         self.value = value
         self.iterate = xpath(foreach) if foreach is not None else None
 
-    @staticmethod
-    def from_desc(desc):
-        """Create a rule from a description."""
-        key_ = desc["key"]
-        key = key_ if isinstance(key_, str) else Extractor.from_desc(key_)
-        value = Extractor.from_desc(desc["value"])
-        return Rule(key=key, value=value, foreach=desc.get("foreach"))
-
     def __call__(self, element):
         """Apply this rule to an element."""
         data = {}
@@ -411,6 +368,33 @@ class Rule:
                 continue
             data[key] = value
         return data if len(data) > 0 else _EMPTY
+
+
+def extractor(desc: Union[str, MutableMapping]) -> Union[Path, Items]:
+    """Create an extractor from a description."""
+    if isinstance(desc, str):
+        return Path(desc)
+
+    transform_name = desc.pop("transform", None)
+    if transform_name is not None:
+        transform = getattr(transformers, transform_name, None)
+        if transform is None:
+            raise ValueError(f"Unknown transformer: '{transform_name}'")
+        desc["transform"] = transform
+
+    path = desc.pop("path", None)
+    if path is not None:
+        return Path(path, **desc)
+    else:
+        rules = [rule(**i) for i in desc.pop("items", [])]
+        return Items(rules, **desc)
+
+
+def rule(key, value, foreach=None):
+    """Create a rule from a description."""
+    key = key if isinstance(key, str) else extractor(key)
+    value = extractor(value)
+    return Rule(key=key, value=value, foreach=foreach)
 
 
 ############################################################
@@ -498,7 +482,7 @@ def preprocessor(desc):
     if func is None:
         raise ValueError(f"Unknown preprocessing operation: '{op}'")
     args = {
-        k: v if isinstance(v, str) else Extractor.from_desc(v)
+        k: v if isinstance(v, str) else extractor(v)
         for k, v in desc.items()
         if k not in {"op", "path"}
     }
@@ -543,19 +527,15 @@ def scrape(document: str, spec: Mapping, *, html: bool = False) -> Mapping:
     :param spec: Preprocessing and extraction specification.
     :param html: Whether to use the HTML builder.
     """
-    pre_ = spec.get("pre")
-    pre = [preprocessor(p) for p in pre_] if pre_ is not None else []
-
-    items_ = spec.get("items", [])
-    section = spec.get("section")
-    rules = Items(rules=[Rule.from_desc(item) for item in items_],
-                  section=section)
-
     root = build_tree(document, html=html)
-    for preprocess in pre:
-        preprocess(root)
-    data = rules(root)
-    return data
+
+    pre_ops = [preprocessor(p) for p in spec.get("pre", [])]
+    for op in pre_ops:
+        op(root)
+
+    rules = [rule(**item) for item in spec.get("items", [])]
+    items = Items(rules, section=spec.get("section"))
+    return items(root)
 
 
 ############################################################
