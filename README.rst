@@ -1,19 +1,17 @@
 Piculet is a module for extracting data from XML or HTML documents
 using XPath queries.
 It consists of a `single source file`_ with no dependencies
-other than the standard library,
-which makes it very easy to integrate into applications.
+other than the standard library.
 
 .. note::
 
-   In Python 3.7-3.9, it requires the `typing_extensions` module.
-
-Piculet also provides a command line interface.
-
-.. _single source file: https://github.com/uyar/piculet/blob/master/piculet.py
+   In Python versions earlier than 3.10,
+   it requires the `typing_extensions` module.
 
 Piculet is used for the parsers
-of the `IMDbPY <https://github.com/alberanid/imdbpy>`_ project.
+of the `Cinemagoer <https://github.com/cinemagoer/cinemagoer>`_ project.
+
+.. _single source file: https://github.com/uyar/piculet/blob/master/piculet.py
 
 Getting started
 ---------------
@@ -23,8 +21,8 @@ You can install it using ``pip``::
 
     pip install piculet
 
-Installing Piculet creates a script named ``piculet`` which can be used
-to invoke the command line interface::
+Installing Piculet creates a script named ``piculet``
+which can be used to invoke the command line interface::
 
    $ piculet -h
    usage: piculet [-h] [--version] [--html] -s SPEC
@@ -48,7 +46,7 @@ The source code can be obtained from: https://github.com/uyar/piculet
 License
 -------
 
-Copyright (C) 2014-2022 H. Turgut Uyar <uyar@tekir.org>
+Copyright (C) 2014-2023 H. Turgut Uyar <uyar@tekir.org>
 
 Piculet is released under the LGPL license, version 3 or later.
 Read the included `LICENSE.txt`_ file for details.

@@ -17,8 +17,7 @@
 """Module for scraping XML and HTML documents using XPath queries.
 
 It consists of this single source file with no dependencies
-other than the standard library,
-which makes it very easy to integrate into applications.
+other than the standard library.
 
 For more information, please refer to the documentation:
 https://tekir.org/piculet/
@@ -165,9 +164,11 @@ get_parent: Callable[[Element], Element] = \
     partial(Element.get, key="__parent__")
 
 
+XPath: TypeAlias = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
+
+
 @lru_cache(maxsize=None)
-def xpath(path: str) -> Callable[[Element],
-                                 Union[Sequence[str], Sequence[Element]]]:
+def xpath(path: str) -> XPath:
     """Get an XPath evaluator that can be applied to an element.
 
     This is needed to compensate for the lack of some features

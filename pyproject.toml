@@ -51,16 +51,16 @@ dev = [
 piculet = "piculet:main"
 
 [project.urls]
-"Homepage" = "https://tekir.org/piculet/"
-"Documentation" = "https://piculet.readthedocs.io/"
-"Repository" = "https://github.com/uyar/piculet"
+homepage = "https://tekir.org/piculet/"
+documentation = "https://piculet.readthedocs.io/"
+repository = "https://github.com/uyar/piculet"
 
 [tool.mypy]
 ignore_missing_imports = true
 
 [tool.isort]
 lines_after_imports = 2
-multi_line_output = 3
+multi_line_output = 2
 known_test = "pytest,unittest"
 sections = "TEST,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
 
