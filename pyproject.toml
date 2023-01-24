@@ -34,15 +34,27 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = [
+tests = [
     "pytest",
-    "pytest-cov",
     "importlib-metadata; python_version < '3.8'",
+]
+coverage = [
+    "piculet[tests]",
+    "pytest-cov",
+]
+types = [
+    "mypy",
+]
+style = [
     "flake8",
     "flake8-isort",
-    "mypy",
+]
+docs = [
     "sphinx",
     "sphinx-rtd-theme",
+]
+dev = [
+    "piculet[tests,coverage,types,style,docs]",
     "tox",
     "build",
 ]
@@ -71,41 +83,29 @@ envlist = py{311,310,39,38,37}{,-lxml}, pypy{39,38,37}{,-lxml}, types, style, do
 isolated_build = True
 
 [testenv]
+extras = tests
 deps =
-    pytest
-    py{39,38,37}: typing_extensions
-    pypy{39,38,37}: typing_extensions
-    py37: importlib-metadata
-    pypy37: importlib-metadata
     lxml: lxml
 commands =
     pytest {posargs:tests}
 
 [testenv:coverage]
-deps =
-    {[testenv]deps}
-    pytest-cov
+extras = coverage
 commands =
     pytest --cov=piculet --cov-report=term-missing tests
 
 [testenv:types]
-deps =
-    {[testenv]deps}
-    mypy
+extras = types
 commands =
     mypy piculet.py
 
 [testenv:style]
-deps =
-    flake8
-    flake8-isort
+extras = style
 commands =
     flake8 piculet.py
 
 [testenv:docs]
-deps =
-    sphinx
-    sphinx_rtd_theme
+extras = docs
 changedir = docs/
 commands =
     sphinx-build -b html source/ build/html/
