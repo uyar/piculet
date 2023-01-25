@@ -36,25 +36,20 @@ dependencies = [
 [project.optional-dependencies]
 tests = [
     "pytest",
+    "pytest-cov",
     "importlib-metadata; python_version < '3.8'",
 ]
-coverage = [
-    "piculet[tests]",
-    "pytest-cov",
-]
-types = [
-    "mypy",
-]
-style = [
+lint = [
     "flake8",
     "flake8-isort",
+    "mypy",
 ]
 docs = [
     "sphinx",
     "sphinx-rtd-theme",
 ]
 dev = [
-    "piculet[tests,coverage,types,style,docs]",
+    "piculet[tests,lint,docs]",
     "tox",
     "build",
 ]
@@ -90,17 +85,17 @@ commands =
     pytest {posargs:tests}
 
 [testenv:coverage]
-extras = coverage
+extras = tests
 commands =
     pytest --cov=piculet --cov-report=term-missing tests
 
 [testenv:types]
-extras = types
+extras = lint
 commands =
     mypy piculet.py
 
 [testenv:style]
-extras = style
+extras = lint
 commands =
     flake8 piculet.py
 
