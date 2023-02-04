@@ -47,12 +47,6 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
 
-if sys.version_info >= (3, 10):
-    from typing import TypeAlias
-else:
-    from typing_extensions import TypeAlias
-
-
 _LXML_AVAILABLE = find_spec("lxml") is not None
 if _LXML_AVAILABLE:
     import lxml.etree
@@ -155,7 +149,7 @@ else:
     get_parent = partial(Element.get, key="__parent__")  # type: ignore
 
 
-XPath: TypeAlias = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
+XPath = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
 
 
 @lru_cache(maxsize=None)
@@ -246,11 +240,11 @@ def xpath(path: str) -> XPath:
 _EMPTY: Mapping = MappingProxyType({})
 
 
-StrTransformer: TypeAlias = Callable[[str], Any]
-MapTransformer: TypeAlias = Callable[[Mapping], Any]
+StrTransformer = Callable[[str], Any]
+MapTransformer = Callable[[Mapping], Any]
 
-StrExtractor: TypeAlias = Callable[[Element], str]
-MapExtractor: TypeAlias = Callable[[Element], Mapping]
+StrExtractor = Callable[[Element], str]
+MapExtractor = Callable[[Element], Mapping]
 
 
 class Extractor(ABC):
@@ -402,7 +396,7 @@ def rule(key, value, foreach=None):
 ############################################################
 
 
-Preprocessor: TypeAlias = Callable[[Element], None]
+Preprocessor = Callable[[Element], None]
 
 
 def _remove(path: str) -> Preprocessor:

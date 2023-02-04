@@ -3,11 +3,6 @@ using XPath queries.
 It consists of a `single source file`_ with no dependencies
 other than the standard library.
 
-.. note::
-
-   In Python versions earlier than 3.10,
-   it requires the ``typing_extensions`` module.
-
 Piculet is used for the parsers
 of the `Cinemagoer <https://github.com/cinemagoer/cinemagoer>`_ project.
 
