@@ -35,17 +35,19 @@ tests = [
     "pytest",
     "pytest-cov",
 ]
-lint = [
+types = [
+    "mypy",
+]
+style = [
     "flake8",
     "flake8-isort",
-    "mypy",
 ]
 docs = [
     "sphinx",
     "sphinx-rtd-theme",
 ]
 dev = [
-    "piculet[tests,lint,docs]",
+    "piculet[tests,types,style,docs]",
     "tox",
     "build",
 ]
@@ -57,6 +59,20 @@ piculet = "piculet:main"
 homepage = "https://tekir.org/piculet/"
 documentation = "https://piculet.readthedocs.io/"
 repository = "https://github.com/uyar/piculet"
+
+[tool.setuptools]
+py-modules = ["piculet"]
+
+[tool.coverage.run]
+source = ["piculet"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "if __name__ == \"__main__\":",
+    "if _LXML_AVAILABLE",
+]
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -78,20 +94,20 @@ extras = tests
 deps =
     lxml: lxml
 commands =
-    pytest {posargs:tests}
+    pytest tests
 
 [testenv:coverage]
 extras = tests
 commands =
-    pytest --cov=piculet --cov-report=term-missing tests
+    pytest tests --cov
 
 [testenv:types]
-extras = lint
+extras = types
 commands =
     mypy piculet.py
 
 [testenv:style]
-extras = lint
+extras = style
 commands =
     flake8 piculet.py
 
@@ -103,5 +119,5 @@ commands =
 """
 
 [build-system]
-requires = ["flit_core>=3.2"]
-build-backend = "flit_core.buildapi"
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
