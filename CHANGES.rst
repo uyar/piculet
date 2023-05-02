@@ -4,7 +4,7 @@ Changes
 2.0.0a2 (unreleased)
 --------------------
 
-- Drop support for Python 3.6.
+- Drop support for Python 3.6 and 3.7.
 - Drop direct support for YAML.
 - Revert API to OOP style.
 - Move type annotations from stub into source.
