@@ -87,9 +87,6 @@ class HTMLNormalizer(HTMLParser):
     def handle_data(self, data):
         print(html_escape(data), end="")
 
-    def error(self, message):
-        raise RuntimeError(message)
-
 
 def html_to_xml(document: str, *,
                 parser: Union[HTMLNormalizer, None] = None) -> str:
