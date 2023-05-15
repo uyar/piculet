@@ -1,4 +1,4 @@
-from pytest import mark
+from pytest import mark, raises
 
 from piculet import _LXML_AVAILABLE, build_tree, xpath
 
@@ -76,7 +76,7 @@ def test_attribute_queries_starting_with_parent_from_root_should_be_ok():
     assert selected == []
 
 
-@mark.skipif(not _LXML_AVAILABLE, reason="xpath function not supported in ElementTree")
+@mark.skipif(_LXML_AVAILABLE, reason="starts-with function is supported in lxml")
 def test_lxml_should_be_used_if_available():
-    selected = xpath(".//t1[starts-with(text(), 'f')]")(root)
-    assert [s.tag for s in selected] == ["t1"]
+    with raises(SyntaxError):
+        xpath(".//t1[starts-with(text(), 'f')]")(root)
