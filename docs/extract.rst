@@ -6,7 +6,7 @@ from a document.
 We'll scrape the following HTML content for the movie "The Shining"
 in our examples:
 
-.. literalinclude:: ../../examples/shining.html
+.. literalinclude:: ../examples/shining.html
    :language: html
 
 Assuming the HTML document above is saved as :file:`shining.html`, let's get

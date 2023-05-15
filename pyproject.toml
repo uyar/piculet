@@ -44,7 +44,6 @@ style = [
 ]
 docs = [
     "sphinx",
-    "sphinx-rtd-theme",
 ]
 dev = [
     "piculet[tests,types,style,docs]",
@@ -102,12 +101,16 @@ commands =
     pytest tests --cov
 
 [testenv:types]
-extras = types
+skip_install = true
+deps = mypy
 commands =
     mypy piculet.py
 
 [testenv:style]
-extras = style
+skip_install = true
+deps =
+    flake8
+    flake8-isort
 commands =
     flake8 piculet.py
 
@@ -115,7 +118,7 @@ commands =
 extras = docs
 changedir = docs/
 commands =
-    sphinx-build -b html source/ build/html/
+    sphinx-build -b html ./ _build/html/
 """
 
 [build-system]
