@@ -35,7 +35,7 @@ pyproject_hooks==1.0.0
 pytest==7.3.1
 pytest-cov==4.0.0
 pytz==2023.3
-requests==2.30.0
+requests==2.31.0
 snowballstemmer==2.2.0
 Sphinx==7.0.1
 sphinxcontrib-applehelp==1.0.4
