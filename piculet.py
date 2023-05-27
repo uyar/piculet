@@ -18,9 +18,11 @@
 
 It consists of this single source file with no dependencies
 other than the standard library.
+If available, it will make use of the lxml package
+for improved performance and better XPath support.
 
 For more information, please refer to the documentation:
-https://tekir.org/piculet/
+https://piculet.readthedocs.io/
 """
 
 

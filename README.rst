@@ -1,7 +1,12 @@
+Piculet
+=======
+
 Piculet is a module for extracting data from XML or HTML documents
 using XPath queries.
 It consists of a `single source file`_ with no dependencies
 other than the standard library.
+If available, it will make use of the lxml package
+for improved performance and better XPath support.
 
 Piculet is used for the parsers
 of the `Cinemagoer <https://github.com/cinemagoer/cinemagoer>`_ project.
@@ -11,7 +16,7 @@ of the `Cinemagoer <https://github.com/cinemagoer/cinemagoer>`_ project.
 Getting started
 ---------------
 
-Piculet works with Python 3.7 and later versions.
+Piculet works with Python 3.8 and later versions.
 You can install it using ``pip``::
 
     pip install piculet
@@ -19,7 +24,7 @@ You can install it using ``pip``::
 Installing Piculet creates a script named ``piculet``
 which can be used to invoke the command line interface::
 
-   $ piculet -h
+   $ piculet -h
    usage: piculet [-h] [--version] [--html] -s SPEC [document]
 
 For example, say you want to extract some data from the file `shining.html`_.
@@ -34,7 +39,7 @@ Download both of these files and run the command::
 Getting help
 ------------
 
-The documentation is available on: https://tekir.org/piculet/
+The documentation is available on: https://piculet.readthedocs.io/
 
 The source code can be obtained from: https://github.com/uyar/piculet
 
