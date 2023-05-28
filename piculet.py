@@ -44,7 +44,7 @@ from io import StringIO
 from itertools import dropwhile
 from types import MappingProxyType, SimpleNamespace
 from typing import Any, Callable, FrozenSet, List, Mapping, MutableMapping, \
-    Sequence, Union
+    Sequence, Tuple, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -151,6 +151,85 @@ else:
 XPath = Callable[[Element], Union[Sequence[str], Sequence[Element]]]
 
 
+def get_preps(path: str) -> Tuple[List[Callable[[Element], Element]], str]:
+    preps: List[Callable[[Element], Element]] = []
+    down_path: str = path
+
+    if path[0] == "/":
+        # ElementTree doesn't support absolute paths
+        preps.append(get_root)
+        down_path = "." + path
+    elif path[:2] == "..":
+        # ElementTree doesn't support paths starting with a parent
+        path_steps = path.split("/")
+        down_steps = list(dropwhile(lambda x: x == "..", path_steps))
+        for _ in range(len(path_steps) - len(down_steps)):
+            preps.append(get_parent)
+        down_path = "./" + "/".join(down_steps)
+
+    return (preps, down_path)
+
+
+def prep(element: Element,
+         preps: List[Callable[[Element], Element]]) -> Union[Element, None]:
+    for stage in preps:
+        element = stage(element)
+        if element is None:
+            break
+    return element
+
+
+def str_xpath(path: str, /) -> Callable[[Element], Sequence[str]]:
+    """Get an XPath evaluator that can be applied to an element.
+
+    This is needed to compensate for the lack of some features
+    in ElementTree XPath support.
+    """
+    preps, down_path = get_preps(path)
+
+    def descendant_text(element: Element, parent: str) -> Sequence[str]:
+        start: Union[Element, None] = prep(element, preps)
+        if start is None:
+            return []
+        return [t for e in start.findall(parent) for t in e.itertext() if t]
+
+    def child_text(element: Element, parent: str) -> Sequence[str]:
+        start: Union[Element, None] = prep(element, preps)
+        if start is None:
+            return []
+        return [
+            t
+            for e in start.findall(parent)
+            for t in ([e.text] + [c.tail if c.tail else "" for c in e])
+            if t
+        ]
+
+    def attribute(element: Element, parent: str, attr: str) -> Sequence[str]:
+        start: Union[Element, None] = prep(element, preps)
+        if start is None:
+            return []
+        result = [e.get(attr) for e in start.findall(parent)]
+        return [r for r in result if r is not None]
+
+    if down_path.endswith("//text()"):
+        return partial(descendant_text, parent=down_path[:-8])
+    elif down_path.endswith("/text()"):
+        return partial(child_text, parent=down_path[:-7])
+    else:
+        *front, last = down_path.split("/")
+        return partial(attribute, parent="/".join(front), attr=last[1:])
+
+
+def element_xpath(path: str, /) -> Callable[[Element], Sequence[Element]]:
+    preps, down_path = get_preps(path)
+
+    def etree(element: Element, query: str) -> Sequence[Element]:
+        start: Union[Element, None] = prep(element, preps)
+        return start.findall(query) if start is not None else []
+
+    return partial(etree, query=down_path)
+
+
 @lru_cache(maxsize=None)
 def xpath(path: str) -> XPath:
     """Get an XPath evaluator that can be applied to an element.
@@ -161,74 +240,11 @@ def xpath(path: str) -> XPath:
     if _LXML_AVAILABLE:
         return lxml.etree.XPath(path)
 
-    preps: List[Callable[[Element], Element]] = []
-    if path[0] == "/":
-        # ElementTree doesn't support absolute paths
-        preps.append(get_root)
-        path = "." + path
-
-    # ElementTree doesn't support paths starting with a parent
-    if path.startswith(".."):
-        path_steps = path.split("/")
-        down_steps = list(dropwhile(lambda x: x == "..", path_steps))
-        for _ in range(len(path_steps) - len(down_steps)):
-            preps.append(get_parent)
-        path = "./" + "/".join(down_steps)
-
-    def prep(element: Element) -> Union[Element, None]:
-        for stage in preps:
-            element = stage(element)
-            if element is None:
-                break
-        return element
-
-    def descendant_text(element: Element) -> Sequence[str]:
-        start: Union[Element, None] = prep(element)
-        if start is None:
-            return []
-
-        # strip trailing '//text()'
-        return [
-            t
-            for e in start.findall(path[:-8])
-            for t in e.itertext()
-            if t
-        ]
-
-    def child_text(element: Element) -> Sequence[str]:
-        start: Union[Element, None] = prep(element)
-        if start is None:
-            return []
-
-        # strip trailing '/text()'
-        return [
-            t
-            for e in start.findall(path[:-7])
-            for t in ([e.text] + [c.tail if c.tail else "" for c in e])
-            if t
-        ]
-
-    def attribute(element: Element, path: str, attr: str) -> Sequence[str]:
-        start: Union[Element, None] = prep(element)
-        if start is None:
-            return []
-        result = [e.get(attr) for e in start.findall(path)]
-        return [r for r in result if r is not None]
-
-    def etree(element: Element, path: str) -> Sequence[Element]:
-        start: Union[Element, None] = prep(element)
-        return start.findall(path) if start is not None else []
-
-    if path.endswith("//text()"):
-        return descendant_text
-    elif path.endswith("/text()"):
-        return child_text
+    last = path.split("/")[-1]
+    if (last == "text()") or (last[0] == "@"):
+        return str_xpath(path)
     else:
-        *front, last = path.split("/")
-        if last.startswith("@"):
-            return partial(attribute, path="/".join(front), attr=last[1:])
-        else:
-            return partial(etree, path=path)
+        return element_xpath(path)
 
 
 ############################################################
