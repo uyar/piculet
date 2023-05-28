@@ -25,9 +25,7 @@ For more information, please refer to the documentation:
 https://piculet.readthedocs.io/
 """
 
-
-__version__ = "2.0a2"
-
+from __future__ import annotations
 
 import json
 import pathlib
@@ -47,6 +45,9 @@ from typing import Any, Callable, FrozenSet, List, Mapping, MutableMapping, \
     Sequence, Tuple, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
+
+
+__version__ = "2.0a2"
 
 
 ############################################################
@@ -214,8 +215,8 @@ def _element_xpath(path: str, /) -> ElementSelector:
     return partial(find_all, query=adjusted_path)
 
 
-text_xpath: Callable[[str], TextSelector] = lru_cache(maxsize=None)(_text_xpath)
-element_xpath: Callable[[str], ElementSelector] = lru_cache(maxsize=None)(_element_xpath)
+text_xpath: Callable[[str], TextSelector] = lru_cache()(_text_xpath)
+element_xpath: Callable[[str], ElementSelector] = lru_cache()(_element_xpath)
 
 
 def xpath(path: str, /) -> Union[TextSelector, ElementSelector]:
@@ -278,13 +279,6 @@ if _LXML_AVAILABLE:
 _EMPTY: Mapping = MappingProxyType({})
 
 
-StrTransformer = Callable[[str], Any]
-MapTransformer = Callable[[Mapping], Any]
-
-StrExtractor = Callable[[Element], str]
-MapExtractor = Callable[[Element], Mapping]
-
-
 class Extractor(ABC):
     """An abstract base extractor.
 
@@ -326,7 +320,7 @@ class Path(Extractor):
     """
 
     def __init__(self, path: str, *, sep: str = "",
-                 transform: Union[StrTransformer, None] = None,
+                 transform: Union[Callable[[str], Any], None] = None,
                  foreach: Union[str, None] = None) -> None:
         super().__init__(transform=transform, foreach=foreach)
         self.xpath: TextSelector = text_xpath(path)
@@ -346,13 +340,14 @@ class Piculet(Extractor):
     :param foreach: XPath expression for selecting multiple subelements.
     """
 
-    def __init__(self, rules: Sequence[MapExtractor], *,
+    def __init__(self, rules: Sequence[Rule], *,
                  section: Union[str, None] = None,
-                 transform: Union[MapTransformer, None] = None,
+                 transform: Union[Callable[[Mapping], Any], None] = None,
                  foreach: Union[str, None] = None) -> None:
         super().__init__(transform=transform, foreach=foreach)
-        self.rules: Sequence[MapExtractor] = rules
-        self.sections: Union[ElementSelector, None] = element_xpath(section) if section is not None else None
+        self.rules: Sequence[Rule] = rules
+        self.sections: Union[ElementSelector, None] = \
+            element_xpath(section) if section is not None else None
 
     def __raw__(self, element: Element) -> Mapping:
         if self.sections is None:
@@ -380,16 +375,18 @@ class Rule:
     :param foreach: XPath expression for generating multiple data items.
     """
 
-    def __init__(self, key: Union[str, StrExtractor], value: Extractor, *,
+    def __init__(self, key: Union[str, Path], value: Extractor, *,
                  foreach: Union[str, None] = None) -> None:
-        self.key: Union[str, StrExtractor] = key
+        self.key: Union[str, Path] = key
         self.value: Extractor = value
-        self.iterate: Union[ElementSelector, None] = element_xpath(foreach) if foreach is not None else None
+        self.iterate: Union[ElementSelector, None] = \
+            element_xpath(foreach) if foreach is not None else None
 
     def extract(self, element: Element) -> Mapping:
         """Apply this rule to an element."""
         data: MutableMapping = {}
-        subroots: Sequence[Element] = [element] if self.iterate is None else self.iterate(element)
+        subroots: Sequence[Element] = \
+            [element] if self.iterate is None else self.iterate(element)
         for subroot in subroots:
             key = self.key if isinstance(self.key, str) else self.key.extract(subroot)
             if key is _EMPTY:
@@ -456,8 +453,8 @@ def _remove(path: str) -> Preprocessor:
     return apply
 
 
-def _set_attr(path: str, name: Union[str, StrExtractor],
-              value: Union[str, StrExtractor]) -> Preprocessor:
+def _set_attr(path: str, name: Union[str, Path],
+              value: Union[str, Path]) -> Preprocessor:
     """Create a preprocessor that will set an attribute for selected elements.
 
     :param path: XPath to select the elements to set attributes for.
@@ -482,7 +479,7 @@ def _set_attr(path: str, name: Union[str, StrExtractor],
     return apply
 
 
-def _set_text(path: str, text: Union[str, StrExtractor]) -> Preprocessor:
+def _set_text(path: str, text: Union[str, Path]) -> Preprocessor:
     """Create a preprocessor that will set the text for selected elements.
 
     :param path: XPath to select the elements to set attributes for.

@@ -80,7 +80,7 @@ ignore_missing_imports = true
 lines_after_imports = 2
 multi_line_output = 2
 known_test = "pytest,unittest"
-sections = "TEST,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
+sections = "FUTURE,TEST,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
 
 [tool.tox]
 legacy_tox_ini = """
