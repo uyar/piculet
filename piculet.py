@@ -105,107 +105,124 @@ def html_to_xml(document: str, *,
 ############################################################
 
 
-PrepStage = Callable[[Element], Union[Element, None]]
+PrepStep = Callable[[Element], Union[Element, None]]
 
-get_root: PrepStage = partial(Element.get, key="__root__")  # type: ignore
-get_parent: PrepStage = partial(Element.get, key="__parent__")  # type: ignore
+get_root: PrepStep = partial(Element.get, key="__root__")  # type: ignore
+get_parent: PrepStep = partial(Element.get, key="__parent__")  # type: ignore
 
 
-def _parse_xpath(path: str) -> Tuple[List[PrepStage], str]:
-    preps: List[PrepStage] = []
-    etree_path: str = path
+def _parse_xpath(path: str, /) -> Tuple[Sequence[PrepStep], str]:
+    """Parse an XPath expression for ElementTree processing.
+
+    Separates the expression into a sequence of preparation steps
+    to reach a new starting element, and
+    adjusts the path to start from that element.
+
+    :param path: XPath expression to parse.
+    :return: Preparation steps and adjusted path.
+    """
+    steps: List[PrepStep] = []
+    adjusted_path: str = path
 
     if path[0] == "/":
         # ElementTree doesn't support absolute paths
-        preps.append(get_root)
-        etree_path = "." + path
+        steps = [get_root]
+        adjusted_path = "." + path
     elif path[:2] == "..":
         # ElementTree doesn't support paths starting with a parent
         path_steps = path.split("/")
         down_steps = list(dropwhile(lambda x: x == "..", path_steps))
-        for _ in range(len(path_steps) - len(down_steps)):
-            preps.append(get_parent)
-        etree_path = "./" + "/".join(down_steps)
+        steps = [get_parent] * (len(path_steps) - len(down_steps))
+        adjusted_path = "./" + "/".join(down_steps)
 
-    return (preps, etree_path)
+    return (steps, adjusted_path)
 
 
-def _prep(element: Element, stages: List[PrepStage]) -> Union[Element, None]:
-    for stage in stages:
-        next_element = stage(element)
+def _traverse(element: Element,
+              steps: Sequence[PrepStep]) -> Union[Element, None]:
+    """Follow the steps from a starting element."""
+    for step in steps:
+        next_element = step(element)
         if next_element is None:
             return None
         element = next_element
     return element
 
 
-StrSelector = Callable[[Element], List[str]]
-ElementSelector = Callable[[Element], List[Element]]
+TextSelector = Callable[[Element], Sequence[str]]
+ElementSelector = Callable[[Element], Sequence[Element]]
 
 
-def _str_xpath(path: str, /) -> StrSelector:
+def _text_xpath(path: str, /) -> TextSelector:
+    """Get an XPath evaluator that will return character data.
+
+    Adds support for text and attribute retrievals in ElementTree.
+    """
     last = path.split("/")[-1]
     if (last != "text()") and (last[0] != "@"):
-        raise ValueError("Not a str XPath")
+        raise ValueError("Not a text XPath")
 
-    preps, etree_path = _parse_xpath(path)
+    preps, adjusted_path = _parse_xpath(path)
 
-    def descendant_text(element: Element, parent: str) -> List[str]:
-        start: Union[Element, None] = _prep(element, preps)
+    def descendant_text(element: Element, query: str) -> Sequence[str]:
+        start: Union[Element, None] = _traverse(element, preps)
         if start is None:
             return []
-        return [t for e in start.findall(parent) for t in e.itertext() if t]
+        return [t for e in start.findall(query) for t in e.itertext() if t]
 
-    def child_text(element: Element, parent: str) -> List[str]:
-        start: Union[Element, None] = _prep(element, preps)
+    def child_text(element: Element, query: str) -> Sequence[str]:
+        start: Union[Element, None] = _traverse(element, preps)
         if start is None:
             return []
         return [
             t
-            for e in start.findall(parent)
+            for e in start.findall(query)
             for t in ([e.text] + [c.tail if c.tail else "" for c in e])
             if t
         ]
 
-    def attribute(element: Element, parent: str, attr: str) -> List[str]:
-        start: Union[Element, None] = _prep(element, preps)
+    def attribute(element: Element, query: str, attr: str) -> Sequence[str]:
+        start: Union[Element, None] = _traverse(element, preps)
         if start is None:
             return []
-        result = [e.get(attr) for e in start.findall(parent)]
+        result = [e.get(attr) for e in start.findall(query)]
         return [r for r in result if r is not None]
 
-    if etree_path.endswith("//text()"):
-        return partial(descendant_text, parent=etree_path[:-8])
-    elif etree_path.endswith("/text()"):
-        return partial(child_text, parent=etree_path[:-7])
+    if adjusted_path.endswith("//text()"):
+        return partial(descendant_text, query=adjusted_path[:-8])
+    elif adjusted_path.endswith("/text()"):
+        return partial(child_text, query=adjusted_path[:-7])
     else:
-        *front, last = etree_path.split("/")
-        return partial(attribute, parent="/".join(front), attr=last[1:])
+        *front, last = adjusted_path.split("/")
+        return partial(attribute, query="/".join(front), attr=last[1:])
 
 
 def _element_xpath(path: str, /) -> ElementSelector:
+    """Get an XPath evaluator that will return XML elements."""
     last = path.split("/")[-1]
     if (last == "text()") or (last[0] == "@"):
         raise ValueError("Not an element XPath")
 
-    preps, etree_path = _parse_xpath(path)
+    preps, adjusted_path = _parse_xpath(path)
 
-    def etree(element: Element, query: str) -> List[Element]:
-        start: Union[Element, None] = _prep(element, preps)
-        return start.findall(query) if start is not None else []
+    def find_all(element: Element, query: str) -> Sequence[Element]:
+        start: Union[Element, None] = _traverse(element, preps)
+        if start is None:
+            return []
+        return start.findall(query)
 
-    return partial(etree, query=etree_path)
+    return partial(find_all, query=adjusted_path)
 
 
-str_xpath: Callable[[str], StrSelector] = lru_cache(maxsize=None)(_str_xpath)
+text_xpath: Callable[[str], TextSelector] = lru_cache(maxsize=None)(_text_xpath)
 element_xpath: Callable[[str], ElementSelector] = lru_cache(maxsize=None)(_element_xpath)
 
 
-def xpath(path: str) -> Union[StrSelector, ElementSelector]:
+def xpath(path: str, /) -> Union[TextSelector, ElementSelector]:
     """Get an XPath evaluator that can be applied to an element."""
     last = path.split("/")[-1]
     if (last == "text()") or (last[0] == "@"):
-        return str_xpath(path)
+        return text_xpath(path)
     else:
         return element_xpath(path)
 
@@ -248,7 +265,7 @@ if _LXML_AVAILABLE:
 
     get_root = lambda e: lxml.etree._Element.getroottree(e).getroot()
     get_parent = lxml.etree._Element.getparent
-    str_xpath = element_xpath = lru_cache(maxsize=None)(lxml.etree.XPath)
+    text_xpath = element_xpath = lru_cache(maxsize=None)(lxml.etree.XPath)
     parse_xml = lxml.etree.fromstring
     parse_html = lxml.html.fromstring
 
@@ -312,11 +329,11 @@ class Path(Extractor):
                  transform: Union[StrTransformer, None] = None,
                  foreach: Union[str, None] = None) -> None:
         super().__init__(transform=transform, foreach=foreach)
-        self.xpath: StrSelector = str_xpath(path)
+        self.xpath: TextSelector = text_xpath(path)
         self.sep: str = sep
 
     def extract(self, element: Element) -> Union[str, Mapping]:
-        selected: List[str] = self.xpath(element)
+        selected: Sequence[str] = self.xpath(element)
         return self.sep.join(selected) if len(selected) > 0 else _EMPTY
 
 
@@ -372,7 +389,7 @@ class Rule:
     def __call__(self, element: Element) -> Mapping:
         """Apply this rule to an element."""
         data: MutableMapping = {}
-        subroots: List[Element] = [element] if self.iterate is None else self.iterate(element)
+        subroots: Sequence[Element] = [element] if self.iterate is None else self.iterate(element)
         for subroot in subroots:
             key = self.key if isinstance(self.key, str) else self.key(subroot)
             if key is _EMPTY:
