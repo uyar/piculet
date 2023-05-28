@@ -113,14 +113,8 @@ Basically, they are rule collections.
 
    >>> from piculet import Items
    >>> rules = [
-   ...     Rule(
-   ...         key="title",
-   ...         value=Path('//title/text()'),
-   ...     ),
-   ...     Rule(
-   ...         key="year",
-   ...         value=Path('//span[@class="year"]/text()', transform=int),
-   ...     ),
+   ...     Rule("title", Path('//title/text()')),
+   ...     Rule("year", Path('//span[@class="year"]/text()', transform=int)),
    ... ]
    >>> items = Items(rules)
    >>> items(root)
@@ -136,8 +130,8 @@ An extractor can have a ``foreach`` parameter if it will be multi-valued:
 
    >>> rules = [
    ...     Rule(
-   ...         key="genres",
-   ...         value=Path(
+   ...         "genres",
+   ...         Path(
    ...             foreach='//ul[@class="genres"]/li',
    ...             path="./text()",
    ...             transform=str.lower,
@@ -162,18 +156,12 @@ in the corresponding mapping example in the data extraction chapter.
 
    >>> rules = [
    ...     Rule(
-   ...         key="cast",
-   ...         value=Items(
+   ...         "cast",
+   ...         Items(
    ...             foreach='//table[@class="cast"]/tr',
    ...             rules=[
-   ...                 Rule(
-   ...                     key="name",
-   ...                     value=Path("./td[1]/a/text()"),
-   ...                 ),
-   ...                 Rule(
-   ...                     key="character",
-   ...                     value=Path("./td[2]/text()"),
-   ...                 ),
+   ...                 Rule("name", Path("./td[1]/a/text()")),
+   ...                 Rule("character", Path("./td[2]/text()")),
    ...              ],
    ...              transform=lambda x: "%(name)s as %(character)s" % x
    ...         ),
@@ -190,18 +178,12 @@ chapter:
 
    >>> rules = [
    ...     Rule(
-   ...         key="director",
-   ...         value=Items(
+   ...         "director",
+   ...         Items(
    ...             section='//div[@class="director"]//a',
    ...             rules=[
-   ...                 Rule(
-   ...                     key="name",
-   ...                     value=Path("./text()"),
-   ...                 ),
-   ...                 Rule(
-   ...                     key="link",
-   ...                     value=Path("./@href"),
-   ...                 ),
+   ...                 Rule("name", Path("./text()")),
+   ...                 Rule("link", Path("./@href")),
    ...             ],
    ...         ),
    ...     ),
