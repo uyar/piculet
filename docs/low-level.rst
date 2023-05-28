@@ -79,7 +79,7 @@ to extract the value for a single data item.
 
    >>> from piculet import Path
    >>> path = Path('//span[@class="year"]/text()', transform=int)
-   >>> path(root)
+   >>> path.extract(root)
    1980
 
 The ``sep`` parameter can be used concatenate using a separator string:
@@ -87,7 +87,7 @@ The ``sep`` parameter can be used concatenate using a separator string:
 .. code-block:: python
 
    >>> path = Path('//table[@class="cast"]/tr/td[1]/a/text()', sep=", ")
-   >>> path(root)
+   >>> path.extract(root)
    'Jack Nicholson, Shelley Duvall'
 
 Every item in the result mapping is generated
@@ -102,7 +102,7 @@ so their basic function is to associate the keys with the values.
    ...     key="year",
    ...     value=Path('//span[@class="year"]/text()', transform=int),
    ... )
-   >>> rule(root)
+   >>> rule.extract(root)
    {'year': 1980}
 
 :class:`Items <piculet.Items>` extractors are applied to elements
@@ -117,7 +117,7 @@ Basically, they are rule collections.
    ...     Rule("year", Path('//span[@class="year"]/text()', transform=int)),
    ... ]
    >>> items = Items(rules)
-   >>> items(root)
+   >>> items.extract(root)
    {'title': 'The Shining', 'year': 1980}
 
 Items extractors act both
@@ -139,7 +139,7 @@ An extractor can have a ``foreach`` parameter if it will be multi-valued:
    ...     ),
    ... ]
    >>> items = Items(rules)
-   >>> items(root)
+   >>> items.extract(root)
    {'genres': ['horror', 'drama']}
 
 The ``key`` parameter of a rule can be an extractor
@@ -167,7 +167,7 @@ in the corresponding mapping example in the data extraction chapter.
    ...         ),
    ...     ),
    ... ]
-   >>> Items(rules)(root)
+   >>> Items(rules).extract(root)
    {'cast': ['Jack Nicholson as Jack Torrance',
      'Shelley Duvall as Wendy Torrance']}
 
@@ -188,5 +188,5 @@ chapter:
    ...         ),
    ...     ),
    ... ]
-   >>> Items(rules)(root)
+   >>> Items(rules).extract(root)
    {'director': {'name': 'Stanley Kubrick', 'link': '/people/1'}}

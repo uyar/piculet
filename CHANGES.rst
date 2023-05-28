@@ -1,8 +1,8 @@
 Changes
 =======
 
-2.0.0a2 (unreleased)
---------------------
+2.0a2 (unreleased)
+------------------
 
 - Drop support for Python 3.6 and 3.7.
 - Drop direct support for YAML.

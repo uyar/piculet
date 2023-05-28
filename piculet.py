@@ -26,7 +26,7 @@ https://piculet.readthedocs.io/
 """
 
 
-__version__ = "2.0.0a2"
+__version__ = "2.0a2"
 
 
 import json
@@ -297,18 +297,18 @@ class Extractor(ABC):
         self.iterate = element_xpath(foreach) if foreach is not None else None
 
     @abstractmethod
-    def extract(self, element):
+    def __raw__(self, element):
         """Extract the raw data from the element."""
 
-    def __call__(self, element):
+    def extract(self, element):
         """Extract the data from the element."""
         if self.iterate is None:
-            raw = self.extract(element)
+            raw = self.__raw__(element)
             if raw is _EMPTY:
                 return _EMPTY
             return raw if self.transform is None else self.transform(raw)
         else:
-            raw_ = [self.extract(r) for r in self.iterate(element)]
+            raw_ = [self.__raw__(r) for r in self.iterate(element)]
             raw = [v for v in raw_ if v is not _EMPTY]
             if len(raw) == 0:
                 return _EMPTY
@@ -332,7 +332,7 @@ class Path(Extractor):
         self.xpath: TextSelector = text_xpath(path)
         self.sep: str = sep
 
-    def extract(self, element: Element) -> Union[str, Mapping]:
+    def __raw__(self, element: Element) -> Union[str, Mapping]:
         selected: Sequence[str] = self.xpath(element)
         return self.sep.join(selected) if len(selected) > 0 else _EMPTY
 
@@ -354,7 +354,7 @@ class Items(Extractor):
         self.rules: Sequence[MapExtractor] = rules
         self.sections: Union[ElementSelector, None] = element_xpath(section) if section is not None else None
 
-    def extract(self, element: Element) -> Mapping:
+    def __raw__(self, element: Element) -> Mapping:
         if self.sections is None:
             subroot = element
         else:
@@ -367,7 +367,7 @@ class Items(Extractor):
 
         data: MutableMapping = {}
         for rule in self.rules:
-            item = rule(subroot)
+            item = rule.extract(subroot)
             data.update(item)
         return data if len(data) > 0 else _EMPTY
 
@@ -386,16 +386,16 @@ class Rule:
         self.value: Extractor = value
         self.iterate: Union[ElementSelector, None] = element_xpath(foreach) if foreach is not None else None
 
-    def __call__(self, element: Element) -> Mapping:
+    def extract(self, element: Element) -> Mapping:
         """Apply this rule to an element."""
         data: MutableMapping = {}
         subroots: Sequence[Element] = [element] if self.iterate is None else self.iterate(element)
         for subroot in subroots:
-            key = self.key if isinstance(self.key, str) else self.key(subroot)
+            key = self.key if isinstance(self.key, str) else self.key.extract(subroot)
             if key is _EMPTY:
                 continue
 
-            value = self.value(subroot)
+            value = self.value.extract(subroot)
             if value is _EMPTY:
                 continue
             data[key] = value
@@ -469,11 +469,11 @@ def _set_attr(path: str, name: Union[str, StrExtractor],
     def apply(root: Element) -> None:
         elements = applier(root)
         for element in elements:
-            name_ = name if isinstance(name, str) else name(element)
+            name_ = name if isinstance(name, str) else name.extract(element)
             if name_ is _EMPTY:
                 continue
 
-            value_ = value if isinstance(value, str) else value(element)
+            value_ = value if isinstance(value, str) else value.extract(element)
             if value_ is _EMPTY:
                 continue
 
@@ -493,7 +493,7 @@ def _set_text(path: str, text: Union[str, StrExtractor]) -> Preprocessor:
     def apply(root: Element) -> None:
         elements = applier(root)
         for element in elements:
-            text_ = text if isinstance(text, str) else text(element)
+            text_ = text if isinstance(text, str) else text.extract(element)
             # note that if the text is empty the existing text will be cleared
             element.text = text_ if text_ is not _EMPTY else None
 
@@ -568,7 +568,7 @@ def scrape(document: str, spec: Mapping, *, html: bool = False) -> Mapping:
 
     rules = [rule(**item) for item in spec.get("items", [])]
     items = Items(rules, section=spec.get("section"))
-    return items(root)
+    return items.extract(root)
 
 
 ############################################################
