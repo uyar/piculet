@@ -105,22 +105,22 @@ so their basic function is to associate the keys with the values.
    >>> rule.extract(root)
    {'year': 1980}
 
-:class:`Items <piculet.Items>` extractors are applied to elements
+:class:`Piculet <piculet.Piculet>` extractors are applied to elements
 to extract subitems for a data item.
 Basically, they are rule collections.
 
 .. code-block:: python
 
-   >>> from piculet import Items
+   >>> from piculet import Piculet
    >>> rules = [
    ...     Rule("title", Path('//title/text()')),
    ...     Rule("year", Path('//span[@class="year"]/text()', transform=int)),
    ... ]
-   >>> items = Items(rules)
+   >>> items = Piculet(rules)
    >>> items.extract(root)
    {'title': 'The Shining', 'year': 1980}
 
-Items extractors act both
+Piculet extractors act both
 as the top level extractor that gets applied to the root of the tree,
 and also as an extractor for any rule with subitems.
 
@@ -138,7 +138,7 @@ An extractor can have a ``foreach`` parameter if it will be multi-valued:
    ...         ),
    ...     ),
    ... ]
-   >>> items = Items(rules)
+   >>> items = Piculet(rules)
    >>> items.extract(root)
    {'genres': ['horror', 'drama']}
 
@@ -157,7 +157,7 @@ in the corresponding mapping example in the data extraction chapter.
    >>> rules = [
    ...     Rule(
    ...         "cast",
-   ...         Items(
+   ...         Piculet(
    ...             foreach='//table[@class="cast"]/tr',
    ...             rules=[
    ...                 Rule("name", Path("./td[1]/a/text()")),
@@ -167,7 +167,7 @@ in the corresponding mapping example in the data extraction chapter.
    ...         ),
    ...     ),
    ... ]
-   >>> Items(rules).extract(root)
+   >>> Piculet(rules).extract(root)
    {'cast': ['Jack Nicholson as Jack Torrance',
      'Shelley Duvall as Wendy Torrance']}
 
@@ -179,7 +179,7 @@ chapter:
    >>> rules = [
    ...     Rule(
    ...         "director",
-   ...         Items(
+   ...         Piculet(
    ...             section='//div[@class="director"]//a',
    ...             rules=[
    ...                 Rule("name", Path("./text()")),
@@ -188,5 +188,5 @@ chapter:
    ...         ),
    ...     ),
    ... ]
-   >>> Items(rules).extract(root)
+   >>> Piculet(rules).extract(root)
    {'director': {'name': 'Stanley Kubrick', 'link': '/people/1'}}

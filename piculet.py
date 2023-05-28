@@ -337,7 +337,7 @@ class Path(Extractor):
         return self.sep.join(selected) if len(selected) > 0 else _EMPTY
 
 
-class Items(Extractor):
+class Piculet(Extractor):
     """An extractor that can get multiple pieces of data from an element.
 
     :param rules: Functions for generating the items from the element.
@@ -402,7 +402,7 @@ class Rule:
         return data if len(data) > 0 else _EMPTY
 
 
-def extractor(desc: Union[str, MutableMapping]) -> Union[Path, Items]:
+def extractor(desc: Union[str, MutableMapping]) -> Union[Path, Piculet]:
     """Create an extractor from a description."""
     if isinstance(desc, str):
         return Path(desc)
@@ -419,7 +419,7 @@ def extractor(desc: Union[str, MutableMapping]) -> Union[Path, Items]:
         return Path(path, **desc)
     else:
         rules = [rule(**i) for i in desc.pop("items", [])]
-        return Items(rules, **desc)
+        return Piculet(rules, **desc)
 
 
 def rule(key, value, foreach=None):
@@ -567,7 +567,7 @@ def scrape(document: str, spec: Mapping, *, html: bool = False) -> Mapping:
         op(root)
 
     rules = [rule(**item) for item in spec.get("items", [])]
-    items = Items(rules, section=spec.get("section"))
+    items = Piculet(rules, section=spec.get("section"))
     return items.extract(root)
 
 
