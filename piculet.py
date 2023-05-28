@@ -271,7 +271,7 @@ class Extractor(ABC):
 
     def __init__(self, transform=None, foreach=None):
         self.transform = transform
-        self.iterate = xpath(foreach) if foreach is not None else None
+        self.iterate = element_xpath(foreach) if foreach is not None else None
 
     @abstractmethod
     def extract(self, element):
@@ -306,11 +306,11 @@ class Path(Extractor):
                  transform: Union[StrTransformer, None] = None,
                  foreach: Union[str, None] = None) -> None:
         super().__init__(transform=transform, foreach=foreach)
-        self.xpath = xpath(path)
-        self.sep = sep
+        self.xpath: Callable[[Element], Sequence[str]] = str_xpath(path)
+        self.sep: str = sep
 
-    def extract(self, element):
-        selected = self.xpath(element)
+    def extract(self, element: Element) -> Union[str, Mapping]:
+        selected: Sequence[str] = self.xpath(element)
         return self.sep.join(selected) if len(selected) > 0 else _EMPTY
 
 
@@ -328,10 +328,10 @@ class Items(Extractor):
                  transform: Union[MapTransformer, None] = None,
                  foreach: Union[str, None] = None) -> None:
         super().__init__(transform=transform, foreach=foreach)
-        self.rules = rules
-        self.sections = xpath(section) if section is not None else None
+        self.rules: Sequence[MapExtractor] = rules
+        self.sections: Union[Callable[[Element], Sequence[Element]], None] = element_xpath(section) if section is not None else None
 
-    def extract(self, element):
+    def extract(self, element: Element) -> Mapping:
         if self.sections is None:
             subroot = element
         else:
@@ -342,7 +342,7 @@ class Items(Extractor):
                 raise ValueError("Section path must select a single element")
             subroot = subroots[0]
 
-        data = {}
+        data: MutableMapping = {}
         for rule in self.rules:
             item = rule(subroot)
             data.update(item)
@@ -359,14 +359,14 @@ class Rule:
 
     def __init__(self, key: Union[str, StrExtractor], value: Extractor, *,
                  foreach: Union[str, None] = None) -> None:
-        self.key = key
-        self.value = value
-        self.iterate = xpath(foreach) if foreach is not None else None
+        self.key: Union[str, StrExtractor] = key
+        self.value: Extractor = value
+        self.iterate: Union[Callable[[Element], Sequence[Element]], None] = element_xpath(foreach) if foreach is not None else None
 
-    def __call__(self, element):
+    def __call__(self, element: Element) -> Mapping:
         """Apply this rule to an element."""
-        data = {}
-        subroots = [element] if self.iterate is None else self.iterate(element)
+        data: MutableMapping = {}
+        subroots: Sequence[Element] = [element] if self.iterate is None else self.iterate(element)
         for subroot in subroots:
             key = self.key if isinstance(self.key, str) else self.key(subroot)
             if key is _EMPTY:
@@ -419,7 +419,7 @@ def _remove(path: str) -> Preprocessor:
 
     :param path: XPath expression to select the elements to remove.
     """
-    applier = xpath(path)
+    applier = element_xpath(path)
 
     def apply(root):
         elements = applier(root)
@@ -440,7 +440,7 @@ def _set_attr(path: str, name: Union[str, StrExtractor],
     :param name: Name of attribute to set.
     :param value: Value of attribute to set.
     """
-    applier = xpath(path)
+    applier = element_xpath(path)
 
     def apply(root):
         elements = applier(root)
@@ -464,7 +464,7 @@ def _set_text(path: str, text: Union[str, StrExtractor]) -> Preprocessor:
     :param path: XPath to select the elements to set attributes for.
     :param text: Value of text to set.
     """
-    applier = xpath(path)
+    applier = element_xpath(path)
 
     def apply(root):
         elements = applier(root)
