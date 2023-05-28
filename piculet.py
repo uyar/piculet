@@ -84,8 +84,8 @@ class HTMLNormalizer(HTMLParser):
         print(html_escape(data), end="")
 
 
-def html_to_xml(document: str, *,
-                parser: Union[HTMLNormalizer, None] = None) -> str:
+def html_to_xml(document: str, /, *,
+                parser: Union[HTMLParser, None] = None) -> str:
     """Convert an HTML document into XML.
 
     :param document: Document to convert.
