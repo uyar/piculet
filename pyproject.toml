@@ -1,25 +1,33 @@
 [project]
 name = "piculet"
-version = "2.0.0a2"
+version = "2.0b1"
 description = "XML/HTML scraper using XPath queries."
 readme = "README.rst"
 
-authors = [{name = "H. Turgut Uyar", email = "uyar@tekir.org"}]
-license = {file = "LICENSE.txt"}
+authors = [
+    {name = "H. Turgut Uyar", email = "uyar@tekir.org"},
+]
+license = "LGPL-3.0-or-later"
+license-files = ["LICENSE.txt"]
 
-keywords = ["xml", "html", "xpath", "scrape"]
+keywords = [
+    "html",
+    "xml",
+    "json",
+    "xpath",
+    "jmespath",
+    "scrape",
+]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Environment :: Console",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -28,31 +36,32 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
-requires-python = "~=3.8"
-
-[project.optional-dependencies]
-tests = [
-    "pytest",
-    "pytest-cov",
+requires-python = "~=3.10"
+dependencies = [
+    "typedload~=2.39",
+    "lxml~=5.4.0",
+    "jmespath~=1.0.1",
 ]
-types = [
-    "mypy",
+
+[dependency-groups]
+test = [
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+]
+typing = [
+    "mypy>=1.18.2",
+    "lxml-stubs>=0.5.1",
+    "types-jmespath>=1.0.2.20250809",
 ]
 style = [
-    "flake8",
-    "flake8-isort",
-]
-docs = [
-    "sphinx",
+    "ruff>=0.14.2",
 ]
 dev = [
-    "piculet[tests,types,style,docs]",
-    "tox",
-    "build",
+    {include-group = "test"},
+    {include-group = "typing"},
+    {include-group = "style"},
+    "tox-uv>=1.29.0",
 ]
-
-[project.scripts]
-piculet = "piculet:main"
 
 [project.urls]
 homepage = "https://tekir.org/piculet/"
@@ -62,63 +71,47 @@ repository = "https://github.com/uyar/piculet"
 [tool.setuptools]
 py-modules = ["piculet"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [tool.coverage.run]
 source = ["piculet"]
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-exclude_lines = [
-    "if __name__ == \"__main__\":",
-    "if _LXML_AVAILABLE",
-]
 
-[tool.mypy]
-ignore_missing_imports = true
+[tool.ruff]
+line-length = 79
 
-[tool.isort]
-lines_after_imports = 2
-multi_line_output = 2
-known_test = "pytest,unittest"
-sections = "TEST,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
+[tool.ruff.lint]
+select = ["A", "E", "F", "I", "T", "W"]
+ignore = ["E731"]
 
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{38,39,310,311}{,-lxml}, pypy{38,39}{,-lxml}, types, style, docs
+envlist = py3{10,11,12,13,14}, pypy3{10,11}, types, style
 isolated_build = True
 
 [testenv]
-extras = tests
-deps =
-    lxml: lxml
+runner = uv-venv-lock-runner
+package = wheel
+wheel_build_env = .pkg
 commands =
-    pytest tests
+    pytest
 
 [testenv:coverage]
-extras = tests
 commands =
-    pytest tests --cov
+    pytest --cov
 
 [testenv:types]
-skip_install = true
-deps = mypy
 commands =
-    mypy piculet.py
+    mypy piculet.py tests
 
 [testenv:style]
-skip_install = true
-deps =
-    flake8
-    flake8-isort
 commands =
-    flake8 piculet.py
-
-[testenv:docs]
-extras = docs
-changedir = docs/
-commands =
-    sphinx-build -b html ./ _build/html/
+    ruff check --preview piculet.py tests
 """
 
 [build-system]
