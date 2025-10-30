@@ -283,9 +283,6 @@ def collect_json(root: JSONNode, rules: list[JSONRule]) -> CollectedData:
 
 @dataclass(kw_only=True)
 class _Spec:
-    version: str
-    url: str
-    graphql: dict[str, Any] | None = None
     doctype: DocType
     pre: list[Preprocess] = field(default_factory=list)
     post: list[Postprocess] = field(default_factory=list)

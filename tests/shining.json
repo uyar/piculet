@@ -1,0 +1,39 @@
+{
+  "title": "The Shining",
+  "year": 1980,
+  "genres": [
+    {"name": "Horror"},
+    {"name": "Drama"}
+  ],
+  "director": {
+    "id": 1,
+    "name": "Stanley Kubrick"
+  },
+  "cast": [
+    {
+      "id": 2,
+      "name": "Jack Nicholson",
+      "character": "Jack Torrance"
+    },
+    {
+      "id": 3,
+      "name": "Shelley Duvall",
+      "character": "Wendy Torrance"
+    }
+  ],
+  "info": {
+    "production": [
+      {
+        "name": "Country",
+        "value": "United States"
+      },
+      {
+        "name": "Language",
+        "value": "English"
+      }
+    ],
+    "info": {
+      "runtime": 144
+    }
+  }
+}

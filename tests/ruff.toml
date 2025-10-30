@@ -1,6 +1,6 @@
 extend = "../pyproject.toml"
 
-line-length = 119
+line-length = 95
 
 [lint.isort]
 section-order = [
