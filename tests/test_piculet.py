@@ -18,8 +18,8 @@ MOVIE_JSON = Path(__file__).with_name("shining.json").read_text(encoding="utf-8"
 
 piculet.preprocessors.update({
     "nothing": lambda x: x,
-    "first_subtree": lambda x: x.xpath('./*[1]')[0],
-    "first_submap": lambda x: x.get("info", {}),
+    "first_subtree": lambda x: x.xpath('./*[1]')[0],  # type: ignore
+    "first_submap": lambda x: x.get("info", {}),  # type: ignore
     "empty_tree": lambda _: piculet._PARSERS["xml"]("<root/>"),
     "empty_map": lambda _: {},
 })

@@ -21,7 +21,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from decimal import Decimal
 from functools import partial
-from typing import Any, Literal, MutableMapping, TypeAlias, TypeVar
+from typing import Any, Literal, MutableMapping, TypeAlias
 
 import lxml.etree
 import lxml.html
@@ -31,8 +31,6 @@ from lxml.etree import XPath as compile_xpath
 
 XMLNode: TypeAlias = lxml.etree._Element
 JSONNode: TypeAlias = dict
-
-Node = TypeVar("Node", XMLNode, JSONNode)
 
 __lxml_ns = lxml.etree.FunctionNamespace(None)
 __lxml_ns["string-join"] = lambda _, texts, sep: sep.join(texts)
@@ -50,7 +48,7 @@ CollectedData: TypeAlias = MutableMapping[str, Any]
 _EMPTY: CollectedData = {}
 
 
-Preprocessor: TypeAlias = Callable[[Node], XMLNode | JSONNode]
+Preprocessor: TypeAlias = Callable[[XMLNode | JSONNode], XMLNode | JSONNode]
 
 preprocessors: dict[str, Preprocessor] = {}
 
