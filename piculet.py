@@ -19,7 +19,6 @@ import json
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from decimal import Decimal
 from functools import partial
 from typing import Any, Literal, MutableMapping, TypeAlias
 
@@ -28,6 +27,7 @@ import lxml.html
 import typedload
 from jmespath import compile as compile_jmespath
 from lxml.etree import XPath as compile_xpath
+
 
 XMLNode: TypeAlias = lxml.etree._Element
 JSONNode: TypeAlias = dict
@@ -80,7 +80,6 @@ Transformer: TypeAlias = Callable[[Any], Any]
 
 
 transformers: dict[str, Transformer] = {
-    "decimal": lambda x: Decimal(str(x)),
     "int": int,
     "lower": str.lower,
     "str": str,
@@ -314,16 +313,8 @@ def scrape(document: str, spec: XMLSpec | JSONSpec) -> CollectedData:
     return data
 
 
-_data_classes = {Decimal}
-
-deserialize = partial(
-    typedload.load,
-    strconstructed=_data_classes,
-    pep563=True,
-    basiccast=False,
-)
-
-serialize = partial(typedload.dump, strconstructed=_data_classes)
+deserialize = partial(typedload.load, pep563=True, basiccast=False)
+serialize = typedload.dump
 
 _spec_classes = {Preprocess, Postprocess, Transform, XMLPath, JSONPath}
 

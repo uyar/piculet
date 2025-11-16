@@ -1,11 +1,10 @@
 import pytest
 
 import json
-from dataclasses import dataclass
-from decimal import Decimal
 from pathlib import Path
 
 import piculet
+
 
 MOVIE_XML_SPEC_FILE = Path(__file__).parent / "movie_xml_spec.json"
 MOVIE_XML_SPEC = json.loads(MOVIE_XML_SPEC_FILE.read_text(encoding="utf-8"))
@@ -28,21 +27,6 @@ piculet.postprocessors.update({
     "nothing": lambda x: x,
     "shorten": lambda x: {k[:-1]: v[:-1] for k, v in x.items()},
 })
-
-
-@dataclass
-class Movie:
-    score: Decimal
-
-
-def test_deserialize_should_support_decimal():
-    movie = piculet.deserialize({"score": "9.8"}, Movie)
-    assert isinstance(movie.score, Decimal) and (movie.score.as_integer_ratio() == (49, 5))
-
-
-def test_serialize_should_support_decimal():
-    movie = Movie(score=Decimal("9.8"))
-    assert isinstance(movie.score, Decimal) and (piculet.serialize(movie) == {"score": "9.8"})
 
 
 def test_load_spec_should_load_preprocess_from_str():
