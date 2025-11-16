@@ -324,5 +324,3 @@ load_spec = partial(
     strconstructed=_spec_classes,
     failonextra=True,
 )
-
-dump_spec = partial(serialize, strconstructed=_spec_classes)

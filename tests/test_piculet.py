@@ -34,11 +34,6 @@ def test_load_spec_should_load_preprocess_from_str():
     assert isinstance(spec.pre[0], piculet.Preprocess)
 
 
-def test_dump_spec_should_dump_preprocess_as_str():
-    spec = piculet.load_spec(MOVIE_XML_SPEC | {"pre": ["nothing"], "rules": []})
-    assert piculet.dump_spec(spec)["pre"][0] == "nothing"
-
-
 def test_load_spec_should_raise_error_for_unknown_preprocess():
     with pytest.raises(ValueError):
         _ = piculet.load_spec(MOVIE_XML_SPEC | {"pre": ["UNKNOWN"], "rules": []})
@@ -47,11 +42,6 @@ def test_load_spec_should_raise_error_for_unknown_preprocess():
 def test_load_spec_should_load_postprocess_from_str():
     spec = piculet.load_spec(MOVIE_XML_SPEC | {"post": ["nothing"], "rules": []})
     assert isinstance(spec.post[0], piculet.Postprocess)
-
-
-def test_dump_spec_should_dump_postprocess_as_str():
-    spec = piculet.load_spec(MOVIE_XML_SPEC | {"post": ["nothing"], "rules": []})
-    assert piculet.dump_spec(spec)["post"][0] == "nothing"
 
 
 def test_load_spec_should_raise_error_for_unknown_postprocess():
@@ -63,12 +53,6 @@ def test_load_spec_should_load_transform_from_str():
     rules = [{"key": "k", "extractor": {"path": "/", "transforms": ["strip"]}}]
     spec = piculet.load_spec(MOVIE_XML_SPEC | {"rules": rules})
     assert isinstance(spec.rules[0].extractor.transforms[0], piculet.Transform)
-
-
-def test_dump_spec_should_dump_transform_as_str():
-    rules = [{"key": "k", "extractor": {"path": "/", "transforms": ["strip"]}}]
-    spec = piculet.load_spec(MOVIE_XML_SPEC | {"rules": rules})
-    assert piculet.dump_spec(spec)["rules"][0]["extractor"]["transforms"][0] == "strip"
 
 
 def test_load_spec_should_raise_error_for_unknown_transform():
@@ -83,22 +67,10 @@ def test_load_spec_should_load_xml_path_from_str():
     assert isinstance(spec.rules[0].extractor.path, piculet.XMLPath)
 
 
-def test_dump_spec_should_dump_xml_path_as_str():
-    rules = [{"key": "k", "extractor": {"path": "/"}}]
-    spec = piculet.load_spec(MOVIE_XML_SPEC | {"rules": rules})
-    assert piculet.dump_spec(spec)["rules"][0]["extractor"]["path"] == "/"
-
-
 def test_load_spec_should_load_json_path_from_str():
     rules = [{"key": "k", "extractor": {"path": "p"}}]
     spec = piculet.load_spec(MOVIE_JSON_SPEC | {"rules": rules})
     assert isinstance(spec.rules[0].extractor.path, piculet.JSONPath)
-
-
-def test_dump_spec_should_dump_json_path_as_str():
-    rules = [{"key": "k", "extractor": {"path": "p"}}]
-    spec = piculet.load_spec(MOVIE_JSON_SPEC | {"rules": rules})
-    assert piculet.dump_spec(spec)["rules"][0]["extractor"]["path"] == "p"
 
 
 @pytest.mark.parametrize(("content", "skel", "rules"), [
