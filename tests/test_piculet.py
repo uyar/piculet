@@ -95,23 +95,6 @@ def test_scrape_should_produce_scalar_text(content, skel, rules):
     assert piculet.scrape(content, spec) == {"title": "The Shining"}
 
 
-def test_scrape_xml_should_support_string_join():
-    rules = [{"key": "full_title", "extractor": {"path": "string-join(//h1//text(), '')"}}]
-    spec = piculet.load_spec(MOVIE_XML_SPEC | {"rules": rules})
-    assert piculet.scrape(MOVIE_XML, spec) == {"full_title": "The Shining (1980)"}
-
-
-def test_scrape_xml_should_support_string_join_using_given_separator():
-    rules = [
-        {
-            "key": "cast_names",
-            "extractor": {"path": "string-join(//table[@class='cast']/tr/td[1]/a/text(), ', ')"}
-        }
-    ]
-    spec = piculet.load_spec(MOVIE_XML_SPEC | {"rules": rules})
-    assert piculet.scrape(MOVIE_XML, spec) == {"cast_names": "Jack Nicholson, Shelley Duvall"}
-
-
 @pytest.mark.parametrize(("content", "skel", "rules"), [
     (MOVIE_XML, MOVIE_XML_SPEC, [
         {"key": "title", "extractor": {"path": "//title/text()"}},

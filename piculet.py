@@ -16,7 +16,6 @@
 from __future__ import annotations
 
 import json
-import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import partial
@@ -32,8 +31,6 @@ from lxml.etree import XPath as compile_xpath
 XMLNode: TypeAlias = lxml.etree._Element
 JSONNode: TypeAlias = dict
 
-__lxml_ns = lxml.etree.FunctionNamespace(None)
-__lxml_ns["string-join"] = lambda _, texts, sep: sep.join(texts)
 
 DocType: TypeAlias = Literal["html", "xml", "json"]
 
@@ -42,6 +39,7 @@ _PARSERS: dict[DocType, Callable[[str], XMLNode | JSONNode]] = {
     "xml": lxml.etree.fromstring,
     "json": json.loads,
 }
+
 
 CollectedData: TypeAlias = MutableMapping[str, Any]
 
@@ -97,20 +95,16 @@ class Transform:
 
 
 class XMLPath:
-    _re_text_path = re.compile(r""".*\/(text\(\)|(@\w+))$""")
-
     def __init__(self, path: str) -> None:
         self.path: str = path
-        if XMLPath._re_text_path.match(path):
-            path = f"string({path})"
         self._compiled = compile_xpath(path)
 
     def __str__(self) -> str:
         return self.path
 
-    def apply(self, root: XMLNode) -> Any:
-        value = self._compiled(root)
-        return value if value != "" else None
+    def apply(self, root: XMLNode) -> str | None:
+        selected: list[str] = self._compiled(root)  # type: ignore
+        return "".join(selected) if len(selected) > 0 else None
 
     def select(self, root: XMLNode) -> list[XMLNode]:
         return self._compiled(root)  # type: ignore
