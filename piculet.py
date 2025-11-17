@@ -32,13 +32,11 @@ deserialize = partial(typedload.load, pep563=True, basiccast=False)
 serialize = typedload.dump
 
 
-XNode: TypeAlias = lxml.etree._Element
-JNode: TypeAlias = dict
-
+Node: TypeAlias = lxml.etree._Element | dict
 
 DocType: TypeAlias = Literal["html", "xml", "json"]
 
-_PARSERS: dict[DocType, Callable[[str], XNode | JNode]] = {
+_PARSERS: dict[DocType, Callable[[str], Node]] = {
     "html": lxml.html.fromstring,
     "xml": lxml.etree.fromstring,
     "json": json.loads,
@@ -47,7 +45,7 @@ _PARSERS: dict[DocType, Callable[[str], XNode | JNode]] = {
 
 CollectedData: TypeAlias = Mapping[str, Any]
 
-Preprocessor: TypeAlias = Callable[[XNode | JNode], XNode | JNode]
+Preprocessor: TypeAlias = Callable[[Node], Node]
 Postprocessor: TypeAlias = Callable[[CollectedData], CollectedData]
 Transformer: TypeAlias = Callable[[Any], Any]
 
@@ -55,17 +53,17 @@ Transformer: TypeAlias = Callable[[Any], Any]
 class Path:
     def __init__(self, path: str) -> None:
         self.path: str = path
-        self._compiled: Callable[[XNode | JNode], Any] = \
+        self._compiled: Callable[[Node], Any] = \
             compile_xpath(path) if path.startswith(("/", "./")) else \
             compile_jmespath(path).search  # type: ignore
 
-    def query(self, root: XNode | JNode) -> Any:
+    def query(self, root: Node) -> Any:
         value: Any = self._compiled(root)
         if isinstance(self._compiled, lxml.etree.XPath):
             return "".join(value) if len(value) > 0 else None
         return value
 
-    def select(self, root: XNode | JNode) -> list[XNode] | list[JNode]:
+    def select(self, root: Node) -> list[Node]:
         value: Any = self._compiled(root)
         if isinstance(self._compiled, lxml.etree.XPath):
             return value
@@ -83,7 +81,7 @@ class Picker:
     def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
         self.transformers = [registry[name] for name in self.transforms]
 
-    def extract(self, root: XNode | JNode) -> Any:
+    def extract(self, root: Node) -> Any:
         return self.path.query(root)
 
 
@@ -100,7 +98,7 @@ class Collector:
         for rule in self.rules:
             rule._set_transformers(registry)
 
-    def extract(self, root: XNode | JNode) -> CollectedData | None:
+    def extract(self, root: Node) -> CollectedData | None:
         data: dict[str, Any] = {}
         for rule in self.rules:
             subdata = rule.apply(root)
@@ -120,7 +118,7 @@ class Rule:
         if isinstance(self.key, Picker):
             self.key._set_transformers(registry)
 
-    def apply(self, root: XNode | JNode) -> CollectedData | None:
+    def apply(self, root: Node) -> CollectedData | None:
         data: dict[str, Any] = {}
 
         roots = [root] if self.foreach is None else self.foreach.select(root)
@@ -195,11 +193,11 @@ def load_spec(
     return spec
 
 
-def build_tree(document: str, *, doctype: DocType) -> XNode | JNode:
+def build_tree(document: str, *, doctype: DocType) -> Node:
     return _PARSERS[doctype](document)
 
 
-def scrape(document: str | XNode | JNode, spec: Spec) -> CollectedData:
+def scrape(document: str | Node, spec: Spec) -> CollectedData:
     root = document if not isinstance(document, str) else \
         build_tree(document, doctype=spec.doctype)
     for preprocess in spec.preprocessors:
