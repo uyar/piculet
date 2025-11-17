@@ -59,9 +59,6 @@ class PiculetPath:
             compile_xpath(path) if path.startswith(("/", "./")) else \
             compile_jmespath(path).search  # type: ignore
 
-    def __str__(self) -> str:
-        return self.path
-
     def query(self, root: XNode | JNode) -> Any:
         value: Any = self._compiled(root)
         if isinstance(self._compiled, lxml.etree.XPath):

@@ -21,8 +21,7 @@
       "character": "Wendy Torrance"
     }
   ],
-  "info": {
-    "production": [
+  "info": [
       {
         "name": "Country",
         "value": "United States"
@@ -31,9 +30,5 @@
         "name": "Language",
         "value": "English"
       }
-    ],
-    "info": {
-      "runtime": 144
-    }
-  }
+  ]
 }
