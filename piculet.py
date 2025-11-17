@@ -108,7 +108,7 @@ class Collector:
     def extract(self, root: Node) -> CollectedData | None:
         data: dict[str, Any] = {}
         for rule in self.rules:
-            subdata = rule.extract(root)
+            subdata = rule.apply(root)
             if subdata is not None:
                 data.update(subdata)
         return data if len(data) > 0 else None
@@ -118,18 +118,14 @@ class Collector:
 class Rule:
     key: str | Picker
     extractor: Picker | Collector
-    transforms: list[str] = field(default_factory=list)
     foreach: PiculetPath | None = None
 
-    transformers: list[Transformer] = field(default_factory=list)
-
     def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
-        self.transformers = [registry[name] for name in self.transforms]
         self.extractor._set_transformers(registry)
         if isinstance(self.key, Picker):
             self.key._set_transformers(registry)
 
-    def extract(self, root: Node) -> CollectedData | None:
+    def apply(self, root: Node) -> CollectedData | None:
         data: dict[str, Any] = {}
 
         roots = [root] if self.foreach is None else self.foreach.select(root)
@@ -150,9 +146,6 @@ class Rule:
                     for i in range(len(value)):
                         for transform in self.extractor.transformers:
                             value[i] = transform(value[i])
-
-            for transform in self.transformers:
-                value = transform(value)
 
             if isinstance(self.key, str):
                 key = self.key

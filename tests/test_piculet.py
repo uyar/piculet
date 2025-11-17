@@ -133,10 +133,10 @@ def test_scrape_should_exclude_data_for_rules_with_no_result(content, skel, rule
 
 @pytest.mark.parametrize(("content", "skel", "rules"), [
     (MOVIE_XML, MOVIE_XML_SPEC, [
-        {"key": "title", "extractor": {"path": "//title/text()"}, "transforms": ["lower"]}
+        {"key": "title", "extractor": {"path": "//title/text()", "transforms": ["lower"]}}
     ]),
     (MOVIE_JSON, MOVIE_JSON_SPEC, [
-        {"key": "title", "extractor": {"path": "title"}, "transforms": ["lower"]}
+        {"key": "title", "extractor": {"path": "title", "transforms": ["lower"]}}
     ]),
 ])
 def test_scrape_should_transform_result(content, skel, rules):
@@ -148,15 +148,12 @@ def test_scrape_should_transform_result(content, skel, rules):
     (MOVIE_XML, MOVIE_XML_SPEC, [
         {
             "key": "title",
-            "extractor": {"path": "//title/text()"},
-            "transforms": ["remove_spaces", "titlecase"]
-        }
+            "extractor": {"path": "//title/text()", "transforms": ["remove_spaces", "titlecase"]}}
     ]),
     (MOVIE_JSON, MOVIE_JSON_SPEC, [
         {
             "key": "title",
-            "extractor": {"path": "title"},
-            "transforms": ["remove_spaces", "titlecase"]
+            "extractor": {"path": "title", "transforms": ["remove_spaces", "titlecase"]},
         }
     ]),
 ])
@@ -242,8 +239,7 @@ def test_scrape_should_transform_each_value_in_multivalued_result(content, skel,
                     },
                     {
                         "key": "id",
-                        "extractor": {"path": "//div[@class='director']//a/@href"},
-                        "transforms": ["id_from_link"]
+                        "extractor": {"path": "//div[@class='director']//a/@href", "transforms": ["id_from_link"]},
                     }
                 ]
             }
