@@ -52,7 +52,7 @@ Postprocessor: TypeAlias = Callable[[CollectedData], CollectedData]
 Transformer: TypeAlias = Callable[[Any], Any]
 
 
-class PiculetPath:
+class Path:
     def __init__(self, path: str) -> None:
         self.path: str = path
         self._compiled: Callable[[XNode | JNode], Any] = \
@@ -74,9 +74,9 @@ class PiculetPath:
 
 @dataclass(kw_only=True)
 class Picker:
-    path: PiculetPath
+    path: Path
     transforms: list[str] = field(default_factory=list)
-    foreach: PiculetPath | None = None
+    foreach: Path | None = None
 
     transformers: list[Transformer] = field(default_factory=list)
 
@@ -91,7 +91,7 @@ class Picker:
 class Collector:
     rules: list[Rule] = field(default_factory=list)
     transforms: list[str] = field(default_factory=list)
-    foreach: PiculetPath | None = None
+    foreach: Path | None = None
 
     transformers: list[Transformer] = field(default_factory=list)
 
@@ -113,7 +113,7 @@ class Collector:
 class Rule:
     key: str | Picker
     extractor: Picker | Collector
-    foreach: PiculetPath | None = None
+    foreach: Path | None = None
 
     def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
         self.extractor._set_transformers(registry)
@@ -183,7 +183,7 @@ def load_spec(
     spec: Spec = deserialize(
         content,
         type_=Spec,
-        strconstructed={PiculetPath},
+        strconstructed={Path},
         failonextra=True,
     )
     if preprocessors is not None:
@@ -195,8 +195,13 @@ def load_spec(
     return spec
 
 
-def scrape(document: str, spec: Spec) -> CollectedData:
-    root = _PARSERS[spec.doctype](document)
+def build_tree(document: str, *, doctype: DocType) -> XNode | JNode:
+    return _PARSERS[doctype](document)
+
+
+def scrape(document: str | XNode | JNode, spec: Spec) -> CollectedData:
+    root = document if not isinstance(document, str) else \
+        build_tree(document, doctype=spec.doctype)
     for preprocess in spec.preprocessors:
         root = preprocess(root)
     data = spec.extract(root)
