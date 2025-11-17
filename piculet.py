@@ -19,7 +19,7 @@ import json
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import partial
-from typing import Any, Literal, Mapping, TypeAlias, TypeVar
+from typing import Any, Literal, Mapping, TypeAlias
 
 import lxml.etree
 import lxml.html
@@ -32,15 +32,13 @@ deserialize = partial(typedload.load, pep563=True, basiccast=False)
 serialize = typedload.dump
 
 
-XMLNode: TypeAlias = lxml.etree._Element
-JSONNode: TypeAlias = dict
-
-Node = TypeVar("Node", XMLNode, JSONNode)
+XNode: TypeAlias = lxml.etree._Element
+JNode: TypeAlias = dict
 
 
 DocType: TypeAlias = Literal["html", "xml", "json"]
 
-_PARSERS: dict[DocType, Callable[[str], XMLNode | JSONNode]] = {
+_PARSERS: dict[DocType, Callable[[str], XNode | JNode]] = {
     "html": lxml.html.fromstring,
     "xml": lxml.etree.fromstring,
     "json": json.loads,
@@ -49,7 +47,7 @@ _PARSERS: dict[DocType, Callable[[str], XMLNode | JSONNode]] = {
 
 CollectedData: TypeAlias = Mapping[str, Any]
 
-Preprocessor: TypeAlias = Callable[[XMLNode | JSONNode], XMLNode | JSONNode]
+Preprocessor: TypeAlias = Callable[[XNode | JNode], XNode | JNode]
 Postprocessor: TypeAlias = Callable[[CollectedData], CollectedData]
 Transformer: TypeAlias = Callable[[Any], Any]
 
@@ -57,20 +55,20 @@ Transformer: TypeAlias = Callable[[Any], Any]
 class PiculetPath:
     def __init__(self, path: str) -> None:
         self.path: str = path
-        self._compiled: Callable[[Node], Any] = \
+        self._compiled: Callable[[XNode | JNode], Any] = \
             compile_xpath(path) if path.startswith(("/", "./")) else \
             compile_jmespath(path).search  # type: ignore
 
     def __str__(self) -> str:
         return self.path
 
-    def query(self, root: Node) -> Any:
+    def query(self, root: XNode | JNode) -> Any:
         value: Any = self._compiled(root)
         if isinstance(self._compiled, lxml.etree.XPath):
             return "".join(value) if len(value) > 0 else None
         return value
 
-    def select(self, root: Node) -> list[Node]:
+    def select(self, root: XNode | JNode) -> list[XNode] | list[JNode]:
         value: Any = self._compiled(root)
         if isinstance(self._compiled, lxml.etree.XPath):
             return value
@@ -88,7 +86,7 @@ class Picker:
     def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
         self.transformers = [registry[name] for name in self.transforms]
 
-    def extract(self, root: Node) -> Any:
+    def extract(self, root: XNode | JNode) -> Any:
         return self.path.query(root)
 
 
@@ -105,7 +103,7 @@ class Collector:
         for rule in self.rules:
             rule._set_transformers(registry)
 
-    def extract(self, root: Node) -> CollectedData | None:
+    def extract(self, root: XNode | JNode) -> CollectedData | None:
         data: dict[str, Any] = {}
         for rule in self.rules:
             subdata = rule.apply(root)
@@ -125,7 +123,7 @@ class Rule:
         if isinstance(self.key, Picker):
             self.key._set_transformers(registry)
 
-    def apply(self, root: Node) -> CollectedData | None:
+    def apply(self, root: XNode | JNode) -> CollectedData | None:
         data: dict[str, Any] = {}
 
         roots = [root] if self.foreach is None else self.foreach.select(root)
@@ -204,7 +202,7 @@ def scrape(document: str, spec: Spec) -> CollectedData:
     root = _PARSERS[spec.doctype](document)
     for preprocess in spec.preprocessors:
         root = preprocess(root)
-    data = spec.extract(root)  # type: ignore
+    data = spec.extract(root)
     if data is None:
         return {}
     for postprocess in spec.postprocessors:
