@@ -3,9 +3,7 @@ import pytest
 import json
 from pathlib import Path
 
-import lxml.etree
-
-from piculet import JSONPath, XMLPath, load_spec, scrape
+from piculet import PiculetPath, load_spec, scrape
 
 
 MOVIE_XML_SPEC_FILE = Path(__file__).parent / "movie_xml_spec.json"
@@ -26,8 +24,6 @@ TRANSFORMERS = {
 }
 
 PREPROCESSORS = {
-    "empty_map": lambda _: {},
-    "empty_tree": lambda _: lxml.etree.fromstring("<root/>"),
     "first_submap": lambda x: x.get("info", {}),
     "first_subtree": lambda x: x.xpath('./*[1]')[0],
     "id": lambda x: x,
@@ -40,8 +36,8 @@ POSTPROCESSORS = {
 
 
 def test_load_spec_should_load_preprocess_from_str():
-    spec = load_spec(MOVIE_XML_SPEC | {"pre": ["empty_map"], "rules": []}, preprocessors=PREPROCESSORS)
-    assert spec.preprocessors[0]({"answer": 42}) == {}
+    spec = load_spec(MOVIE_XML_SPEC | {"pre": ["first_submap"], "rules": []}, preprocessors=PREPROCESSORS)
+    assert spec.preprocessors[0]({"answer": 42, "info": {"author": "Adams"}}) == {"author": "Adams"}
 
 
 def test_load_spec_should_raise_error_for_unknown_preprocess():
@@ -74,13 +70,13 @@ def test_load_spec_should_raise_error_for_unknown_transform():
 def test_load_spec_should_load_xml_path_from_str():
     rules = [{"key": "k", "extractor": {"path": "/"}}]
     spec = load_spec(MOVIE_XML_SPEC | {"rules": rules})
-    assert isinstance(spec.rules[0].extractor.path, XMLPath)
+    assert isinstance(spec.rules[0].extractor.path, PiculetPath)
 
 
 def test_load_spec_should_load_json_path_from_str():
     rules = [{"key": "k", "extractor": {"path": "p"}}]
     spec = load_spec(MOVIE_JSON_SPEC | {"rules": rules})
-    assert isinstance(spec.rules[0].extractor.path, JSONPath)
+    assert isinstance(spec.rules[0].extractor.path, PiculetPath)
 
 
 @pytest.mark.parametrize(("content", "skel"), [
@@ -412,20 +408,6 @@ def test_scrape_json_should_apply_multiple_preprocesses():
     pre = ["first_submap", "first_submap"]
     spec = load_spec(MOVIE_JSON_SPEC | {"pre": pre, "rules": rules}, preprocessors=PREPROCESSORS)
     assert scrape(MOVIE_JSON, spec) == {"runtime": 144}
-
-
-def test_preprocess_should_produce_compatible_node_for_xml_spec():
-    pre = ["empty_map"]
-    spec = load_spec(MOVIE_XML_SPEC | {"pre": pre, "rules": []}, preprocessors=PREPROCESSORS)
-    with pytest.raises(TypeError):
-        _ = scrape(MOVIE_XML, spec)
-
-
-def test_preprocess_should_produce_compatible_node_for_json_spec():
-    pre = ["empty_tree"]
-    spec = load_spec(MOVIE_JSON_SPEC | {"pre": pre, "rules": []}, preprocessors=PREPROCESSORS)
-    with pytest.raises(TypeError):
-        _ = scrape(MOVIE_JSON, spec)
 
 
 def test_scrape_xml_should_apply_postprocess():

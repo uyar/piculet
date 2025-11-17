@@ -19,8 +19,7 @@ import json
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import partial
-from types import MappingProxyType
-from typing import Any, Literal, Mapping, TypeAlias, Union
+from typing import Any, Literal, Mapping, TypeAlias, TypeVar
 
 import lxml.etree
 import lxml.html
@@ -35,6 +34,8 @@ serialize = typedload.dump
 
 XMLNode: TypeAlias = lxml.etree._Element
 JSONNode: TypeAlias = dict
+
+Node = TypeVar("Node", XMLNode, JSONNode)
 
 
 DocType: TypeAlias = Literal["html", "xml", "json"]
@@ -52,229 +53,120 @@ Preprocessor: TypeAlias = Callable[[XMLNode | JSONNode], XMLNode | JSONNode]
 Postprocessor: TypeAlias = Callable[[CollectedData], CollectedData]
 Transformer: TypeAlias = Callable[[Any], Any]
 
-_EMPTY_REGISTRY: Mapping[str, Callable] = MappingProxyType({})
 
-
-class XMLPath:
+class PiculetPath:
     def __init__(self, path: str) -> None:
         self.path: str = path
-        self._compiled = compile_xpath(path)
+        self._compiled: Callable[[Node], Any] = \
+            compile_xpath(path) if path.startswith(("/", "./")) else \
+            compile_jmespath(path).search  # type: ignore
 
     def __str__(self) -> str:
         return self.path
 
-    def apply(self, root: XMLNode) -> str | None:
-        selected: list[str] = self._compiled(root)  # type: ignore
-        return "".join(selected) if len(selected) > 0 else None
+    def query(self, root: Node) -> Any:
+        value: Any = self._compiled(root)
+        if isinstance(self._compiled, lxml.etree.XPath):
+            return "".join(value) if len(value) > 0 else None
+        return value
 
-    def select(self, root: XMLNode) -> list[XMLNode]:
-        return self._compiled(root)  # type: ignore
-
-
-class JSONPath:
-    def __init__(self, path: str) -> None:
-        self.path: str = path
-        self._compiled = compile_jmespath(path).search
-
-    def __str__(self) -> str:
-        return self.path
-
-    def apply(self, root: JSONNode) -> Any:
-        return self._compiled(root)
-
-    def select(self, root: JSONNode) -> list[JSONNode]:
-        selected = self._compiled(root)
-        return selected if selected is not None else []  # type: ignore
+    def select(self, root: Node) -> list[Node]:
+        value: Any = self._compiled(root)
+        if isinstance(self._compiled, lxml.etree.XPath):
+            return value
+        return value if value is not None else []
 
 
 @dataclass(kw_only=True)
-class XMLPicker:
-    path: XMLPath
+class Picker:
+    path: PiculetPath
     transforms: list[str] = field(default_factory=list)
-    foreach: XMLPath | None = None
+    foreach: PiculetPath | None = None
 
     transformers: list[Transformer] = field(default_factory=list)
 
-    def set_transformers(self, registry: Mapping[str, Transformer]) -> None:
+    def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
         self.transformers = [registry[name] for name in self.transforms]
 
-    def extract(self, root: XMLNode) -> Any:
-        return self.path.apply(root)
+    def extract(self, root: Node) -> Any:
+        return self.path.query(root)
 
 
 @dataclass(kw_only=True)
-class JSONPicker:
-    path: JSONPath
+class Collector:
+    rules: list[Rule] = field(default_factory=list)
     transforms: list[str] = field(default_factory=list)
-    foreach: JSONPath | None = None
+    foreach: PiculetPath | None = None
 
     transformers: list[Transformer] = field(default_factory=list)
 
-    def set_transformers(self, registry: Mapping[str, Transformer]) -> None:
-        self.transformers = [registry[name] for name in self.transforms]
-
-    def extract(self, root: JSONNode) -> Any:
-        return self.path.apply(root)
-
-
-@dataclass(kw_only=True)
-class XMLCollector:
-    rules: list[XMLRule] = field(default_factory=list)
-    transforms: list[str] = field(default_factory=list)
-    foreach: XMLPath | None = None
-
-    transformers: list[Transformer] = field(default_factory=list)
-
-    def set_transformers(self, registry: Mapping[str, Transformer]) -> None:
+    def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
         self.transformers = [registry[name] for name in self.transforms]
         for rule in self.rules:
-            rule.set_transformers(registry)
+            rule._set_transformers(registry)
 
-    def extract(self, root: XMLNode) -> CollectedData | None:
-        return collect_xml(root, self.rules)
-
-
-@dataclass(kw_only=True)
-class JSONCollector:
-    rules: list[JSONRule] = field(default_factory=list)
-    transforms: list[str] = field(default_factory=list)
-    foreach: JSONPath | None = None
-
-    transformers: list[Transformer] = field(default_factory=list)
-
-    def set_transformers(self, registry: Mapping[str, Transformer]) -> None:
-        self.transformers = [registry[name] for name in self.transforms]
+    def extract(self, root: Node) -> CollectedData | None:
+        data: dict[str, Any] = {}
         for rule in self.rules:
-            rule.set_transformers(registry)
-
-    def extract(self, root: JSONNode) -> CollectedData | None:
-        return collect_json(root, self.rules)
+            subdata = rule.extract(root)
+            if subdata is not None:
+                data.update(subdata)
+        return data if len(data) > 0 else None
 
 
 @dataclass(kw_only=True)
-class XMLRule:
-    key: str | XMLPicker
-    extractor: XMLPicker | XMLCollector
+class Rule:
+    key: str | Picker
+    extractor: Picker | Collector
     transforms: list[str] = field(default_factory=list)
-    foreach: XMLPath | None = None
+    foreach: PiculetPath | None = None
 
     transformers: list[Transformer] = field(default_factory=list)
 
-    def set_transformers(self, registry: Mapping[str, Transformer]) -> None:
+    def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
         self.transformers = [registry[name] for name in self.transforms]
-        self.extractor.set_transformers(registry)
-        if not isinstance(self.key, str):
-            self.key.set_transformers(registry)
+        self.extractor._set_transformers(registry)
+        if isinstance(self.key, Picker):
+            self.key._set_transformers(registry)
+
+    def extract(self, root: Node) -> CollectedData | None:
+        data: dict[str, Any] = {}
+
+        roots = [root] if self.foreach is None else self.foreach.select(root)
+        for subroot in roots:
+            if self.extractor.foreach is None:
+                value = self.extractor.extract(subroot)
+                if value is None:
+                    continue
+                for transform in self.extractor.transformers:
+                    value = transform(value)
+            else:
+                raws = [self.extractor.extract(n)
+                        for n in self.extractor.foreach.select(subroot)]
+                value = [v for v in raws if v is not None]
+                if len(value) == 0:
+                    continue
+                if len(self.extractor.transforms) > 0:
+                    for i in range(len(value)):
+                        for transform in self.extractor.transformers:
+                            value[i] = transform(value[i])
+
+            for transform in self.transformers:
+                value = transform(value)
+
+            if isinstance(self.key, str):
+                key = self.key
+            else:
+                key = self.key.extract(subroot)
+                for key_transform in self.key.transformers:
+                    key = key_transform(key)
+            data[key] = value
+
+        return data if len(data) > 0 else None
 
 
 @dataclass(kw_only=True)
-class JSONRule:
-    key: str | JSONPicker
-    extractor: JSONPicker | JSONCollector
-    transforms: list[str] = field(default_factory=list)
-    foreach: JSONPath | None = None
-
-    transformers: list[Transformer] = field(default_factory=list)
-
-    def set_transformers(self, registry: Mapping[str, Transformer]) -> None:
-        self.transformers = [registry[name] for name in self.transforms]
-        self.extractor.set_transformers(registry)
-        if not isinstance(self.key, str):
-            self.key.set_transformers(registry)
-
-
-def extract_xml(root: XMLNode, rule: XMLRule) -> CollectedData | None:
-    data: dict[str, Any] = {}
-
-    subroots = [root] if rule.foreach is None else rule.foreach.select(root)
-    for subroot in subroots:
-        if rule.extractor.foreach is None:
-            value = rule.extractor.extract(subroot)
-            if value is None:
-                continue
-            for transform in rule.extractor.transformers:
-                value = transform(value)
-        else:
-            raws = [rule.extractor.extract(n)
-                    for n in rule.extractor.foreach.select(subroot)]
-            value = [v for v in raws if v is not None]
-            if len(value) == 0:
-                continue
-            if len(rule.extractor.transforms) > 0:
-                for i in range(len(value)):
-                    for transform in rule.extractor.transformers:
-                        value[i] = transform(value[i])
-
-        for transform in rule.transformers:
-            value = transform(value)
-
-        if isinstance(rule.key, str):
-            key = rule.key
-        else:
-            key = rule.key.extract(subroot)
-            for key_transform in rule.key.transformers:
-                key = key_transform(key)
-        data[key] = value
-
-    return data if len(data) > 0 else None
-
-
-def extract_json(root: JSONNode, rule: JSONRule) -> CollectedData | None:
-    data: dict[str, Any] = {}
-
-    subroots = [root] if rule.foreach is None else rule.foreach.select(root)
-    for subroot in subroots:
-        if rule.extractor.foreach is None:
-            value = rule.extractor.extract(subroot)
-            if value is None:
-                continue
-            for transform in rule.extractor.transformers:
-                value = transform(value)
-        else:
-            raws = [rule.extractor.extract(n)
-                    for n in rule.extractor.foreach.select(subroot)]
-            value = [v for v in raws if v is not None]
-            if len(value) == 0:
-                continue
-            if len(rule.extractor.transforms) > 0:
-                for i in range(len(value)):
-                    for transform in rule.extractor.transformers:
-                        value[i] = transform(value[i])
-
-        for transform in rule.transformers:
-            value = transform(value)
-
-        if isinstance(rule.key, str):
-            key = rule.key
-        else:
-            key = rule.key.extract(subroot)
-            for key_transform in rule.key.transformers:
-                key = key_transform(key)
-        data[key] = value
-
-    return data if len(data) > 0 else None
-
-
-def collect_xml(root: XMLNode, rules: list[XMLRule]) -> CollectedData | None:
-    data: dict[str, Any] = {}
-    for rule in rules:
-        subdata = extract_xml(root, rule)
-        if subdata is not None:
-            data.update(subdata)
-    return data if len(data) > 0 else None
-
-
-def collect_json(root: JSONNode, rules: list[JSONRule]) -> CollectedData | None:  # noqa: E501
-    data: dict[str, Any] = {}
-    for rule in rules:
-        subdata = extract_json(root, rule)
-        if subdata is not None:
-            data.update(subdata)
-    return data if len(data) > 0 else None
-
-
-@dataclass(kw_only=True)
-class _Spec:
+class Spec(Collector):
     doctype: DocType
     pre: list[str] = field(default_factory=list)
     post: list[str] = field(default_factory=list)
@@ -282,63 +174,44 @@ class _Spec:
     preprocessors: list[Preprocessor] = field(default_factory=list)
     postprocessors: list[Postprocessor] = field(default_factory=list)
 
-    def set_preprocessors(self, registry: Mapping[str, Preprocessor]) -> None:
+    def _set_pre(self, registry: Mapping[str, Preprocessor]) -> None:
         self.preprocessors = [registry[name] for name in self.pre]
 
-    def set_postprocessors(self, registry: Mapping[str, Postprocessor]) -> None:  # noqa: E501
+    def _set_post(self, registry: Mapping[str, Postprocessor]) -> None:
         self.postprocessors = [registry[name] for name in self.post]
 
-
-@dataclass(kw_only=True)
-class XMLSpec(_Spec):
-    path_type: Literal["xpath"] = "xpath"
-    rules: list[XMLRule] = field(default_factory=list)
-
-    def set_transformers(self, registry: Mapping[str, Transformer]) -> None:
+    def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
         for rule in self.rules:
-            rule.set_transformers(registry)
-
-
-@dataclass(kw_only=True)
-class JSONSpec(_Spec):
-    path_type: Literal["jmespath"] = "jmespath"
-    rules: list[JSONRule] = field(default_factory=list)
-
-    def set_transformers(self, registry: Mapping[str, Transformer]) -> None:
-        for rule in self.rules:
-            rule.set_transformers(registry)
+            rule._set_transformers(registry)
 
 
 def load_spec(
         content: dict,
         *,
-        transformers: Mapping[str, Transformer] = _EMPTY_REGISTRY,
-        preprocessors: Mapping[str, Preprocessor] = _EMPTY_REGISTRY,
-        postprocessors: Mapping[str, Postprocessor] = _EMPTY_REGISTRY,
-) -> XMLSpec | JSONSpec:
-    spec: XMLSpec | JSONSpec = deserialize(
+        transformers: Mapping[str, Transformer] | None = None,
+        preprocessors: Mapping[str, Preprocessor] | None = None,
+        postprocessors: Mapping[str, Postprocessor] | None = None,
+) -> Spec:
+    spec: Spec = deserialize(
         content,
-        type_=Union[XMLSpec, JSONSpec],
-        strconstructed={XMLPath, JSONPath},
+        type_=Spec,
+        strconstructed={PiculetPath},
         failonextra=True,
     )
-    spec.set_preprocessors(preprocessors)
-    spec.set_postprocessors(postprocessors)
-    spec.set_transformers(transformers)
+    if preprocessors is not None:
+        spec._set_pre(preprocessors)
+    if postprocessors is not None:
+        spec._set_post(postprocessors)
+    if transformers is not None:
+        spec._set_transformers(transformers)
     return spec
 
 
-def scrape(document: str, spec: XMLSpec | JSONSpec) -> CollectedData:
+def scrape(document: str, spec: Spec) -> CollectedData:
     root = _PARSERS[spec.doctype](document)
     for preprocess in spec.preprocessors:
         root = preprocess(root)
-    match (root, spec):
-        case (XMLNode(), XMLSpec()):
-            data = collect_xml(root, spec.rules)
-        case (JSONNode(), JSONSpec()):
-            data = collect_json(root, spec.rules)
-        case _:
-            raise TypeError("Node and spec types don't match")
+    data = spec.extract(root)  # type: ignore
     if data is None:
         return {}
     for postprocess in spec.postprocessors:
