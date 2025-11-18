@@ -8,8 +8,7 @@ Postprocessors are functions that take a mapping and return a mapping.
 Like with transformers, a map to look up postprocessor callables from names
 has to be given to the :func:`load_spec <piculet.load_spec>` function.
 
-For example, to keep a combined crew list instead of separate
-director and cast data, we can write:
+For example, to add a key by combining the director name with the title:
 
 .. code-block:: python
 
