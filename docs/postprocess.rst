@@ -8,22 +8,16 @@ Postprocessors are functions that take a mapping and return a mapping.
 Like with transformers, a map to look up postprocessor callables from names
 has to be given to the :func:`load_spec <piculet.load_spec>` function.
 
-An example use case for postprocessing could be combining data gathered
-in separate pieces.
 For example, to keep a combined crew list instead of separate
 director and cast data, we can write:
 
 .. code-block:: python
 
-   def collect_crew_names(data):
-       crew = [data["director"]["name"]]
-       crew.extend([member["name"] for member in data["cast"]])
-       data["crew"] = crew
-       del data["director"]
-       del data["cast"]
+   def add_director_title(data):
+       data["director_title"] = "%(director)s's '%(title)s'" % data
        return data
 
-   postprocessors = {"crew_names": collect_crew_names}
+   postprocessors = {"director_title": add_director_title}
 
    rules = [
        {
@@ -32,33 +26,12 @@ director and cast data, we can write:
        },
        {
            "key": "director",
-           "extractor": {
-               "rules": [
-                   {
-                       "key": "name",
-                       "extractor": {"path": "//div[@class='director']//a/text()"}
-                   },
-                   {
-                       "key": "link",
-                       "extractor": {"path": "//div[@class='director']//a/@href"}
-                   }
-               ]
-           }
-       },
-       {
-           "key": "cast",
-           "extractor": {
-               "foreach": "//table[@class='cast']/tr",
-               "rules": [
-                   {"key": "name", "extractor": {"path": "./td[1]/a/text()"}},
-                   {"key": "character", "extractor": {"path": "./td[2]/text()"}}
-               ]
-           }
+           "extractor": {"path": "//div[@class='director']//a/text()"}
        }
    ]
 
    spec = load_spec(
-       {"doctype": "html", "rules": rules, "post": ["crew_names"]},
+       {"doctype": "html", "rules": rules, "post": ["director_title"]},
        postprocessors=postprocessors
    )
    scrape(document, spec)
@@ -66,5 +39,6 @@ director and cast data, we can write:
    # result:
    {
        "title": "The Shining",
-       "crew": ["Stanley Kubrick", "Jack Nicholson", "Shelley Duvall"]
+       "director": "Stanley Kubrick",
+       "director_title": "Stanley Kubrick's 'The Shining'"
    }

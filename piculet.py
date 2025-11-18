@@ -71,6 +71,12 @@ class Path:
             return "".join(value) if len(value) > 0 else None
         return value
 
+    def get(self, root: Node) -> Node:
+        value: Any = self._compiled(root)
+        if isinstance(self._compiled, lxml.etree.XPath):
+            return value[0]
+        return value
+
     def select(self, root: Node) -> list[Node]:
         value: Any = self._compiled(root)
         if isinstance(self._compiled, lxml.etree.XPath):
@@ -79,30 +85,31 @@ class Path:
 
 
 @dataclass(kw_only=True)
-class Picker:
-    path: Path
-    transforms: list[str] = field(default_factory=list)
+class Extractor:
+    root: Path | None = None
     foreach: Path | None = None
+    transforms: list[str] = field(default_factory=list)
 
     transformers: list[Transformer] = field(default_factory=list)
 
     def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
         self.transformers = [registry[name] for name in self.transforms]
+
+
+@dataclass(kw_only=True)
+class Picker(Extractor):
+    path: Path
 
     def extract(self, root: Node) -> Any:
         return self.path.query(root)
 
 
 @dataclass(kw_only=True)
-class Collector:
+class Collector(Extractor):
     rules: list[Rule] = field(default_factory=list)
-    transforms: list[str] = field(default_factory=list)
-    foreach: Path | None = None
-
-    transformers: list[Transformer] = field(default_factory=list)
 
     def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
-        self.transformers = [registry[name] for name in self.transforms]
+        super()._set_transformers(registry)
         for rule in self.rules:
             rule._set_transformers(registry)
 
@@ -129,17 +136,19 @@ class Rule:
     def apply(self, root: Node) -> CollectedData | None:
         data: dict[str, Any] = {}
 
-        roots = [root] if self.foreach is None else self.foreach.select(root)
-        for subroot in roots:
+        if self.extractor.root is not None:
+            root = self.extractor.root.get(root)
+        nodes = [root] if self.foreach is None else self.foreach.select(root)
+        for node in nodes:
             if self.extractor.foreach is None:
-                value = self.extractor.extract(subroot)
+                value = self.extractor.extract(node)
                 if value is None:
                     continue
                 for transform in self.extractor.transformers:
                     value = transform(value)
             else:
                 raws = [self.extractor.extract(n)
-                        for n in self.extractor.foreach.select(subroot)]
+                        for n in self.extractor.foreach.select(node)]
                 value = [v for v in raws if v is not None]
                 if len(value) == 0:
                     continue
@@ -151,7 +160,7 @@ class Rule:
             if isinstance(self.key, str):
                 key = self.key
             else:
-                key = self.key.extract(subroot)
+                key = self.key.extract(node)
                 for key_transform in self.key.transformers:
                     key = key_transform(key)
             data[key] = value
@@ -175,10 +184,6 @@ class Spec(Collector):
 
     def _set_post(self, registry: Mapping[str, Postprocessor]) -> None:
         self.postprocessors = [registry[name] for name in self.post]
-
-    def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
-        for rule in self.rules:
-            rule._set_transformers(registry)
 
 
 def load_spec(

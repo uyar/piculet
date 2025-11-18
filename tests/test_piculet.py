@@ -264,6 +264,43 @@ def test_scrape_should_produce_subitems_for_subrules(document, doctype, rules):
 @pytest.mark.parametrize(("document", "doctype", "rules"), [
     (MOVIE_HTML, "html", [
         {
+            "key": "director",
+            "extractor": {
+                "root": "//div[@class='director']//a",
+                "rules": [
+                    {
+                        "key": "name",
+                        "extractor": {"path": "./text()"}
+                    },
+                    {
+                        "key": "id",
+                        "extractor": {"path": "./@href", "transforms": ["id_from_link"]},
+                    }
+                ]
+            }
+        }
+    ]),
+    (MOVIE_JSON, "json", [
+        {
+            "key": "director",
+            "extractor": {
+                "root": "director",
+                "rules": [
+                    {"key": "name", "extractor": {"path": "name"}},
+                    {"key": "id", "extractor": {"path": "id"}}
+                ]
+            }
+        }
+    ]),
+])
+def test_scrape_should_move_root_for_subitems(document, doctype, rules):
+    spec = load_spec({"doctype": doctype, "rules": rules}, transformers=TRANSFORMERS)
+    assert scrape(document, spec) == {"director": {"name": "Stanley Kubrick", "id": 1}}
+
+
+@pytest.mark.parametrize(("document", "doctype", "rules"), [
+    (MOVIE_HTML, "html", [
+        {
             "key": "cast",
             "extractor": {
                 "foreach": "//table[@class='cast']/tr",
@@ -288,6 +325,44 @@ def test_scrape_should_produce_subitems_for_subrules(document, doctype, rules):
     ]),
 ])
 def test_scrape_should_produce_subitem_lists_for_multivalued_subrules(document, doctype, rules):
+    spec = load_spec({"doctype": doctype, "rules": rules})
+    assert scrape(document, spec) == {
+        "cast": [
+            {"name": "Jack Nicholson", "character": "Jack Torrance"},
+            {"name": "Shelley Duvall", "character": "Wendy Torrance"}
+        ]
+    }
+
+
+@pytest.mark.parametrize(("document", "doctype", "rules"), [
+    (MOVIE_HTML, "html", [
+        {
+            "key": "cast",
+            "extractor": {
+                "root": "//table[@class='cast']",
+                "foreach": "./tr",
+                "rules": [
+                    {"key": "name", "extractor": {"path": "./td[1]/a/text()"}},
+                    {"key": "character", "extractor": {"path": "./td[2]/text()"}}
+                ]
+            }
+        }
+    ]),
+    (MOVIE_JSON, "json", [
+        {
+            "key": "cast",
+            "extractor": {
+                "root": "cast",
+                "foreach": "[*]",
+                "rules": [
+                    {"key": "name", "extractor": {"path": "name"}},
+                    {"key": "character", "extractor": {"path": "character"}}
+                ]
+            }
+        }
+    ]),
+])
+def test_scrape_root_should_come_before_foreach(document, doctype, rules):
     spec = load_spec({"doctype": doctype, "rules": rules})
     assert scrape(document, spec) == {
         "cast": [

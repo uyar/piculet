@@ -271,9 +271,33 @@ and the generated mapping will be the value for the key.
    spec = load_spec({"doctype": "html", "rules": [rule]})
    scrape(document, spec)
 
-
    # result:
    {"director": {"name": "Stanley Kubrick", "link": "/people/1"}}
+
+Extractors can be moved to a selected node before applying the query.
+This can improve readability and performance.
+The ``root`` key has to be a path that selects the root for the operation.
+If it returns multiple nodes, the first one will be selected.
+The above rule is equivalent to:
+
+.. code-block:: python
+
+   rule = {
+       "key": "director",
+       "extractor": {
+           "root": "//div[@class='director']//a",
+           "rules": [
+               {
+                   "key": "name",
+                   "extractor": {"path": "./text()"}
+               },
+               {
+                   "key": "link",
+                   "extractor": {"path": "./@href"}
+               }
+           ]
+       }
+   }
 
 Subrules can be combined with multivalues:
 
@@ -299,6 +323,23 @@ Subrules can be combined with multivalues:
        {"name": "Jack Nicholson", "character": "Jack Torrance"},
        {"name": "Shelley Duvall", "character": "Wendy Torrance"}
      ]
+   }
+
+Moving the root takes place before selecting the elements using ``foreach``.
+The rule given above is equivalent to:
+
+.. code-block:: python
+
+   rule = {
+       "key": "cast",
+       "extractor": {
+           "root": "//table[@class='cast']"
+           "foreach": "./tr",
+           "rules": [
+               {"key": "name", "extractor": {"path": "./td[1]/a/text()"}},
+               {"key": "character", "extractor": {"path": "./td[2]/text()"}}
+           ]
+       }
    }
 
 Subitems can also be transformed.
