@@ -13,6 +13,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Piculet.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Piculet is a module for extracting data from HTML, XML, and JSON documents.
+For HTML and XML documents, the queries are written as XPath expressions,
+and for JSON documents, the queries are written as JMESPath expressions.
+
+The documentation is available on: https://piculet.readthedocs.io/
+"""
+
 from __future__ import annotations
 
 import json
@@ -153,6 +161,8 @@ class Rule:
 
 @dataclass(kw_only=True)
 class Spec(Collector):
+    """A scraping specification."""
+
     doctype: DocType
     pre: list[str] = field(default_factory=list)
     post: list[str] = field(default_factory=list)
@@ -178,6 +188,18 @@ def load_spec(
         preprocessors: Mapping[str, Preprocessor] | None = None,
         postprocessors: Mapping[str, Postprocessor] | None = None,
 ) -> Spec:
+    """Generate a scraping specification from the content.
+
+    The transformer, preprocessor and postprocessor functions
+    used in the specification will be looked up in the corresponding
+    registry parameters.
+
+    :param content: Specification content.
+    :param transformers: Transformer registry.
+    :param preprocessors: Preprocessor registry.
+    :param postprocessors: Preprocessor registry.
+    :return: Generated specification.
+    """
     spec: Spec = deserialize(
         content,
         type_=Spec,
@@ -194,10 +216,24 @@ def load_spec(
 
 
 def build_tree(document: str, *, doctype: DocType) -> Node:
+    """Convert the document to a tree.
+
+    :param document: Document to convert.
+    :param doctype: Type of document.
+    :return: Root node of generated tree.
+    """
     return _PARSERS[doctype](document)
 
 
 def scrape(document: str | Node, spec: Spec) -> CollectedData:
+    """Scrape a document using a specification.
+
+    If the document is a string, it will be converted to a tree first.
+
+    :param document: Document to scrape.
+    :param spec: Scraping specification.
+    :return: Scraped data.
+    """
     root = document if not isinstance(document, str) else \
         build_tree(document, doctype=spec.doctype)
     for preprocess in spec.preprocessors:

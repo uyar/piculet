@@ -5,10 +5,10 @@
    :caption: Contents:
 
    overview
-   spec
    extract
    preprocess
    postprocess
+   api
    changes
 
 Indices and tables

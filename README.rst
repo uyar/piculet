@@ -2,22 +2,8 @@ Piculet
 =======
 
 Piculet is a module for extracting data from HTML, XML, and JSON documents.
-For HTML and XML documents, the queries are written as XPath expressions,
-and for JSON documents, the queries are written as JMESPath expressions.
-
-Piculet is used for the parsers
-of the `CinemagoerNG <https://github.com/cinemagoer/cinemagoerng>`_ project.
-
-Getting started
----------------
-
-Piculet works with Python 3.10 and later versions.
-You can install it using ``pip``::
-
-    pip install piculet
-
-Getting help
-------------
+For HTML and XML documents, the queries are written as XPath expressions;
+for JSON documents, the queries are written as JMESPath expressions.
 
 The documentation is available on: https://piculet.readthedocs.io/
 

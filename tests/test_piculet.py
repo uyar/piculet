@@ -115,6 +115,16 @@ def test_scrape_should_produce_scalar_value(document, doctype, rules):
 
 @pytest.mark.parametrize(("document", "doctype", "rules"), [
     (MOVIE_HTML, "html", [
+        {"key": "full_title", "extractor": {"path": "//h1//text()"}}
+    ]),
+])
+def test_scrape_xml_should_produce_joined_value(document, doctype, rules):
+    spec = load_spec({"doctype": doctype, "rules": rules})
+    assert scrape(document, spec) == {"full_title": "The Shining (1980)"}
+
+
+@pytest.mark.parametrize(("document", "doctype", "rules"), [
+    (MOVIE_HTML, "html", [
         {"key": "title", "extractor": {"path": "//title/text()"}},
         {"key": "country", "extractor": {"path": "//div[@class='info'][1]/p/text()"}}
     ]),
@@ -184,15 +194,17 @@ def test_scrape_should_produce_list_for_multivalued_rule(document, doctype, rule
 
 @pytest.mark.parametrize(("document", "doctype", "rules"), [
     (MOVIE_HTML, "html", [
+        {"key": "title", "extractor": {"path": "//title/text()"}},
         {"key": "foos", "extractor": {"foreach": "//ul[@class='foos']/li", "path": "./text()"}}
     ]),
     (MOVIE_JSON, "json", [
+        {"key": "title", "extractor": {"path": "title"}},
         {"key": "foos", "extractor": {"foreach": "foos[*]", "path": "text"}}
     ]),
 ])
 def test_scrape_should_exclude_empty_items_in_multivalued_rule_results(document, doctype, rules):
     spec = load_spec({"doctype": doctype, "rules": rules})
-    assert scrape(document, spec) == {}
+    assert scrape(document, spec) == {"title": "The Shining"}
 
 
 @pytest.mark.parametrize(("document", "doctype", "rules"), [
