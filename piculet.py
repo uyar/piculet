@@ -52,7 +52,7 @@ _PARSERS: dict[DocType, Callable[[str], Node]] = {
 
 
 Preprocessor: TypeAlias = Callable[[Node], Node]
-Postprocessor: TypeAlias = Callable[[Mapping[str, Any]], dict[str, Any]]
+Postprocessor: TypeAlias = Callable[[dict[str, Any]], dict[str, Any]]
 Transformer: TypeAlias = Callable[[Any], Any]
 
 
@@ -88,10 +88,10 @@ class Extractor:
     foreach: Path | None = None
     transforms: list[str] = field(default_factory=list)
 
-    transformers: list[Transformer] = field(default_factory=list)
+    _transforms: list[Transformer] = field(default_factory=list)
 
-    def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
-        self.transformers = [registry[name] for name in self.transforms]
+    def _set_transforms(self, registry: Mapping[str, Transformer]) -> None:
+        self._transforms = [registry[name] for name in self.transforms]
 
 
 @dataclass(kw_only=True)
@@ -106,8 +106,8 @@ class Picker(Extractor):
 class Collector(Extractor):
     rules: list[Rule] = field(default_factory=list)
 
-    def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
-        super()._set_transformers(registry)
+    def _set_transforms(self, registry: Mapping[str, Transformer]) -> None:
+        super()._set_transforms(registry)
         for rule in self.rules:
             rule._set_transformers(registry)
 
@@ -127,9 +127,9 @@ class Rule:
     foreach: Path | None = None
 
     def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
-        self.extractor._set_transformers(registry)
+        self.extractor._set_transforms(registry)
         if isinstance(self.key, Picker):
-            self.key._set_transformers(registry)
+            self.key._set_transforms(registry)
 
     def apply(self, root: Node) -> dict[str, Any] | None:
         data: dict[str, Any] = {}
@@ -142,7 +142,7 @@ class Rule:
                 value = self.extractor.extract(node)
                 if value is None:
                     continue
-                for transform in self.extractor.transformers:
+                for transform in self.extractor._transforms:
                     value = transform(value)
             else:
                 raws = [self.extractor.extract(n)
@@ -152,14 +152,14 @@ class Rule:
                     continue
                 if len(self.extractor.transforms) > 0:
                     for i in range(len(value)):
-                        for transform in self.extractor.transformers:
+                        for transform in self.extractor._transforms:
                             value[i] = transform(value[i])
 
             if isinstance(self.key, str):
                 key = self.key
             else:
                 key = self.key.extract(node)
-                for key_transform in self.key.transformers:
+                for key_transform in self.key._transforms:
                     key = key_transform(key)
             data[key] = value
 
@@ -174,14 +174,50 @@ class Spec(Collector):
     pre: list[str] = field(default_factory=list)
     post: list[str] = field(default_factory=list)
 
-    preprocessors: list[Preprocessor] = field(default_factory=list)
-    postprocessors: list[Postprocessor] = field(default_factory=list)
+    _pre: list[Preprocessor] = field(default_factory=list)
+    _post: list[Postprocessor] = field(default_factory=list)
 
     def _set_pre(self, registry: Mapping[str, Preprocessor]) -> None:
-        self.preprocessors = [registry[name] for name in self.pre]
+        self._pre = [registry[name] for name in self.pre]
 
     def _set_post(self, registry: Mapping[str, Postprocessor]) -> None:
-        self.postprocessors = [registry[name] for name in self.post]
+        self._post = [registry[name] for name in self.post]
+
+    def build_tree(self, document: str, preprocess: bool = True) -> Node:
+        """Convert the document to a tree of this spec's doctype."""
+        root = _PARSERS[self.doctype](document)
+        if preprocess:
+            root = self.preprocess(root)
+        return root
+
+    def preprocess(self, root: Node) -> Node:
+        """Apply the preprocessors in this spec to the root node."""
+        for preprocess in self._pre:
+            root = preprocess(root)
+        return root
+
+    def extract(self, root: Node, postprocess: bool = True):
+        data = super().extract(root)
+        if data is None:
+            return {}
+        if postprocess:
+            data = self.postprocess(data)
+        return data
+
+    def postprocess(self, data: dict[str, Any]) -> dict[str, Any]:
+        """Apply the postprocessors in this spec to the collected data."""
+        for postprocess in self._post:
+            data = postprocess(data)
+        return data
+
+    def scrape(self, document: str) -> dict[str, Any]:
+        """Scrape a document using this specification.
+
+        :param document: Document to scrape.
+        :return: Scraped data.
+        """
+        root = self.build_tree(document)
+        return self.extract(root)
 
 
 def load_spec(
@@ -214,33 +250,5 @@ def load_spec(
     if postprocessors is not None:
         spec._set_post(postprocessors)
     if transformers is not None:
-        spec._set_transformers(transformers)
+        spec._set_transforms(transformers)
     return spec
-
-
-def build_tree(document: str, *, doctype: DocType) -> Node:
-    """Convert the document to a tree.
-
-    :param document: Document to convert.
-    :param doctype: Type of document.
-    :return: Root node of generated tree.
-    """
-    return _PARSERS[doctype](document)
-
-
-def scrape(document: str, spec: Spec) -> dict[str, Any]:
-    """Scrape a document using a specification.
-
-    :param document: Document to scrape.
-    :param spec: Scraping specification.
-    :return: Scraped data.
-    """
-    root = build_tree(document, doctype=spec.doctype)
-    for preprocess in spec.preprocessors:
-        root = preprocess(root)
-    data = spec.extract(root)
-    if data is None:
-        return {}
-    for postprocess in spec.postprocessors:
-        data = postprocess(data)
-    return data
