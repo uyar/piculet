@@ -40,7 +40,7 @@ deserialize = partial(typedload.load, pep563=True, basiccast=False)
 serialize = typedload.dump
 
 
-Node: TypeAlias = lxml.etree._Element | dict
+Node: TypeAlias = lxml.etree._Element | dict[str, Any]
 
 DocType: TypeAlias = Literal["html", "xml", "json"]
 
@@ -51,10 +51,8 @@ _PARSERS: dict[DocType, Callable[[str], Node]] = {
 }
 
 
-CollectedData: TypeAlias = Mapping[str, Any]
-
 Preprocessor: TypeAlias = Callable[[Node], Node]
-Postprocessor: TypeAlias = Callable[[CollectedData], CollectedData]
+Postprocessor: TypeAlias = Callable[[Mapping[str, Any]], dict[str, Any]]
 Transformer: TypeAlias = Callable[[Any], Any]
 
 
@@ -113,7 +111,7 @@ class Collector(Extractor):
         for rule in self.rules:
             rule._set_transformers(registry)
 
-    def extract(self, root: Node) -> CollectedData | None:
+    def extract(self, root: Node) -> dict[str, Any] | None:
         data: dict[str, Any] = {}
         for rule in self.rules:
             subdata = rule.apply(root)
@@ -133,7 +131,7 @@ class Rule:
         if isinstance(self.key, Picker):
             self.key._set_transformers(registry)
 
-    def apply(self, root: Node) -> CollectedData | None:
+    def apply(self, root: Node) -> dict[str, Any] | None:
         data: dict[str, Any] = {}
 
         if self.extractor.root is not None:
@@ -230,17 +228,14 @@ def build_tree(document: str, *, doctype: DocType) -> Node:
     return _PARSERS[doctype](document)
 
 
-def scrape(document: str | Node, spec: Spec) -> CollectedData:
+def scrape(document: str, spec: Spec) -> dict[str, Any]:
     """Scrape a document using a specification.
-
-    If the document is a string, it will be converted to a tree first.
 
     :param document: Document to scrape.
     :param spec: Scraping specification.
     :return: Scraped data.
     """
-    root = document if not isinstance(document, str) else \
-        build_tree(document, doctype=spec.doctype)
+    root = build_tree(document, doctype=spec.doctype)
     for preprocess in spec.preprocessors:
         root = preprocess(root)
     data = spec.extract(root)

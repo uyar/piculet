@@ -2,14 +2,12 @@ import pytest
 
 from pathlib import Path
 
-from piculet import build_tree, load_spec, scrape
+from piculet import Node, build_tree, load_spec, scrape
+from piculet import Path as PiculetPath
 
 
-MOVIE_HTML_CONTENT = Path(__file__).with_name("shining.html").read_text(encoding="utf-8")
-MOVIE_JSON_CONTENT = Path(__file__).with_name("shining.json").read_text(encoding="utf-8")
-
-MOVIE_HTML = build_tree(MOVIE_HTML_CONTENT, doctype="html")
-MOVIE_JSON = build_tree(MOVIE_JSON_CONTENT, doctype="json")
+MOVIE_HTML = Path(__file__).with_name("shining.html").read_text(encoding="utf-8")
+MOVIE_JSON = Path(__file__).with_name("shining.json").read_text(encoding="utf-8")
 
 
 TRANSFORMERS = {
@@ -20,21 +18,30 @@ TRANSFORMERS = {
     "stars": lambda x: "%(name)s as %(character)s" % x,
 }
 
+
+def shorten_title(root: Node) -> Node:
+    try:
+        title_node = PiculetPath("//title").get(root)
+        title_node.text = title_node.text[:-1]  # type: ignore
+    except TypeError:
+        root["title"] = root["title"][:-1]  # type: ignore
+    return root
+
+
 PREPROCESSORS = {
-    "first_ul": lambda x: x.xpath('./body/ul')[0],
-    "first_li": lambda x: x.xpath('./li')[0],
-    "first_list": lambda x: [v for v in x.values() if isinstance(v, list)][0],
-    "first_map": lambda x: [v for v in x if isinstance(v, dict)][0],
+    "shorten_title": shorten_title,
 }
 
+
 POSTPROCESSORS = {
-    "shorten": lambda x: {k[:-1]: v[:-1] for k, v in x.items()},
+    "shorten_items": lambda x: {k[:-1]: v[:-1] for k, v in x.items()},
 }
 
 
 def test_load_spec_should_set_preprocessor():
-    spec = load_spec({"doctype": "json", "pre": ["first_list"], "rules": []}, preprocessors=PREPROCESSORS)
-    assert spec.preprocessors[0]({"x": "X", "ys": ["y1", "y2"], "z": "Z"}) == ["y1", "y2"]
+    spec = load_spec({"doctype": "json", "pre": ["shorten_title"], "rules": []}, preprocessors=PREPROCESSORS)
+    root = {"title": "The Shining"}
+    assert spec.preprocessors[0](root) == {"title": "The Shinin"}
 
 
 def test_load_spec_should_raise_error_for_unknown_preprocessor():
@@ -43,8 +50,9 @@ def test_load_spec_should_raise_error_for_unknown_preprocessor():
 
 
 def test_load_spec_should_set_postprocessor():
-    spec = load_spec({"doctype": "json", "post": ["shorten"], "rules": []}, postprocessors=POSTPROCESSORS)
-    assert spec.postprocessors[0]({"genre": "Horror"}) == {"genr": "Horro"}
+    spec = load_spec({"doctype": "json", "post": ["shorten_items"], "rules": []}, postprocessors=POSTPROCESSORS)
+    data = {"genre": "Horror"}
+    assert spec.postprocessors[0](data) == {"genr": "Horro"}
 
 
 def test_load_spec_should_raise_error_for_unknown_postprocessor():
@@ -85,19 +93,6 @@ def test_load_spec_should_load_jmespath():
 def test_scrape_should_produce_empty_result_for_empty_rules(document, doctype):
     spec = load_spec({"doctype": doctype, "rules": []})
     assert scrape(document, spec) == {}
-
-
-@pytest.mark.parametrize(("document", "doctype", "rules"), [
-    (MOVIE_HTML_CONTENT, "html", [
-        {"key": "title", "extractor": {"path": "//title/text()"}}
-    ]),
-    (MOVIE_JSON_CONTENT, "json", [
-        {"key": "title", "extractor": {"path": "title"}}
-    ]),
-])
-def test_scrape_should_work_with_str_content(document, doctype, rules):
-    spec = load_spec({"doctype": doctype, "rules": rules})
-    assert scrape(document, spec) == {"title": "The Shining"}
 
 
 @pytest.mark.parametrize(("document", "doctype", "rules"), [
@@ -453,37 +448,37 @@ def test_scrape_should_transform_generated_key(document, doctype, rules):
 
 
 @pytest.mark.parametrize(("document", "doctype", "pre", "rules"), [
-    (MOVIE_HTML, "html", ["first_ul"], [
-        {"key": "genre", "extractor": {"path": './li[1]/text()'}}
+    (MOVIE_HTML, "html", ["shorten_title"], [
+        {"key": "title", "extractor": {"path": "//title/text()"}}
     ]),
-    (MOVIE_JSON, "json", ["first_list"], [
-        {"key": "genre", "extractor": {"path": '[0].name'}}
+    (MOVIE_JSON, "json", ["shorten_title"], [
+        {"key": "title", "extractor": {"path": "title"}}
     ]),
 ])
 def test_scrape_should_apply_preprocess(document, doctype, pre, rules):
     spec = load_spec({"doctype": doctype, "pre": pre, "rules": rules}, preprocessors=PREPROCESSORS)
-    assert scrape(document, spec) == {"genre": "Horror"}
+    assert scrape(document, spec) == {"title": "The Shinin"}
 
 
 @pytest.mark.parametrize(("document", "doctype", "pre", "rules"), [
-    (MOVIE_HTML, "html", ["first_ul", "first_li"], [
-        {"key": "genre", "extractor": {"path": './text()'}}
+    (MOVIE_HTML, "html", ["shorten_title", "shorten_title"], [
+        {"key": "title", "extractor": {"path": "//title/text()"}}
     ]),
-    (MOVIE_JSON, "json", ["first_list", "first_map"], [
-        {"key": "genre", "extractor": {"path": 'name'}}
+    (MOVIE_JSON, "json", ["shorten_title", "shorten_title"], [
+        {"key": "title", "extractor": {"path": 'title'}}
     ]),
 ])
-def test_scrape_should_apply_multiple_preprocess(document, doctype, pre, rules):
+def test_scrape_should_apply_multiple_preprocesses(document, doctype, pre, rules):
     spec = load_spec({"doctype": doctype, "pre": pre, "rules": rules}, preprocessors=PREPROCESSORS)
-    assert scrape(document, spec) == {"genre": "Horror"}
+    assert scrape(document, spec) == {"title": "The Shini"}
 
 
 @pytest.mark.parametrize(("document", "doctype", "post", "rules"), [
-    (MOVIE_HTML, "html", ["shorten"], [
-        {"key": "title", "extractor": {"path": '//title/text()'}}
+    (MOVIE_HTML, "html", ["shorten_items"], [
+        {"key": "title", "extractor": {"path": "//title/text()"}}
     ]),
-    (MOVIE_JSON, "json", ["shorten"], [
-        {"key": "title", "extractor": {"path": 'title'}}
+    (MOVIE_JSON, "json", ["shorten_items"], [
+        {"key": "title", "extractor": {"path": "title"}}
     ]),
 ])
 def test_scrape_should_apply_postprocess(document, doctype, post, rules):
@@ -492,11 +487,11 @@ def test_scrape_should_apply_postprocess(document, doctype, post, rules):
 
 
 @pytest.mark.parametrize(("document", "doctype", "post", "rules"), [
-    (MOVIE_HTML, "html", ["shorten", "shorten"], [
-        {"key": "title", "extractor": {"path": '//title/text()'}}
+    (MOVIE_HTML, "html", ["shorten_items", "shorten_items"], [
+        {"key": "title", "extractor": {"path": "//title/text()"}}
     ]),
-    (MOVIE_JSON, "json", ["shorten", "shorten"], [
-        {"key": "title", "extractor": {"path": 'title'}}
+    (MOVIE_JSON, "json", ["shorten_items", "shorten_items"], [
+        {"key": "title", "extractor": {"path": "title"}}
     ]),
 ])
 def test_scrape_should_apply_multiple_postprocesses(document, doctype, post, rules):
