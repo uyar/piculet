@@ -56,27 +56,42 @@ Postprocessor: TypeAlias = Callable[[dict[str, Any]], dict[str, Any]]
 Transformer: TypeAlias = Callable[[Any], Any]
 
 
-class Path:
+class Query:
+    """A query based on XPath or JMESPath.
+
+    Expressions starting with ``/`` or ``./`` are assumed to be XPath.
+    Otherwise they are assumed to be JMESPath.
+    """
+
     def __init__(self, path: str) -> None:
         self.path: str = path
+        """Path expression to apply to nodes."""
+
         self._compiled: Callable[[Node], Any] = \
             compile_xpath(path) if path.startswith(("/", "./")) else \
             compile_jmespath(path).search  # type: ignore
 
-    def query(self, root: Node) -> Any:
-        value: Any = self._compiled(root)
+    def apply(self, node: Node) -> Any:
+        """Apply this query to a node.
+
+        If this is an XPath query, it should return a list of texts,
+        which will be concatenated.
+        """
+        value: Any = self._compiled(node)
         if isinstance(self._compiled, lxml.etree.XPath):
             return "".join(value) if len(value) > 0 else None
         return value
 
-    def get(self, root: Node) -> Node:
-        value: Any = self._compiled(root)
+    def get(self, node: Node) -> Node:
+        """Get the first node matched by applying this query to a node."""
+        value: Any = self._compiled(node)
         if isinstance(self._compiled, lxml.etree.XPath):
             return value[0]
         return value
 
-    def select(self, root: Node) -> list[Node]:
-        value: Any = self._compiled(root)
+    def select(self, node: Node) -> list[Node]:
+        """Get all nodes matched by applying this query to a node."""
+        value: Any = self._compiled(node)
         if isinstance(self._compiled, lxml.etree.XPath):
             return value
         return value if value is not None else []
@@ -84,9 +99,16 @@ class Path:
 
 @dataclass(kw_only=True)
 class Extractor:
-    root: Path | None = None
-    foreach: Path | None = None
+    """Base class for extractors."""
+
+    root: Query | None = None
+    """Query to select the root node to extract the data from."""
+
+    foreach: Query | None = None
+    """Query to select the nodes for items in multivalued results."""
+
     transforms: list[str] = field(default_factory=list)
+    """Names of transform functions to apply to the obtained data."""
 
     _transforms: list[Transformer] = field(default_factory=list)
 
@@ -96,25 +118,32 @@ class Extractor:
 
 @dataclass(kw_only=True)
 class Picker(Extractor):
-    path: Path
+    """An extractor that produces a single value."""
 
-    def extract(self, root: Node) -> Any:
-        return self.path.query(root)
+    path: Query
+    """Query to apply to a node to extract the value."""
+
+    def extract(self, node: Node) -> Any:
+        """Extract data from a node using this extractor."""
+        return self.path.apply(node)
 
 
 @dataclass(kw_only=True)
 class Collector(Extractor):
+    """An extractor that collects multiple pieces of data in a dictionary."""
+
     rules: list[Rule] = field(default_factory=list)
+    """Rules to apply to a node to collect the data."""
 
     def _set_transforms(self, registry: Mapping[str, Transformer]) -> None:
         super()._set_transforms(registry)
         for rule in self.rules:
             rule._set_transformers(registry)
 
-    def extract(self, root: Node) -> dict[str, Any] | None:
+    def extract(self, node: Node) -> dict[str, Any] | None:
         data: dict[str, Any] = {}
         for rule in self.rules:
-            subdata = rule.apply(root)
+            subdata = rule.apply(node)
             if subdata is not None:
                 data.update(subdata)
         return data if len(data) > 0 else None
@@ -122,9 +151,16 @@ class Collector(Extractor):
 
 @dataclass(kw_only=True)
 class Rule:
+    """A rule that generates a key and a value from a node."""
+
     key: str | Picker
+    """Name or extractor of key."""
+
     extractor: Picker | Collector
-    foreach: Path | None = None
+    """Extractor of value."""
+
+    foreach: Query | None = None
+    """Query to generate multiple keys and values from selected nodes."""
 
     def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
         self.extractor._set_transforms(registry)
@@ -132,6 +168,7 @@ class Rule:
             self.key._set_transforms(registry)
 
     def apply(self, root: Node) -> dict[str, Any] | None:
+        """Apply this rule to a node."""
         data: dict[str, Any] = {}
 
         if self.extractor.root is not None:
@@ -171,8 +208,13 @@ class Spec(Collector):
     """A scraping specification."""
 
     doctype: DocType
+    """Type of document."""
+
     pre: list[str] = field(default_factory=list)
+    """Names of preprocessor functions."""
+
     post: list[str] = field(default_factory=list)
+    """Names of postprocessor functions."""
 
     _pre: list[Preprocessor] = field(default_factory=list)
     _post: list[Postprocessor] = field(default_factory=list)
@@ -184,7 +226,11 @@ class Spec(Collector):
         self._post = [registry[name] for name in self.post]
 
     def build_tree(self, document: str, preprocess: bool = True) -> Node:
-        """Convert the document to a tree of this spec's doctype."""
+        """Convert the document to a tree of this sepc's doctype.
+
+        :param document: Document to convert.
+        :param preprocess: Whether to apply the preprocessors.
+        """
         root = _PARSERS[self.doctype](document)
         if preprocess:
             root = self.preprocess(root)
@@ -197,6 +243,11 @@ class Spec(Collector):
         return root
 
     def extract(self, root: Node, postprocess: bool = True):
+        """Extract data using this specification from a node.
+
+        :param root: Root node to scrape.
+        :param postprocess: Whether to apply postprocessors.
+        """
         data = super().extract(root)
         if data is None:
             return {}
@@ -211,11 +262,7 @@ class Spec(Collector):
         return data
 
     def scrape(self, document: str) -> dict[str, Any]:
-        """Scrape a document using this specification.
-
-        :param document: Document to scrape.
-        :return: Scraped data.
-        """
+        """Scrape a document using this specification."""
         root = self.build_tree(document)
         return self.extract(root)
 
@@ -232,17 +279,11 @@ def load_spec(
     The transformer, preprocessor and postprocessor functions
     used in the specification will be looked up in the corresponding
     registry parameters.
-
-    :param content: Specification content.
-    :param transformers: Transformer registry.
-    :param preprocessors: Preprocessor registry.
-    :param postprocessors: Preprocessor registry.
-    :return: Generated specification.
     """
     spec: Spec = deserialize(
         content,
         type_=Spec,
-        strconstructed={Path},
+        strconstructed={Query},
         failonextra=True,
     )
     if preprocessors is not None:

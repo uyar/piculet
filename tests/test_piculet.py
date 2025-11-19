@@ -86,14 +86,14 @@ def test_load_spec_should_load_xpath():
     rules = [{"key": "title", "extractor": {"path": "//title/text()"}}]
     spec = load_spec(SPEC["html"] | {"rules": rules})
     root = spec.build_tree("<html><head><title>The Shining</title></head></html>")
-    assert spec.rules[0].extractor.path.query(root) == "The Shining"
+    assert spec.rules[0].extractor.path.apply(root) == "The Shining"
 
 
 def test_load_spec_should_load_jmespath():
     rules = [{"key": "title", "extractor": {"path": "title"}}]
     spec = load_spec(SPEC["json"] | {"rules": rules})
     root = spec.build_tree('{"title": "The Shining"}')
-    assert spec.rules[0].extractor.path.query(root) == "The Shining"
+    assert spec.rules[0].extractor.path.apply(root) == "The Shining"
 
 
 @pytest.mark.parametrize(("doctype",), [
