@@ -26,7 +26,6 @@ from __future__ import annotations
 import json
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from functools import partial
 from typing import Any, Literal, Mapping, TypeAlias
 
 import lxml.etree
@@ -34,10 +33,6 @@ import lxml.html
 import typedload
 from jmespath import compile as compile_jmespath
 from lxml.etree import XPath as compile_xpath
-
-
-deserialize = partial(typedload.load, pep563=True, basiccast=False)
-serialize = typedload.dump
 
 
 Node: TypeAlias = lxml.etree._Element | dict[str, Any]
@@ -280,10 +275,12 @@ def load_spec(
     used in the specification will be looked up in the corresponding
     registry parameters.
     """
-    spec: Spec = deserialize(
+    spec: Spec = typedload.load(
         content,
         type_=Spec,
         strconstructed={Query},
+        pep563=True,
+        basiccast=False,
         failonextra=True,
     )
     if preprocessors is not None:
