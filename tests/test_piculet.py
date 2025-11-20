@@ -1,18 +1,14 @@
 import pytest
 
+from copy import deepcopy
 from pathlib import Path
 
-from piculet import load_spec
+from piculet import build_tree, load_spec
 
 
 MOVIE = {
-    "html": Path(__file__).with_name("shining.html").read_text(),
-    "json": Path(__file__).with_name("shining.json").read_text(),
-}
-
-SPEC = {
-    "html": {"doctype": "html", "rules": []},
-    "json": {"doctype": "json", "rules": []},
+    "html": build_tree(Path(__file__).with_name("shining.html").read_text(), doctype="html"),
+    "json": build_tree(Path(__file__).with_name("shining.json").read_text(), doctype="json"),
 }
 
 
@@ -26,12 +22,13 @@ TRANSFORMERS = {
 
 
 def shorten_title(root):
+    clone = deepcopy(root)
     try:
-        title_node = root.xpath("//title")[0]
+        title_node = clone.xpath("//title")[0]
         title_node.text = title_node.text[:-1]
     except AttributeError:
-        root["title"] = root["title"][:-1]
-    return root
+        clone["title"] = clone["title"][:-1]
+    return clone
 
 
 PREPROCESSORS = {
@@ -45,7 +42,7 @@ POSTPROCESSORS = {
 
 
 def test_load_spec_should_set_preprocessor_callable():
-    spec = load_spec(SPEC["json"] | {"pre": ["shorten_title"]},
+    spec = load_spec({"rules": [], "pre": ["shorten_title"]},
                      preprocessors=PREPROCESSORS)
     root = {"title": "The Shining"}
     assert spec._pre[0](root) == {"title": "The Shinin"}
@@ -53,12 +50,12 @@ def test_load_spec_should_set_preprocessor_callable():
 
 def test_load_spec_should_raise_error_for_unknown_preprocessor():
     with pytest.raises(KeyError):
-        _ = load_spec(SPEC["json"] | {"pre": ["UNKNOWN"]},
+        _ = load_spec({"rules": [], "pre": ["UNKNOWN"]},
                       preprocessors=PREPROCESSORS)
 
 
 def test_load_spec_should_set_postprocessor_callable():
-    spec = load_spec(SPEC["json"] | {"post": ["shorten_items"]},
+    spec = load_spec({"rules": [], "post": ["shorten_items"]},
                      postprocessors=POSTPROCESSORS)
     data = {"genre": "Horror"}
     assert spec._post[0](data) == {"genr": "Horro"}
@@ -66,33 +63,33 @@ def test_load_spec_should_set_postprocessor_callable():
 
 def test_load_spec_should_raise_error_for_unknown_postprocessor():
     with pytest.raises(KeyError):
-        _ = load_spec(SPEC["json"] | {"post": ["UNKNOWN"]},
+        _ = load_spec({"rules": [], "post": ["UNKNOWN"]},
                       postprocessors=POSTPROCESSORS)
 
 
 def test_load_spec_should_set_transformer_callable():
     rules = [{"key": "k", "extractor": {"path": "p", "transforms": ["lower"]}}]
-    spec = load_spec(SPEC["json"] | {"rules": rules}, transformers=TRANSFORMERS)
+    spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
     assert spec.rules[0].extractor._transforms[0]("Horror") == "horror"
 
 
 def test_load_spec_should_raise_error_for_unknown_transformer():
     rules = [{"key": "k", "extractor": {"path": "p", "transforms": ["UNKNOWN"]}}]
     with pytest.raises(KeyError):
-        _ = load_spec(SPEC["json"] | {"rules": rules}, transformers=TRANSFORMERS)
+        _ = load_spec({"rules": rules}, transformers=TRANSFORMERS)
 
 
 def test_load_spec_should_load_xpath():
     rules = [{"key": "title", "extractor": {"path": "//title/text()"}}]
-    spec = load_spec(SPEC["html"] | {"rules": rules})
-    root = spec.build_tree("<html><head><title>The Shining</title></head></html>")
+    spec = load_spec({"rules": rules})
+    root = build_tree('<html><head><title>The Shining</title></head></html>', doctype="html")
     assert spec.rules[0].extractor.path.apply(root) == "The Shining"
 
 
 def test_load_spec_should_load_jmespath():
     rules = [{"key": "title", "extractor": {"path": "title"}}]
-    spec = load_spec(SPEC["json"] | {"rules": rules})
-    root = spec.build_tree('{"title": "The Shining"}')
+    spec = load_spec({"rules": rules})
+    root = build_tree('{"title": "The Shining"}', doctype="json")
     assert spec.rules[0].extractor.path.apply(root) == "The Shining"
 
 
@@ -101,7 +98,7 @@ def test_load_spec_should_load_jmespath():
     ("json",),
 ])
 def test_scrape_should_produce_empty_result_for_empty_rules(doctype):
-    spec = load_spec(SPEC[doctype] | {"rules": []})
+    spec = load_spec({"rules": []})
     assert spec.scrape(MOVIE[doctype]) == {}
 
 
@@ -114,7 +111,7 @@ def test_scrape_should_produce_empty_result_for_empty_rules(doctype):
     ]),
 ])
 def test_scrape_should_produce_scalar_value(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules})
+    spec = load_spec({"rules": rules})
     assert spec.scrape(MOVIE[doctype]) == {"title": "The Shining"}
 
 
@@ -124,7 +121,7 @@ def test_scrape_should_produce_scalar_value(doctype, rules):
     ]),
 ])
 def test_scrape_xpath_should_produce_joined_text(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules})
+    spec = load_spec({"rules": rules})
     assert spec.scrape(MOVIE[doctype]) == {"full_title": "The Shining (1980)"}
 
 
@@ -139,7 +136,7 @@ def test_scrape_xpath_should_produce_joined_text(doctype, rules):
     ]),
 ])
 def test_scrape_should_produce_multiple_items_for_multiple_rules(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules})
+    spec = load_spec({"rules": rules})
     assert spec.scrape(MOVIE[doctype]) == {"title": "The Shining", "country": "United States"}
 
 
@@ -154,7 +151,7 @@ def test_scrape_should_produce_multiple_items_for_multiple_rules(doctype, rules)
     ]),
 ])
 def test_scrape_should_exclude_data_for_rules_with_no_result(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules})
+    spec = load_spec({"rules": rules})
     assert spec.scrape(MOVIE[doctype]) == {"title": "The Shining"}
 
 
@@ -169,7 +166,7 @@ def test_scrape_should_exclude_data_for_rules_with_no_result(doctype, rules):
     ]),
 ])
 def test_scrape_should_transform_result(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules}, transformers=TRANSFORMERS)
+    spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
     assert spec.scrape(MOVIE[doctype]) == {"title": "the shining"}
 
 
@@ -184,7 +181,7 @@ def test_scrape_should_transform_result(doctype, rules):
     ]),
 ])
 def test_scrape_should_apply_transforms_in_order(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules}, transformers=TRANSFORMERS)
+    spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
     assert spec.scrape(MOVIE[doctype]) == {"title": "Theshining"}
 
 
@@ -199,7 +196,7 @@ def test_scrape_should_apply_transforms_in_order(doctype, rules):
     ]),
 ])
 def test_scrape_should_produce_list_for_multivalued_rule(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules})
+    spec = load_spec({"rules": rules})
     assert spec.scrape(MOVIE[doctype]) == {"genres": ["Horror", "Drama"]}
 
 
@@ -216,7 +213,7 @@ def test_scrape_should_produce_list_for_multivalued_rule(doctype, rules):
     ]),
 ])
 def test_scrape_should_exclude_empty_items_in_multivalued_rule_results(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules})
+    spec = load_spec({"rules": rules})
     assert spec.scrape(MOVIE[doctype]) == {"title": "The Shining"}
 
 
@@ -239,7 +236,7 @@ def test_scrape_should_exclude_empty_items_in_multivalued_rule_results(doctype, 
     ]),
 ])
 def test_scrape_should_transform_each_value_in_multivalued_result(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules}, transformers=TRANSFORMERS)
+    spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
     assert spec.scrape(MOVIE[doctype]) == {"genres": ["horror", "drama"]}
 
 
@@ -275,7 +272,7 @@ def test_scrape_should_transform_each_value_in_multivalued_result(doctype, rules
     ]),
 ])
 def test_scrape_should_produce_subitems_for_subrules(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules}, transformers=TRANSFORMERS)
+    spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
     assert spec.scrape(MOVIE[doctype]) == {"director": {"name": "Stanley Kubrick", "id": 1}}
 
 
@@ -313,7 +310,7 @@ def test_scrape_should_produce_subitems_for_subrules(doctype, rules):
     ]),
 ])
 def test_scrape_should_move_root_for_subitems(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules}, transformers=TRANSFORMERS)
+    spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
     assert spec.scrape(MOVIE[doctype]) == {"director": {"name": "Stanley Kubrick", "id": 1}}
 
 
@@ -344,7 +341,7 @@ def test_scrape_should_move_root_for_subitems(doctype, rules):
     ]),
 ])
 def test_scrape_should_produce_subitem_lists_for_multivalued_subrules(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules})
+    spec = load_spec({"rules": rules})
     assert spec.scrape(MOVIE[doctype]) == {
         "cast": [
             {"name": "Jack Nicholson", "character": "Jack Torrance"},
@@ -382,7 +379,7 @@ def test_scrape_should_produce_subitem_lists_for_multivalued_subrules(doctype, r
     ]),
 ])
 def test_scrape_root_should_come_before_foreach(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules})
+    spec = load_spec({"rules": rules})
     assert spec.scrape(MOVIE[doctype]) == {
         "cast": [
             {"name": "Jack Nicholson", "character": "Jack Torrance"},
@@ -420,7 +417,7 @@ def test_scrape_root_should_come_before_foreach(doctype, rules):
     ]),
 ])
 def test_scrape_should_transform_subitems(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules}, transformers=TRANSFORMERS)
+    spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
     assert spec.scrape(MOVIE[doctype]) == {
         "cast": [
             "Jack Nicholson as Jack Torrance",
@@ -446,7 +443,7 @@ def test_scrape_should_transform_subitems(doctype, rules):
     ]),
 ])
 def test_scrape_should_generate_keys_from_document(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules})
+    spec = load_spec({"rules": rules})
     assert spec.scrape(MOVIE[doctype]) == {"Country": "United States", "Language": "English"}
 
 
@@ -467,7 +464,7 @@ def test_scrape_should_generate_keys_from_document(doctype, rules):
     ]),
 ])
 def test_scrape_should_transform_generated_key(doctype, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules}, transformers=TRANSFORMERS)
+    spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
     assert spec.scrape(MOVIE[doctype]) == {"country": "United States", "language": "English"}
 
 
@@ -480,7 +477,7 @@ def test_scrape_should_transform_generated_key(doctype, rules):
     ]),
 ])
 def test_scrape_should_apply_preprocess(doctype, pre, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules, "pre": pre},
+    spec = load_spec({"rules": rules, "pre": pre},
                      preprocessors=PREPROCESSORS)
     assert spec.scrape(MOVIE[doctype]) == {"title": "The Shinin"}
 
@@ -494,7 +491,7 @@ def test_scrape_should_apply_preprocess(doctype, pre, rules):
     ]),
 ])
 def test_scrape_should_apply_multiple_preprocesses(doctype, pre, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules, "pre": pre},
+    spec = load_spec({"rules": rules, "pre": pre},
                      preprocessors=PREPROCESSORS)
     assert spec.scrape(MOVIE[doctype]) == {"title": "The Shini"}
 
@@ -508,7 +505,7 @@ def test_scrape_should_apply_multiple_preprocesses(doctype, pre, rules):
     ]),
 ])
 def test_scrape_should_apply_postprocess(doctype, post, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules, "post": post},
+    spec = load_spec({"rules": rules, "post": post},
                      postprocessors=POSTPROCESSORS)
     assert spec.scrape(MOVIE[doctype]) == {"titl": "The Shinin"}
 
@@ -522,6 +519,6 @@ def test_scrape_should_apply_postprocess(doctype, post, rules):
     ]),
 ])
 def test_scrape_should_apply_multiple_postprocesses(doctype, post, rules):
-    spec = load_spec(SPEC[doctype] | {"rules": rules, "post": post},
+    spec = load_spec({"rules": rules, "post": post},
                      postprocessors=POSTPROCESSORS)
     assert spec.scrape(MOVIE[doctype]) == {"tit": "The Shini"}

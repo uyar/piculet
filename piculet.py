@@ -202,9 +202,6 @@ class Rule:
 class Spec(Collector):
     """A scraping specification."""
 
-    doctype: DocType
-    """Type of document."""
-
     pre: list[str] = field(default_factory=list)
     """Names of preprocessor functions."""
 
@@ -220,35 +217,16 @@ class Spec(Collector):
     def _set_post(self, registry: Mapping[str, Postprocessor]) -> None:
         self._post = [registry[name] for name in self.post]
 
-    def build_tree(self, document: str, preprocess: bool = True) -> Node:
-        """Convert the document to a tree of this sepc's doctype.
-
-        :param document: Document to convert.
-        :param preprocess: Whether to apply the preprocessors.
-        """
-        root = _PARSERS[self.doctype](document)
-        if preprocess:
-            root = self.preprocess(root)
-        return root
-
     def preprocess(self, root: Node) -> Node:
         """Apply the preprocessors in this spec to the root node."""
         for preprocess in self._pre:
             root = preprocess(root)
         return root
 
-    def extract(self, root: Node, postprocess: bool = True):
-        """Extract data using this specification from a node.
-
-        :param root: Root node to scrape.
-        :param postprocess: Whether to apply postprocessors.
-        """
+    def extract(self, root: Node):
+        """Extract data using this specification from a node."""
         data = super().extract(root)
-        if data is None:
-            return {}
-        if postprocess:
-            data = self.postprocess(data)
-        return data
+        return data if data is not None else {}
 
     def postprocess(self, data: dict[str, Any]) -> dict[str, Any]:
         """Apply the postprocessors in this spec to the collected data."""
@@ -256,10 +234,12 @@ class Spec(Collector):
             data = postprocess(data)
         return data
 
-    def scrape(self, document: str) -> dict[str, Any]:
+    def scrape(self, root: Node) -> dict[str, Any]:
         """Scrape a document using this specification."""
-        root = self.build_tree(document)
-        return self.extract(root)
+        root = self.preprocess(root)
+        data = self.extract(root)
+        data = self.postprocess(data)
+        return data
 
 
 def load_spec(
@@ -290,3 +270,8 @@ def load_spec(
     if transformers is not None:
         spec._set_transforms(transformers)
     return spec
+
+
+def build_tree(document: str, doctype: DocType) -> Node:
+    """Convert a document to a tree."""
+    return _PARSERS[doctype](document)
