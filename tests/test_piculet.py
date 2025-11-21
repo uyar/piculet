@@ -2,7 +2,7 @@ import pytest
 
 from pathlib import Path
 
-from piculet import build_tree, load_spec
+from piculet import build_tree, dump_spec, load_spec
 
 
 MOVIE = {
@@ -78,11 +78,23 @@ def test_load_spec_should_load_xpath():
     assert spec.rules[0].extractor.path.apply(root) == "The Shining"
 
 
+def test_dump_spec_should_dump_xpath_as_str():
+    rules = [{"key": "title", "extractor": {"path": "//title/text()"}}]
+    spec = load_spec({"rules": rules})
+    assert dump_spec(spec) == {"rules": rules}
+
+
 def test_load_spec_should_load_jmespath():
     rules = [{"key": "title", "extractor": {"path": "title"}}]
     spec = load_spec({"rules": rules})
     root = build_tree('{"title": "The Shining"}', doctype="json")
     assert spec.rules[0].extractor.path.apply(root) == "The Shining"
+
+
+def test_dump_spec_json_should_dump_jmespath_as_str():
+    rules = [{"key": "title", "extractor": {"path": "//title/text()"}}]
+    spec = load_spec({"rules": rules})
+    assert dump_spec(spec) == {"rules": rules}
 
 
 @pytest.mark.parametrize(("doctype",), [

@@ -25,13 +25,21 @@ from __future__ import annotations
 import json
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from importlib.util import find_spec
+from functools import partial
 from typing import Any, Literal, Mapping, TypeAlias
 
 import lxml.etree
 import lxml.html
+import typedload
 from jmespath import compile as compile_jmespath
 from lxml.etree import XPath as compile_xpath
+
+
+deserialize = partial(typedload.load, pep563=True, basiccast=False)
+"""Generate an object from a dictionary."""
+
+serialize = typedload.dump
+"""Generate a dictionary from an object."""
 
 
 Node: TypeAlias = lxml.etree._Element | dict[str, Any]
@@ -64,6 +72,9 @@ class Query:
         self._compiled: Callable[[Node], Any] = \
             compile_xpath(path) if path.startswith(("/", "./")) else \
             compile_jmespath(path).search  # type: ignore
+
+    def __str__(self) -> str:
+        return self.path
 
     def apply(self, node: Node) -> Any:
         """Apply this query to a node.
@@ -254,29 +265,28 @@ def build_tree(document: str, doctype: DocType) -> Node:
     return _PARSERS[doctype](document)
 
 
-if find_spec("typedload") is not None:
-    import typedload
+def load_spec(
+        content: Mapping[str, Any],
+        *,
+        transformers: Mapping[str, Transformer] | None = None,
+        preprocessors: Mapping[str, Preprocessor] | None = None,
+        postprocessors: Mapping[str, Postprocessor] | None = None,
+) -> Spec:
+    """Deserialize a mapping into a scraping specification."""
+    spec: Spec = deserialize(
+        content,
+        type_=Spec,
+        strconstructed={Query},
+        failonextra=True,
+    )
+    if preprocessors is not None:
+        spec._set_pre(preprocessors)
+    if postprocessors is not None:
+        spec._set_post(postprocessors)
+    if transformers is not None:
+        spec._set_transforms(transformers)
+    return spec
 
-    def load_spec(
-            content: Mapping[str, Any],
-            *,
-            transformers: Mapping[str, Transformer] | None = None,
-            preprocessors: Mapping[str, Preprocessor] | None = None,
-            postprocessors: Mapping[str, Postprocessor] | None = None,
-    ) -> Spec:
-        """Deserialize a mapping into a scraping specification."""
-        spec: Spec = typedload.load(
-            content,
-            type_=Spec,
-            strconstructed={Query},
-            pep563=True,
-            basiccast=False,
-            failonextra=True,
-        )
-        if preprocessors is not None:
-            spec._set_pre(preprocessors)
-        if postprocessors is not None:
-            spec._set_post(postprocessors)
-        if transformers is not None:
-            spec._set_transforms(transformers)
-        return spec
+
+def dump_spec(spec: Spec) -> dict[str, Any]:
+    return serialize(spec, strconstructed={Query})
