@@ -38,15 +38,18 @@ classifiers = [
 
 requires-python = "~=3.10"
 dependencies = [
-    "typedload~=2.39",
     "lxml~=5.4.0",
     "jmespath~=1.0.1",
 ]
+
+[project.optional-dependencies]
+typedload = ["typedload~=2.39"]
 
 [dependency-groups]
 test = [
     "pytest>=9.0.1",
     "pytest-cov>=7.0.0",
+    "typedload~=2.39",
 ]
 typing = [
     "mypy>=1.18.2",

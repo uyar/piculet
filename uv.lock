@@ -595,6 +595,10 @@ source = { editable = "." }
 dependencies = [
     { name = "jmespath" },
     { name = "lxml" },
+]
+
+[package.optional-dependencies]
+typedload = [
     { name = "typedload" },
 ]
 
@@ -609,6 +613,7 @@ dev = [
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "sphinx-rtd-theme" },
     { name = "tox-uv" },
+    { name = "typedload" },
     { name = "types-jmespath" },
 ]
 doc = [
@@ -622,6 +627,7 @@ style = [
 test = [
     { name = "pytest" },
     { name = "pytest-cov" },
+    { name = "typedload" },
 ]
 typing = [
     { name = "lxml-stubs" },
@@ -633,8 +639,9 @@ typing = [
 requires-dist = [
     { name = "jmespath", specifier = "~=1.0.1" },
     { name = "lxml", specifier = "~=5.4.0" },
-    { name = "typedload", specifier = "~=2.39" },
+    { name = "typedload", marker = "extra == 'typedload'", specifier = "~=2.39" },
 ]
+provides-extras = ["typedload"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -646,6 +653,7 @@ dev = [
     { name = "sphinx", specifier = ">=8.1.3" },
     { name = "sphinx-rtd-theme", specifier = ">=3.0.2" },
     { name = "tox-uv", specifier = ">=1.29.0" },
+    { name = "typedload", specifier = "~=2.39" },
     { name = "types-jmespath", specifier = ">=1.0.2.20250809" },
 ]
 doc = [
@@ -656,6 +664,7 @@ style = [{ name = "ruff", specifier = ">=0.14.5" }]
 test = [
     { name = "pytest", specifier = ">=9.0.1" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
+    { name = "typedload", specifier = "~=2.39" },
 ]
 typing = [
     { name = "lxml-stubs", specifier = ">=0.5.1" },
