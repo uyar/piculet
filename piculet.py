@@ -234,8 +234,15 @@ class Spec(Collector):
             data = postprocess(data)
         return data
 
-    def scrape(self, root: Node) -> dict[str, Any]:
+    def scrape(
+            self,
+            document: str | Node,
+            *,
+            doctype: DocType,
+        ) -> dict[str, Any]:
         """Scrape a document using this specification."""
+        root = document if not isinstance(document, str) else \
+            build_tree(document, doctype=doctype)
         root = self.preprocess(root)
         data = self.extract(root)
         data = self.postprocess(data)

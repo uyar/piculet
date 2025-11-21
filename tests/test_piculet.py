@@ -1,14 +1,13 @@
 import pytest
 
-from copy import deepcopy
 from pathlib import Path
 
 from piculet import build_tree, load_spec
 
 
 MOVIE = {
-    "html": build_tree(Path(__file__).with_name("shining.html").read_text(), doctype="html"),
-    "json": build_tree(Path(__file__).with_name("shining.json").read_text(), doctype="json"),
+    "html": Path(__file__).with_name("shining.html").read_text(),
+    "json": Path(__file__).with_name("shining.json").read_text(),
 }
 
 
@@ -22,13 +21,12 @@ TRANSFORMERS = {
 
 
 def shorten_title(root):
-    clone = deepcopy(root)
     try:
-        title_node = clone.xpath("//title")[0]
+        title_node = root.xpath("//title")[0]
         title_node.text = title_node.text[:-1]
     except AttributeError:
-        clone["title"] = clone["title"][:-1]
-    return clone
+        root["title"] = root["title"][:-1]
+    return root
 
 
 PREPROCESSORS = {
@@ -42,29 +40,23 @@ POSTPROCESSORS = {
 
 
 def test_load_spec_should_set_preprocessor_callable():
-    spec = load_spec({"rules": [], "pre": ["shorten_title"]},
-                     preprocessors=PREPROCESSORS)
-    root = {"title": "The Shining"}
-    assert spec._pre[0](root) == {"title": "The Shinin"}
+    spec = load_spec({"rules": [], "pre": ["shorten_title"]}, preprocessors=PREPROCESSORS)
+    assert spec._pre[0]({"title": "The Shining"}) == {"title": "The Shinin"}
 
 
 def test_load_spec_should_raise_error_for_unknown_preprocessor():
     with pytest.raises(KeyError):
-        _ = load_spec({"rules": [], "pre": ["UNKNOWN"]},
-                      preprocessors=PREPROCESSORS)
+        _ = load_spec({"rules": [], "pre": ["UNKNOWN"]}, preprocessors=PREPROCESSORS)
 
 
 def test_load_spec_should_set_postprocessor_callable():
-    spec = load_spec({"rules": [], "post": ["shorten_items"]},
-                     postprocessors=POSTPROCESSORS)
-    data = {"genre": "Horror"}
-    assert spec._post[0](data) == {"genr": "Horro"}
+    spec = load_spec({"rules": [], "post": ["shorten_items"]}, postprocessors=POSTPROCESSORS)
+    assert spec._post[0]({"genre": "Horror"}) == {"genr": "Horro"}
 
 
 def test_load_spec_should_raise_error_for_unknown_postprocessor():
     with pytest.raises(KeyError):
-        _ = load_spec({"rules": [], "post": ["UNKNOWN"]},
-                      postprocessors=POSTPROCESSORS)
+        _ = load_spec({"rules": [], "post": ["UNKNOWN"]}, postprocessors=POSTPROCESSORS)
 
 
 def test_load_spec_should_set_transformer_callable():
@@ -99,7 +91,7 @@ def test_load_spec_should_load_jmespath():
 ])
 def test_scrape_should_produce_empty_result_for_empty_rules(doctype):
     spec = load_spec({"rules": []})
-    assert spec.scrape(MOVIE[doctype]) == {}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {}
 
 
 @pytest.mark.parametrize(("doctype", "rules"), [
@@ -112,7 +104,7 @@ def test_scrape_should_produce_empty_result_for_empty_rules(doctype):
 ])
 def test_scrape_should_produce_scalar_value(doctype, rules):
     spec = load_spec({"rules": rules})
-    assert spec.scrape(MOVIE[doctype]) == {"title": "The Shining"}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"title": "The Shining"}
 
 
 @pytest.mark.parametrize(("doctype", "rules"), [
@@ -122,7 +114,7 @@ def test_scrape_should_produce_scalar_value(doctype, rules):
 ])
 def test_scrape_xpath_should_produce_joined_text(doctype, rules):
     spec = load_spec({"rules": rules})
-    assert spec.scrape(MOVIE[doctype]) == {"full_title": "The Shining (1980)"}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"full_title": "The Shining (1980)"}
 
 
 @pytest.mark.parametrize(("doctype", "rules"), [
@@ -137,7 +129,9 @@ def test_scrape_xpath_should_produce_joined_text(doctype, rules):
 ])
 def test_scrape_should_produce_multiple_items_for_multiple_rules(doctype, rules):
     spec = load_spec({"rules": rules})
-    assert spec.scrape(MOVIE[doctype]) == {"title": "The Shining", "country": "United States"}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {
+        "title": "The Shining", "country": "United States"
+    }
 
 
 @pytest.mark.parametrize(("doctype", "rules"), [
@@ -152,7 +146,7 @@ def test_scrape_should_produce_multiple_items_for_multiple_rules(doctype, rules)
 ])
 def test_scrape_should_exclude_data_for_rules_with_no_result(doctype, rules):
     spec = load_spec({"rules": rules})
-    assert spec.scrape(MOVIE[doctype]) == {"title": "The Shining"}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"title": "The Shining"}
 
 
 @pytest.mark.parametrize(("doctype", "rules"), [
@@ -167,7 +161,7 @@ def test_scrape_should_exclude_data_for_rules_with_no_result(doctype, rules):
 ])
 def test_scrape_should_transform_result(doctype, rules):
     spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
-    assert spec.scrape(MOVIE[doctype]) == {"title": "the shining"}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"title": "the shining"}
 
 
 @pytest.mark.parametrize(("doctype", "rules"), [
@@ -182,7 +176,7 @@ def test_scrape_should_transform_result(doctype, rules):
 ])
 def test_scrape_should_apply_transforms_in_order(doctype, rules):
     spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
-    assert spec.scrape(MOVIE[doctype]) == {"title": "Theshining"}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"title": "Theshining"}
 
 
 @pytest.mark.parametrize(("doctype", "rules"), [
@@ -197,7 +191,7 @@ def test_scrape_should_apply_transforms_in_order(doctype, rules):
 ])
 def test_scrape_should_produce_list_for_multivalued_rule(doctype, rules):
     spec = load_spec({"rules": rules})
-    assert spec.scrape(MOVIE[doctype]) == {"genres": ["Horror", "Drama"]}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"genres": ["Horror", "Drama"]}
 
 
 @pytest.mark.parametrize(("doctype", "rules"), [
@@ -214,7 +208,7 @@ def test_scrape_should_produce_list_for_multivalued_rule(doctype, rules):
 ])
 def test_scrape_should_exclude_empty_items_in_multivalued_rule_results(doctype, rules):
     spec = load_spec({"rules": rules})
-    assert spec.scrape(MOVIE[doctype]) == {"title": "The Shining"}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"title": "The Shining"}
 
 
 @pytest.mark.parametrize(("doctype", "rules"), [
@@ -237,7 +231,7 @@ def test_scrape_should_exclude_empty_items_in_multivalued_rule_results(doctype, 
 ])
 def test_scrape_should_transform_each_value_in_multivalued_result(doctype, rules):
     spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
-    assert spec.scrape(MOVIE[doctype]) == {"genres": ["horror", "drama"]}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"genres": ["horror", "drama"]}
 
 
 @pytest.mark.parametrize(("doctype", "rules"), [
@@ -273,7 +267,9 @@ def test_scrape_should_transform_each_value_in_multivalued_result(doctype, rules
 ])
 def test_scrape_should_produce_subitems_for_subrules(doctype, rules):
     spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
-    assert spec.scrape(MOVIE[doctype]) == {"director": {"name": "Stanley Kubrick", "id": 1}}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {
+        "director": {"name": "Stanley Kubrick", "id": 1}
+    }
 
 
 @pytest.mark.parametrize(("doctype", "rules"), [
@@ -311,7 +307,9 @@ def test_scrape_should_produce_subitems_for_subrules(doctype, rules):
 ])
 def test_scrape_should_move_root_for_subitems(doctype, rules):
     spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
-    assert spec.scrape(MOVIE[doctype]) == {"director": {"name": "Stanley Kubrick", "id": 1}}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {
+        "director": {"name": "Stanley Kubrick", "id": 1}
+    }
 
 
 @pytest.mark.parametrize(("doctype", "rules"), [
@@ -342,7 +340,7 @@ def test_scrape_should_move_root_for_subitems(doctype, rules):
 ])
 def test_scrape_should_produce_subitem_lists_for_multivalued_subrules(doctype, rules):
     spec = load_spec({"rules": rules})
-    assert spec.scrape(MOVIE[doctype]) == {
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {
         "cast": [
             {"name": "Jack Nicholson", "character": "Jack Torrance"},
             {"name": "Shelley Duvall", "character": "Wendy Torrance"}
@@ -380,7 +378,7 @@ def test_scrape_should_produce_subitem_lists_for_multivalued_subrules(doctype, r
 ])
 def test_scrape_root_should_come_before_foreach(doctype, rules):
     spec = load_spec({"rules": rules})
-    assert spec.scrape(MOVIE[doctype]) == {
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {
         "cast": [
             {"name": "Jack Nicholson", "character": "Jack Torrance"},
             {"name": "Shelley Duvall", "character": "Wendy Torrance"}
@@ -418,7 +416,7 @@ def test_scrape_root_should_come_before_foreach(doctype, rules):
 ])
 def test_scrape_should_transform_subitems(doctype, rules):
     spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
-    assert spec.scrape(MOVIE[doctype]) == {
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {
         "cast": [
             "Jack Nicholson as Jack Torrance",
             "Shelley Duvall as Wendy Torrance"
@@ -444,7 +442,9 @@ def test_scrape_should_transform_subitems(doctype, rules):
 ])
 def test_scrape_should_generate_keys_from_document(doctype, rules):
     spec = load_spec({"rules": rules})
-    assert spec.scrape(MOVIE[doctype]) == {"Country": "United States", "Language": "English"}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {
+        "Country": "United States", "Language": "English"
+    }
 
 
 @pytest.mark.parametrize(("doctype", "rules"), [
@@ -465,7 +465,9 @@ def test_scrape_should_generate_keys_from_document(doctype, rules):
 ])
 def test_scrape_should_transform_generated_key(doctype, rules):
     spec = load_spec({"rules": rules}, transformers=TRANSFORMERS)
-    assert spec.scrape(MOVIE[doctype]) == {"country": "United States", "language": "English"}
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {
+        "country": "United States", "language": "English"
+    }
 
 
 @pytest.mark.parametrize(("doctype", "pre", "rules"), [
@@ -477,9 +479,8 @@ def test_scrape_should_transform_generated_key(doctype, rules):
     ]),
 ])
 def test_scrape_should_apply_preprocess(doctype, pre, rules):
-    spec = load_spec({"rules": rules, "pre": pre},
-                     preprocessors=PREPROCESSORS)
-    assert spec.scrape(MOVIE[doctype]) == {"title": "The Shinin"}
+    spec = load_spec({"rules": rules, "pre": pre}, preprocessors=PREPROCESSORS)
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"title": "The Shinin"}
 
 
 @pytest.mark.parametrize(("doctype", "pre", "rules"), [
@@ -491,9 +492,8 @@ def test_scrape_should_apply_preprocess(doctype, pre, rules):
     ]),
 ])
 def test_scrape_should_apply_multiple_preprocesses(doctype, pre, rules):
-    spec = load_spec({"rules": rules, "pre": pre},
-                     preprocessors=PREPROCESSORS)
-    assert spec.scrape(MOVIE[doctype]) == {"title": "The Shini"}
+    spec = load_spec({"rules": rules, "pre": pre}, preprocessors=PREPROCESSORS)
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"title": "The Shini"}
 
 
 @pytest.mark.parametrize(("doctype", "post", "rules"), [
@@ -505,9 +505,8 @@ def test_scrape_should_apply_multiple_preprocesses(doctype, pre, rules):
     ]),
 ])
 def test_scrape_should_apply_postprocess(doctype, post, rules):
-    spec = load_spec({"rules": rules, "post": post},
-                     postprocessors=POSTPROCESSORS)
-    assert spec.scrape(MOVIE[doctype]) == {"titl": "The Shinin"}
+    spec = load_spec({"rules": rules, "post": post}, postprocessors=POSTPROCESSORS)
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"titl": "The Shinin"}
 
 
 @pytest.mark.parametrize(("doctype", "post", "rules"), [
@@ -519,6 +518,5 @@ def test_scrape_should_apply_postprocess(doctype, post, rules):
     ]),
 ])
 def test_scrape_should_apply_multiple_postprocesses(doctype, post, rules):
-    spec = load_spec({"rules": rules, "post": post},
-                     postprocessors=POSTPROCESSORS)
-    assert spec.scrape(MOVIE[doctype]) == {"tit": "The Shini"}
+    spec = load_spec({"rules": rules, "post": post}, postprocessors=POSTPROCESSORS)
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"tit": "The Shini"}
