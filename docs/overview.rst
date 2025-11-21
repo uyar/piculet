@@ -13,10 +13,6 @@ that describes what the names of the keys will be
 and how their values will be extracted.
 The specification is itself a dictionary with the following keys:
 
-*doctype* (required)
-    A string indicating the type of the document.
-    Possible values are ``html``, ``xml`` and ``json``.
-
 *pre*
     The list of names of preprocessors to apply to the document tree
     before extraction.

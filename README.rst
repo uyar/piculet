@@ -1,9 +1,8 @@
 Piculet
 =======
 
-Piculet is a module for extracting data from HTML, XML, and JSON documents.
-For HTML and XML documents, the queries are written as XPath expressions;
-for JSON documents, the queries are written as JMESPath expressions.
+Piculet is a module for extracting data from HTML/XML and JSON documents.
+The queries are written in XPath for HTML/XML, and in JMESPath for JSON.
 
 The documentation is available on: https://piculet.readthedocs.io/
 

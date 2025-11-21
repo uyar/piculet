@@ -1,6 +1,12 @@
 Data extraction
 ===============
 
+.. note::
+
+   The example uses an HTML document in combination with XPath queries.
+   JSON documents in combination with JMESPath queries conceptually work
+   the same way, differing only in XPath/JMESPath related details.
+
 This section explains how to write the rules for extracting the data.
 We'll scrape the following HTML content for the movie "The Shining"
 in our examples:
@@ -16,12 +22,6 @@ let's get its contents:
    from pathlib import Path
 
    document = Path("shining.html").read_text()
-
-.. note::
-
-   The example uses an HTML document in combination with XPath queries.
-   JSON documents in combination with JMESPath queries conceptually work
-   the same way, differing only in XPath/JMESPath related details.
 
 Rules
 -----
@@ -44,19 +44,17 @@ that we load using the :func:`load_spec <piculet.load_spec>` function:
 
    from piculet import load_spec
 
-   spec = load_spec({"doctype": "html", "rules": [rule]})
+   spec = load_spec({"rules": [rule]})
 
 Now that we have the document and the specification,
-we can use the :func:`scrape <piculet.scrape>` function
+we can use the :func:`scrape <piculet.Spec.scrape>` method
 to extract data from the document:
 
 .. code-block:: python
 
-   from piculet import scrape
+   data = spec.scrape(document, doctype="html")
 
-   scrape(document, spec)
-
-   # result:
+   # data:
    {"title": "The Shining"}
 
 The XPath query has to be arranged so that it will return a list of texts.
@@ -67,10 +65,10 @@ For example:
 
    rule = {"key": "full_title", "extractor": {"path": "//h1//text()"}}
 
-   spec = load_spec({"doctype": "html", "rules": [rule]})
-   scrape(document, spec)
+   spec = load_spec({"rules": [rule]})
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {"full_title": "The Shining (1980)"}
 
 Multiple items can be collected in a single invocation:
@@ -82,10 +80,10 @@ Multiple items can be collected in a single invocation:
        {"key": "country", "extractor": {"path": "//div[@class='info'][1]/p/text()"}}
    ]
 
-   spec = load_spec({"doctype": "html", "rules": rules})
-   scrape(document, spec)
+   spec = load_spec({"rules": rules})
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {"title": "The Shining", "country": "United States"}
 
 If a rule doesn't produce a value, the item will be excluded from the output.
@@ -98,8 +96,8 @@ Note that in the following example, there's no ``foo`` key in the result:
        {"key": "foo", "extractor": {"path": "//foo/text()"}}
    ]
 
-   spec = load_spec({"doctype": "html", "rules": rules})
-   scrape(document, spec)
+   spec = load_spec({"rules": rules})
+   data = spec.scrape(document, doctype="html")
 
    # result:
    {"title": "The Shining"}
@@ -132,13 +130,10 @@ let's define and use an ``int`` transformer:
    }
 
    transformers = {"int": int}
-   spec = load_spec(
-       {"doctype": "html", "rules": [rule]},
-       transformers=transformers
-   )
-   scrape(document, spec)
+   spec = load_spec({"rules": [rule]}, transformers=transformers)
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {"year": 1980}
 
 Multiple transformations are applied in the order they are listed:
@@ -157,13 +152,10 @@ Multiple transformations are applied in the order they are listed:
        "titlecase": str.title,
        "remove_spaces": lambda s: s.replace(" ", "")
    }
-   spec = load_spec(
-       {"doctype": "html", "rules": [rule]},
-       transformers=transformers
-   )
-   scrape(document, spec)
+   spec = load_spec({"rules": [rule]}, transformers=transformers)
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {"title": "Theshining"}
 
 Multivalued results
@@ -187,10 +179,10 @@ For example, to get the genres of the movie, we can write:
        }
    }
 
-   spec = load_spec({"doctype": "html", "rules": [rule]})
-   scrape(document, spec)
+   spec = load_spec({"rules": [rule]})
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {"genres": ["Horror", "Drama"]}
 
 If the ``foreach`` key doesn't match any element, the item will be excluded
@@ -212,10 +204,10 @@ from the result:
        }
    ]
 
-   spec = load_spec({"doctype": "html", "rules": rules})
-   scrape(document, spec)
+   spec = load_spec({"rules": rules})
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {"title": "The Shining"}
 
 If a transformation is specified, it will be applied to *each element*
@@ -233,13 +225,10 @@ in the resulting list:
    }
 
    transformers = {"lower": str.lower}
-   spec = load_spec(
-       {"doctype": "html", "rules": [rule]},
-       transformers=transformers
-   )
-   scrape(document, spec)
+   spec = load_spec({"rules": [rule]}, transformers=transformers)
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {"genres": ["horror", "drama"]}
 
 Subrules
@@ -268,13 +257,13 @@ and the generated mapping will be the value for the key.
        }
    }
 
-   spec = load_spec({"doctype": "html", "rules": [rule]})
-   scrape(document, spec)
+   spec = load_spec({"rules": [rule]})
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {"director": {"name": "Stanley Kubrick", "link": "/people/1"}}
 
-Extractors can be moved to a selected node before applying the query.
+Extractors can select a different node as the root before applying the query.
 This can improve readability and performance.
 The ``root`` key has to be a path that selects the root for the operation.
 If it returns multiple nodes, the first one will be selected.
@@ -314,10 +303,10 @@ Subrules can be combined with multivalues:
        }
    }
 
-   spec = load_spec({"doctype": "html", "rules": [rule]})
-   scrape(document, spec)
+   spec = load_spec({"rules": [rule]})
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {
      "cast": [
        {"name": "Jack Nicholson", "character": "Jack Torrance"},
@@ -333,7 +322,7 @@ The rule given above is equivalent to:
    rule = {
        "key": "cast",
        "extractor": {
-           "root": "//table[@class='cast']"
+           "root": "//table[@class='cast']",
            "foreach": "./tr",
            "rules": [
                {"key": "name", "extractor": {"path": "./td[1]/a/text()"}},
@@ -362,13 +351,10 @@ therefore the first transformer will take the generated mapping as parameter.
    }
 
    transformers = {"stars": lambda x: "%(name)s as %(character)s" % x}
-   spec = load_spec(
-       {"doctype": "html", "rules": [rule]},
-       transformers=transformers
-   )
-   scrape(document, spec)
+   spec = load_spec({"rules": [rule]}, transformers=transformers)
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {
      "cast": [
         "Jack Nicholson as Jack Torrance",
@@ -400,10 +386,10 @@ Key and value extractors will be applied to each selected element.
        "extractor": {"path": "./p/text()"}
    }
 
-   spec = load_spec({"doctype": "html", "rules": [rule]})
-   scrape(document, spec)
+   spec = load_spec({"rules": [rule]})
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {"Country": "United States", "Language": "English"}
 
 Like values, keys can also be transformed:
@@ -417,11 +403,8 @@ Like values, keys can also be transformed:
    }
 
    transformers = {"lower": str.lower}
-   spec = load_spec(
-       {"doctype": "html", "rules": [rule]},
-       transformers=transformers
-   )
-   scrape(document, spec)
+   spec = load_spec({"rules": [rule]}, transformers=transformers)
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {"country": "United States", "language": "English"}

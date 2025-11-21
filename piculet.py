@@ -14,9 +14,8 @@
 # along with Piculet.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Piculet is a module for extracting data from HTML, XML, and JSON documents.
-For HTML and XML documents, the queries are written as XPath expressions,
-and for JSON documents, the queries are written as JMESPath expressions.
+Piculet is a module for extracting data from HTML/XML and JSON documents.
+The queries are written in XPath for HTML/XML, and in JMESPath for JSON.
 
 The documentation is available on: https://piculet.readthedocs.io/
 """
@@ -55,7 +54,7 @@ class Query:
     """A query based on XPath or JMESPath.
 
     Expressions starting with ``/`` or ``./`` are assumed to be XPath.
-    Otherwise they are assumed to be JMESPath.
+    and others are assumed to be JMESPath.
     """
 
     def __init__(self, path: str) -> None:
@@ -100,7 +99,7 @@ class Extractor:
     """Query to select the root node to extract the data from."""
 
     foreach: Query | None = None
-    """Query to select the nodes for items in multivalued results."""
+    """Query to select the nodes for producing multiple results."""
 
     transforms: list[str] = field(default_factory=list)
     """Names of transform functions to apply to the obtained data."""
@@ -119,13 +118,13 @@ class Picker(Extractor):
     """Query to apply to a node to extract the value."""
 
     def extract(self, node: Node) -> Any:
-        """Extract data from a node using this extractor."""
+        """Extract data from a node."""
         return self.path.apply(node)
 
 
 @dataclass(kw_only=True)
 class Collector(Extractor):
-    """An extractor that collects multiple pieces of data in a dictionary."""
+    """An extractor that collects multiple pieces of data."""
 
     rules: list[Rule] = field(default_factory=list)
     """Rules to apply to a node to collect the data."""
@@ -136,6 +135,7 @@ class Collector(Extractor):
             rule._set_transformers(registry)
 
     def extract(self, node: Node) -> dict[str, Any] | None:
+        """Extract data from a node."""
         data: dict[str, Any] = {}
         for rule in self.rules:
             subdata = rule.apply(node)
@@ -146,16 +146,16 @@ class Collector(Extractor):
 
 @dataclass(kw_only=True)
 class Rule:
-    """A rule that generates a key and a value from a node."""
+    """A rule that generates key-value pairs from a node."""
 
     key: str | Picker
-    """Name or extractor of key."""
+    """Name of key or extractor to produce the key."""
 
     extractor: Picker | Collector
-    """Extractor of value."""
+    """Extractor to produce the value."""
 
     foreach: Query | None = None
-    """Query to generate multiple keys and values from selected nodes."""
+    """Query to select the nodes for producing multiple key-value pairs."""
 
     def _set_transformers(self, registry: Mapping[str, Transformer]) -> None:
         self.extractor._set_transforms(registry)
@@ -218,18 +218,18 @@ class Spec(Collector):
         self._post = [registry[name] for name in self.post]
 
     def preprocess(self, root: Node) -> Node:
-        """Apply the preprocessors in this spec to the root node."""
+        """Apply the preprocessors to the root node."""
         for preprocess in self._pre:
             root = preprocess(root)
         return root
 
     def extract(self, root: Node):
-        """Extract data using this specification from a node."""
+        """Extract data from a node."""
         data = super().extract(root)
         return data if data is not None else {}
 
     def postprocess(self, data: dict[str, Any]) -> dict[str, Any]:
-        """Apply the postprocessors in this spec to the collected data."""
+        """Apply the postprocessors to the collected data."""
         for postprocess in self._post:
             data = postprocess(data)
         return data
@@ -240,7 +240,7 @@ class Spec(Collector):
             *,
             doctype: DocType,
         ) -> dict[str, Any]:
-        """Scrape a document using this specification."""
+        """Scrape a document."""
         root = document if not isinstance(document, str) else \
             build_tree(document, doctype=doctype)
         root = self.preprocess(root)
@@ -258,18 +258,13 @@ if find_spec("typedload") is not None:
     import typedload
 
     def load_spec(
-            content: dict,
+            content: Mapping[str, Any],
             *,
             transformers: Mapping[str, Transformer] | None = None,
             preprocessors: Mapping[str, Preprocessor] | None = None,
             postprocessors: Mapping[str, Postprocessor] | None = None,
     ) -> Spec:
-        """Generate a scraping specification from the content.
-
-        The transformer, preprocessor and postprocessor functions
-        used in the specification will be looked up in the corresponding
-        registry parameters.
-        """
+        """Deserialize a mapping into a scraping specification."""
         spec: Spec = typedload.load(
             content,
             type_=Spec,

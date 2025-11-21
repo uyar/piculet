@@ -34,12 +34,12 @@ a ``class`` attribute which we can later use in path queries:
    ]
 
    spec = load_spec(
-       {"doctype": "html", "pre": ["mark_people"], "rules": rules},
+       {"pre": ["mark_people"], "rules": rules},
        preprocessors=preprocessors
    )
-   scrape(document, spec)
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {
        "title": "The Shining",
        "people": ["Stanley Kubrick", "Jack Nicholson", "Shelley Duvall"]

@@ -30,12 +30,12 @@ For example, to add a key by combining the director name with the title:
    ]
 
    spec = load_spec(
-       {"doctype": "html", "rules": rules, "post": ["director_title"]},
+       {"rules": rules, "post": ["director_title"]},
        postprocessors=postprocessors
    )
-   scrape(document, spec)
+   data = spec.scrape(document, doctype="html")
 
-   # result:
+   # data:
    {
        "title": "The Shining",
        "director": "Stanley Kubrick",
