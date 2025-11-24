@@ -236,6 +236,8 @@ class Spec(Collector):
 
     def extract(self, root: Node):
         """Extract data from a node."""
+        if self.root is not None:
+            root = self.root.get(root)
         data = super().extract(root)
         return data if data is not None else {}
 
@@ -268,6 +270,7 @@ def build_tree(document: str, doctype: DocType) -> Node:
 def load_spec(
         content: Mapping[str, Any],
         *,
+        type_: type = Spec,
         transformers: Mapping[str, Transformer] | None = None,
         preprocessors: Mapping[str, Preprocessor] | None = None,
         postprocessors: Mapping[str, Postprocessor] | None = None,
@@ -275,7 +278,7 @@ def load_spec(
     """Deserialize a mapping into a scraping specification."""
     spec: Spec = deserialize(
         content,
-        type_=Spec,
+        type_=type_,
         strconstructed={Query},
         failonextra=True,
     )

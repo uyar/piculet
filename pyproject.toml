@@ -1,6 +1,6 @@
 [project]
 name = "piculet"
-version = "2.0b1"
+version = "2.0"
 description = "XML/HTML scraper using XPath queries."
 readme = "README.rst"
 
@@ -19,7 +19,7 @@ keywords = [
     "scrape",
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
@@ -54,7 +54,7 @@ typing = [
     "types-jmespath>=1.0.2.20250809",
 ]
 style = [
-    "ruff>=0.14.5",
+    "ruff>=0.14.6",
 ]
 doc = [
     "sphinx>=8.1.3",
