@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2025 H. Turgut Uyar <uyar@tekir.org>
+# Copyright (C) 2014-2026 H. Turgut Uyar <uyar@tekir.org>
 #
 # Piculet is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -23,10 +23,10 @@ The documentation is available on: https://piculet.readthedocs.io/
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from functools import partial
-from typing import Any, Literal, Mapping, TypeAlias
+from typing import Any, Literal, TypeAlias
 
 import lxml.etree
 import lxml.html
@@ -61,7 +61,7 @@ Transformer: TypeAlias = Callable[[Any], Any]
 class Query:
     """A query based on XPath or JMESPath.
 
-    Expressions starting with ``/`` or ``./`` are assumed to be XPath.
+    Expressions starting with ``/`` or ``./`` are assumed to be XPath,
     and others are assumed to be JMESPath.
     """
 
@@ -234,11 +234,11 @@ class Spec(Collector):
             root = preprocess(root)
         return root
 
-    def extract(self, root: Node):
+    def extract(self, node: Node):
         """Extract data from a node."""
         if self.root is not None:
-            root = self.root.get(root)
-        data = super().extract(root)
+            node = self.root.get(node)
+        data = super().extract(node)
         return data if data is not None else {}
 
     def postprocess(self, data: dict[str, Any]) -> dict[str, Any]:
@@ -248,11 +248,11 @@ class Spec(Collector):
         return data
 
     def scrape(
-            self,
-            document: str | Node,
-            *,
-            doctype: DocType,
-        ) -> dict[str, Any]:
+        self,
+        document: str | Node,
+        *,
+        doctype: DocType,
+    ) -> dict[str, Any]:
         """Scrape a document."""
         root = document if not isinstance(document, str) else \
             build_tree(document, doctype=doctype)
@@ -268,12 +268,12 @@ def build_tree(document: str, doctype: DocType) -> Node:
 
 
 def load_spec(
-        content: Mapping[str, Any],
-        *,
-        type_: type = Spec,
-        transformers: Mapping[str, Transformer] | None = None,
-        preprocessors: Mapping[str, Preprocessor] | None = None,
-        postprocessors: Mapping[str, Postprocessor] | None = None,
+    content: Mapping[str, Any],
+    *,
+    type_: type = Spec,
+    transformers: Mapping[str, Transformer] | None = None,
+    preprocessors: Mapping[str, Preprocessor] | None = None,
+    postprocessors: Mapping[str, Postprocessor] | None = None,
 ) -> Spec:
     """Deserialize a mapping into a scraping specification."""
     spec: Spec = deserialize(
