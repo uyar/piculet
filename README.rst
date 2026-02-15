@@ -13,7 +13,7 @@ License
 
 Copyright (C) 2014-2026 H. Turgut Uyar <uyar@tekir.org>
 
-Piculet is released under the LGPL license, version 3 or later.
+Piculet is released under the GPL license, version 3.
 Read the included `LICENSE.txt`_ file for details.
 
 .. _LICENSE.txt: https://github.com/uyar/piculet/blob/master/LICENSE.txt

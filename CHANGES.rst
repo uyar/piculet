@@ -4,6 +4,7 @@ Changes
 2.1 (unreleased)
 ----------------
 
+- Change license to GPL 3.0 only.
 - Drop support for Python 3.10.
 
 2.0 (2025-11-24)

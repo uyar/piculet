@@ -7,7 +7,7 @@ readme = "README.rst"
 authors = [
     {name = "H. Turgut Uyar", email = "uyar@tekir.org"},
 ]
-license = "LGPL-3.0-or-later"
+license = "GPL-3.0-only"
 license-files = ["LICENSE.txt"]
 
 keywords = [
@@ -90,6 +90,7 @@ line-length = 79
 [tool.ruff.lint]
 select = ["A", "E", "F", "I", "T", "W"]
 ignore = ["E731"]
+preview = true
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
@@ -117,7 +118,7 @@ commands =
 
 [testenv:style]
 commands =
-    ruff check --preview piculet.py tests
+    ruff check piculet.py tests
 
 [testenv:docs]
 changedir = docs
