@@ -1,6 +1,11 @@
 Changes
 =======
 
+2.1 (unreleased)
+----------------
+
+- Drop support for Python 3.10.
+
 2.0 (2025-11-24)
 -----------------
 

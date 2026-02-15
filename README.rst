@@ -11,7 +11,7 @@ The source code can be obtained from: https://github.com/uyar/piculet
 License
 -------
 
-Copyright (C) 2014-2025 H. Turgut Uyar <uyar@tekir.org>
+Copyright (C) 2014-2026 H. Turgut Uyar <uyar@tekir.org>
 
 Piculet is released under the LGPL license, version 3 or later.
 Read the included `LICENSE.txt`_ file for details.
