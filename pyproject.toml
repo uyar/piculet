@@ -67,9 +67,8 @@ dev = [
 ]
 
 [project.urls]
-homepage = "https://tekir.org/piculet/"
+homepage = "https://pypi.org/project/piculet/"
 documentation = "https://piculet.readthedocs.io/"
-repository = "https://github.com/uyar/piculet"
 
 [tool.setuptools]
 py-modules = ["piculet"]
