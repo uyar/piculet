@@ -5,7 +5,7 @@ The queries are written in XPath for HTML/XML, and in JMESPath for JSON.
 
 The documentation is available on: https://piculet.readthedocs.io/
 
-## License
+## License
 
 (C) 2014-2026 H. Turgut Uyar <uyar@tekir.org>
 
