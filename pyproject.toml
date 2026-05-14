@@ -1,6 +1,6 @@
 [project]
 name = "piculet"
-version = "2.1a1"
+version = "2.1"
 description = "XML/HTML scraper using XPath queries."
 readme = "README.md"
 
@@ -44,16 +44,16 @@ dependencies = [
 
 [dependency-groups]
 test = [
-    "pytest>=9.0.2",
-    "pytest-cov>=7.0.0",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
 ]
 typing = [
-    "mypy>=1.19.1",
+    "mypy>=2.1.0",
     "lxml-stubs>=0.5.1",
-    "types-jmespath>=1.1.0.20260124",
+    "types-jmespath>=1.1.0.20260508",
 ]
 style = [
-    "ruff>=0.15.1",
+    "ruff>=0.15.12",
 ]
 doc = [
     "sphinx>=8.2.3",
@@ -63,7 +63,7 @@ dev = [
     {include-group = "typing"},
     {include-group = "style"},
     {include-group = "doc"},
-    "tox-uv>=1.29.0",
+    "tox-uv>=1.35.2",
 ]
 
 [project.urls]
