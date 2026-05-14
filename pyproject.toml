@@ -2,7 +2,7 @@
 name = "piculet"
 version = "2.1a1"
 description = "XML/HTML scraper using XPath queries."
-readme = "README.rst"
+readme = "README.md"
 
 authors = [
     {name = "H. Turgut Uyar", email = "uyar@tekir.org"},
