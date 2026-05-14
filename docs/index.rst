@@ -1,4 +1,9 @@
-.. include:: ../README.rst
+=======
+Piculet
+=======
+
+Piculet is a module for extracting data from HTML/XML and JSON documents.
+The queries are written in XPath for HTML/XML, and in JMESPath for JSON.
 
 .. toctree::
    :maxdepth: 2
@@ -9,7 +14,6 @@
    preprocess
    postprocess
    api
-   changes
 
 Indices and tables
 ==================
