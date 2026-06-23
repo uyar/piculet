@@ -41,7 +41,12 @@ serialize = typedload.dump
 """Generate a dictionary from an object."""
 
 
-Node: TypeAlias = lxml.etree._Element | dict[str, Any]
+XMLNode: TypeAlias = lxml.etree._Element
+JSONNode: TypeAlias = dict[str, Any]
+Node: TypeAlias = XMLNode | JSONNode
+
+CollectedData: TypeAlias = dict[str, Any]
+
 
 DocType: TypeAlias = Literal["html", "xml", "json"]
 
@@ -53,7 +58,7 @@ _PARSERS: dict[DocType, Callable[[str], Node]] = {
 
 
 Preprocessor: TypeAlias = Callable[[Node], Node]
-Postprocessor: TypeAlias = Callable[[dict[str, Any]], dict[str, Any]]
+Postprocessor: TypeAlias = Callable[[CollectedData], CollectedData]
 Transformer: TypeAlias = Callable[[Any], Any]
 
 
@@ -144,9 +149,9 @@ class Collector(Extractor):
         for rule in self.rules:
             rule._set_transformers(registry)
 
-    def extract(self, node: Node) -> dict[str, Any] | None:
+    def extract(self, node: Node) -> CollectedData | None:
         """Extract data from a node."""
-        data: dict[str, Any] = {}
+        data: CollectedData = {}
         for rule in self.rules:
             subdata = rule.apply(node)
             if subdata is not None:
@@ -172,9 +177,9 @@ class Rule:
         if isinstance(self.key, Picker):
             self.key._set_transforms(registry)
 
-    def apply(self, root: Node) -> dict[str, Any] | None:
+    def apply(self, root: Node) -> CollectedData | None:
         """Apply this rule to a node."""
-        data: dict[str, Any] = {}
+        data: CollectedData = {}
 
         if self.extractor.root is not None:
             root = self.extractor.root.get(root)
@@ -233,25 +238,24 @@ class Spec(Collector):
             root = preprocess(root)
         return root
 
-    def extract(self, node: Node) -> dict[str, Any]:
+    def extract(self, node: Node) -> CollectedData:
         """Extract data from a node."""
         if self.root is not None:
             node = self.root.get(node)
         data = super().extract(node)
         return data if data is not None else {}
 
-    def postprocess(self, data: dict[str, Any]) -> dict[str, Any]:
+    def postprocess(self, data: CollectedData) -> CollectedData:
         """Apply the postprocessors to the collected data."""
         for postprocess in self._post:
             data = postprocess(data)
         return data
 
-    def scrape(
-        self,
+    def scrape(self,
         document: str | Node,
         *,
         doctype: DocType,
-    ) -> dict[str, Any]:
+    ) -> CollectedData:
         """Scrape a document."""
         root = document if not isinstance(document, str) else \
             build_tree(document, doctype=doctype)
