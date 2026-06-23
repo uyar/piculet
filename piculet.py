@@ -31,7 +31,7 @@ import lxml.etree
 import lxml.html
 import typedload
 from jmespath import compile as compile_jmespath
-from lxml.etree import XPath as compile_xpath
+from lxml.etree import XPath as compile_xpath  # noqa: N813
 
 
 deserialize = partial(typedload.load, pep563=True, basiccast=False)

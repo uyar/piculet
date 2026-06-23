@@ -1,23 +1,14 @@
 [project]
 name = "piculet"
 version = "2.1"
-description = "XML/HTML scraper using XPath queries."
+description = "XML/HTML/JSON scraper using XPath/JmesPath queries."
 readme = "README.md"
 
-authors = [
-    {name = "H. Turgut Uyar", email = "uyar@tekir.org"},
-]
+authors = [{name = "H. Turgut Uyar", email = "uyar@tekir.org"}]
 license = "GPL-3.0-only"
 license-files = ["LICENSE.txt"]
 
-keywords = [
-    "html",
-    "xml",
-    "json",
-    "xpath",
-    "jmespath",
-    "scrape",
-]
+keywords = ["html", "xml", "json", "xpath", "jmespath", "scrape"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -37,26 +28,26 @@ classifiers = [
 
 requires-python = ">=3.11"
 dependencies = [
-    "lxml~=5.4",
-    "jmespath~=1.1",
-    "typedload~=2.40",
+    "jmespath>=1.1.0",
+    "lxml>=6.1.1",
+    "typedload>=2.41",
 ]
 
 [dependency-groups]
 test = [
-    "pytest>=9.0.3",
+    "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
 ]
 typing = [
-    "mypy>=2.1.0",
     "lxml-stubs>=0.5.1",
+    "mypy>=2.1.0",
     "types-jmespath>=1.1.0.20260508",
 ]
 style = [
-    "ruff>=0.15.12",
+    "ruff>=0.15.18",
 ]
 doc = [
-    "sphinx>=8.2.3",
+    "sphinx>=9.0.4",
 ]
 dev = [
     {include-group = "test"},
@@ -69,6 +60,7 @@ dev = [
 [project.urls]
 homepage = "https://pypi.org/project/piculet/"
 documentation = "https://piculet.readthedocs.io/"
+repository = "https://github.com/uyar/piculet"
 
 [tool.setuptools]
 py-modules = ["piculet"]
@@ -87,8 +79,7 @@ skip_covered = true
 line-length = 79
 
 [tool.ruff.lint]
-select = ["A", "E", "F", "I", "T", "W"]
-ignore = ["E731"]
+select = ["E", "W", "F", "I", "N", "A", "T20"]
 preview = true
 
 [tool.ruff.lint.isort]
