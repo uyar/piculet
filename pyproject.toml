@@ -88,7 +88,7 @@ lines-after-imports = 2
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py3{11,12,13,14}, pypy3{11}, types, style, docs
+envlist = py3{11,12,13,14}, pypy3{11}, coverage, types, style, docs
 isolated_build = True
 
 [testenv]

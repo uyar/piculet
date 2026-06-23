@@ -246,6 +246,19 @@ def test_scrape_should_transform_each_value_in_multivalued_result(doctype, rules
     assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"genres": ["horror", "drama"]}
 
 
+@pytest.mark.parametrize(("doctype", "root", "rules"), [
+    ("html", "//div[@class='director']", [
+        {"key": "director", "extractor": {"path": "./p/a/text()"}}
+    ]),
+    ("json", "director", [
+        {"key": "director", "extractor": {"path": "name"}}
+    ]),
+])
+def test_scrape_should_move_root_before_starting(doctype, root, rules):
+    spec = load_spec({"root": root, "rules": rules})
+    assert spec.scrape(MOVIE[doctype], doctype=doctype) == {"director": "Stanley Kubrick"}
+
+
 @pytest.mark.parametrize(("doctype", "rules"), [
     ("html", [
         {

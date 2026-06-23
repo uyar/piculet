@@ -233,7 +233,7 @@ class Spec(Collector):
             root = preprocess(root)
         return root
 
-    def extract(self, node: Node):
+    def extract(self, node: Node) -> dict[str, Any]:
         """Extract data from a node."""
         if self.root is not None:
             node = self.root.get(node)
