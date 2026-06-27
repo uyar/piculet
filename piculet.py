@@ -251,7 +251,8 @@ class Spec(Collector):
             data = postprocess(data)
         return data
 
-    def scrape(self,
+    def scrape(
+        self,
         document: str | Node,
         *,
         doctype: DocType,
