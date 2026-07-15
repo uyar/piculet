@@ -40,11 +40,11 @@ test = [
 ]
 typing = [
     "lxml-stubs>=0.5.1",
-    "mypy>=2.1.0",
+    "mypy>=2.3.0",
     "types-jmespath>=1.1.0.20260508",
 ]
 style = [
-    "ruff>=0.15.18",
+    "ruff>=0.15.21",
 ]
 doc = [
     "sphinx>=9.0.4",
